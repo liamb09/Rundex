@@ -2,64 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:path/path.dart';
+import 'package:running_log/Run.dart';
+import 'package:running_log/RunsDatabase.dart';
 import 'package:sqflite/sqflite.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final database = openDatabase(
-    join(await getDatabasesPath(), 'runs_database.db'),
-    onCreate: (db, version) {
-      return db.execute(
-        'CREATE TABLE runs(id INTEGER, title TEXT, distance REAL, unit TEXT, time INTEGER, type TEXT, notes TEXT)',
-      );
-    },
-    version: 1,
-  );
-
-  Future<void> insertRun(Run run) async {
-    final db = await database;
-    await db.insert(
-      'runs',
-      run.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
-
-  Future<List<Run>> runs() async {
-    final db = await database;
-
-    final List<Map<String, dynamic>> maps = await db.query('runs');
-
-    return List.generate(maps.length, (i) {
-      return Run(
-        id: maps[i]['id'] as int,
-        title: maps[i]['title'] as String,
-        distance: maps[i]['distance'] as double,
-        unit: maps[i]['unit'] as String,
-        time: maps[i]['time'] as int,
-        type: maps[i]['type'] as String,
-        notes: maps[i]['type'] as String,
-      );
-    });
-  }
-
-  Future<void> deleteDatabase(String path) =>
-    databaseFactory.deleteDatabase(path);
-
-  var lasaTrack = const Run(
-    id: 0,
-    title: "LASA Track Practice",
-    distance: 5.5,
-    unit: "mi",
-    time: 40,
-    type: "Workout",
-    notes: "",
-  );
-
-  //deleteDatabase(await getDatabasesPath());
-  // await insertRun(lasaTrack);
-  print(await runs());
-
   runApp(MyApp());
 }
 
@@ -83,7 +30,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  
+  Run emptyRun = Run(id: 0, title: "", distance: 0, unit: "", time: 0, type: "", notes: "");
 }
 
 class MyHomePage extends StatefulWidget {
@@ -94,8 +41,26 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  late List<Run> runs;
+  bool isLoading = false;
+
+  @override
+  void initState () {
+    super.initState();
+    refreshNotes();
+  }
+
+  Future refreshNotes() async {
+    setState(() => isLoading = true);
+    this.runs = await RunsDatabase.instance.readAllRuns();
+    setState(() => isLoading = false);
+  }
+
     @override
   Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    refreshNotes();
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Running Log"),
@@ -118,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       body: ListView.builder(
-        itemCount: 50,
+        itemCount: runs.length,
         itemBuilder: (context, index) {
           return Card(
             child: Padding(
@@ -223,6 +188,12 @@ class _AddRunPageState extends State<AddRunPage> {
                         child: IntInputBox(
                           labelText: "Hours",
                           intValueSetter: (value) => _hours = value,
+                          validator: (value) {
+                            if (value != "" && int.tryParse(value) == null) {
+                              return "Must be an integer";
+                            }
+                            return null;
+                          },
                         ),
                       ),
                       SizedBox(width: 6),
@@ -235,6 +206,12 @@ class _AddRunPageState extends State<AddRunPage> {
                         child: IntInputBox(
                           labelText: "Minutes",
                           intValueSetter: (value) => _minutes = value,
+                          validator: (value) {
+                            if (value != "" && int.tryParse(value) == null) {
+                              return "Must be an integer";
+                            }
+                            return null;
+                          },
                         ),
                       ),
                       SizedBox(width: 6),
@@ -247,6 +224,12 @@ class _AddRunPageState extends State<AddRunPage> {
                         child: IntInputBox(
                           labelText: "Seconds",
                           intValueSetter: (value) => _seconds = value,
+                          validator: (value) {
+                            if (value != "" && int.tryParse(value) == null) {
+                              return "Must be an integer";
+                            }
+                            return null;
+                          },
                         ),
                       ),
                     ],
@@ -270,6 +253,7 @@ class _AddRunPageState extends State<AddRunPage> {
                     },
                     value: _type,
                     validator: (value) {
+                      print(constraints.maxHeight);
                       if (value != "N/A" && value != "Easy Run" && value != "Long Run" && value != "Race") {
                         return "Invalid input";
                       }
@@ -277,12 +261,13 @@ class _AddRunPageState extends State<AddRunPage> {
                     },
                   ),
                   SizedBox(height: 12),
-                  SizedBox(
-                    height: constraints.maxHeight-100,
-                    child: StringInputBox(
+                  TextFormField(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
                       labelText: "Notes",
-                      strValueSetter: (value) => _notes = value,
                     ),
+                    maxLines: 3,
+                    onSaved: (value) => _notes = value!,
                   ),
                 ],
               ),
@@ -293,7 +278,20 @@ class _AddRunPageState extends State<AddRunPage> {
             onPressed: () {
               // validate form
               if (formKey.currentState?.validate() == true) {
-                formKey.currentState?.save();       
+                formKey.currentState?.save();
+                // Add run to database
+                int timeInSeconds = (_hours*60 + _minutes)*60 + _seconds;
+                var run = Run(
+                  id: 0,
+                  title: _title,
+                  distance: _distance,
+                  unit: _unit,
+                  time: timeInSeconds,
+                  type: _type,
+                  notes: _notes,
+                );
+                print(run);
+                // TODO: add to database
                 // return to homepage
                 Navigator.pop(context);     
               }
@@ -310,10 +308,12 @@ class IntInputBox extends StatelessWidget {
     super.key,
     required this.labelText,
     required this.intValueSetter,
+    required this.validator,
   });
 
   final String labelText;
   final void Function(int value) intValueSetter;
+  final Function(String value) validator;
 
   @override
   Widget build(BuildContext context) {
@@ -327,12 +327,15 @@ class IntInputBox extends StatelessWidget {
         signed: false,
       ),
       validator: (value) {
-        if (value == null || int.tryParse(value) == null) {
-          return "Must be an integer";
-        }
-        return null;
+        return validator(value!);
       },
-      onSaved: (newValue) => intValueSetter(int.parse("$newValue")),
+      onSaved: (newValue) {
+        if (newValue == "") {
+          intValueSetter(0);
+        } else {
+          intValueSetter(int.parse("$newValue"));
+        }
+      },
     );
   }
 }
@@ -359,7 +362,9 @@ class DoubleInputBox extends StatelessWidget {
         signed: false,
       ),
       validator: (value) {
-        if (value == null || double.tryParse(value) == null) {
+        if (value == "") {
+          return "Required";
+        } else if (double.tryParse(value!) == null) {
           return "Must be a number";
         }
         return null;
@@ -388,7 +393,7 @@ class StringInputBox extends StatelessWidget {
       ),
       validator: (value) {
         if (value?.isEmpty == true) {
-          return "Please fill out this field";
+          return "Required";
         }
         return null;
       },
@@ -412,42 +417,4 @@ class _ProfilePageState extends State<ProfilePage> {
       body: Placeholder(),
     );
   }
-}
-
-class Run {
-  final int id;
-  final String title;
-  final double distance;
-  final String unit;
-  final int time;
-  final String type;
-  final String notes;
-
-  const Run ({
-    required this.id,
-    required this.title,
-    required this.distance,
-    required this.unit,
-    required this.time,
-    required this.type,
-    required this.notes,
-  });
-
-  Map<String, dynamic> toMap () {
-    return {
-      "id": id,
-      "title": title,
-      "distance": distance,
-      "unit": unit,
-      "time": time,
-      "type": type,
-      "notes": notes,
-    };
-  }
-
-  @override
-  String toString() {
-    return 'Run{id: $id, itle: $title, distance: $distance, unit: $unit, time: $time, type: $type, notes: $notes}';
-  }
-
 }

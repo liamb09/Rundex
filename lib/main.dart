@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:async';
-import 'package:path/path.dart';
 import 'package:running_log/Run.dart';
 import 'package:running_log/RunsDatabase.dart';
-import 'package:sqflite/sqflite.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
@@ -41,25 +39,28 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  late List<Run> runs;
-  bool isLoading = false;
-
-  @override
-  void initState () {
-    super.initState();
-    refreshNotes();
-  }
-
-  Future refreshNotes() async {
-    setState(() => isLoading = true);
-    this.runs = await RunsDatabase.instance.readAllRuns();
-    setState(() => isLoading = false);
+  String secondsToTime (int s) {
+    int hours = s ~/ 3600;
+    int minutes = (s - hours * 3600) ~/ 60;
+    int seconds = s - (hours * 3600 + minutes * 60);
+    String secondsStr = "$seconds";
+    if (seconds < 10) {
+      secondsStr = "0$seconds";
+    }
+    if (hours > 0) {
+      String minutesStr = "$minutes";
+      if (minutes < 10) {
+        minutesStr = "0$minutes";
+      }
+      return "$hours:$minutesStr:$secondsStr";
+    } else {
+      return "$minutes:$secondsStr";
+    }
   }
 
     @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    refreshNotes();
 
     return Scaffold(
       appBar: AppBar(
@@ -82,16 +83,63 @@ class _MyHomePageState extends State<MyHomePage> {
           )
         ],
       ),
-      body: ListView.builder(
-        itemCount: runs.length,
-        itemBuilder: (context, index) {
-          return Card(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("Run #$index"),
-            ),
-          );
-        },
+      body: Center(
+        child: FutureBuilder<List<Run>>(
+          future: RunsDatabase.instance.getRuns(),
+          builder: (BuildContext context, AsyncSnapshot<List<Run>> snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: Card(child: Text("Loading...")));
+            }
+            return snapshot.data!.isEmpty
+            ? Center(child: Text("You have no runs."))
+            : ListView(
+              children: snapshot.data!.map((run) {
+                return Center(
+                  child: Card(
+                    child: ListTile(
+                      title: Center(child: Text(run.title)),
+                      subtitle: Column(
+                        children: [
+                          Builder(
+                            builder: (context) {
+                              if (run.type != "N/A") {
+                                return Card(
+                                  color: Theme.of(context).primaryColorLight,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Text(run.type),
+                                  ),
+                                );
+                              }
+                              return SizedBox.shrink();
+                            },
+                          ),
+                          Row(
+                            children: [
+                              Column(
+                                children: [
+                                  Text("${run.distance} ${run.unit}"),
+                                  Text("Distance"),
+                                ],
+                              ),
+                              SizedBox(width: 12),
+                              Column(
+                                children: [
+                                  Text(secondsToTime(run.time)),
+                                  Text("Time"),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList()
+            );
+          }
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         label: Text("Add run"),
@@ -275,14 +323,13 @@ class _AddRunPageState extends State<AddRunPage> {
           ),
           floatingActionButton: FloatingActionButton(
             child: Icon(Icons.check),
-            onPressed: () {
+            onPressed: () async {
               // validate form
               if (formKey.currentState?.validate() == true) {
                 formKey.currentState?.save();
                 // Add run to database
                 int timeInSeconds = (_hours*60 + _minutes)*60 + _seconds;
                 var run = Run(
-                  id: 0,
                   title: _title,
                   distance: _distance,
                   unit: _unit,
@@ -291,7 +338,7 @@ class _AddRunPageState extends State<AddRunPage> {
                   notes: _notes,
                 );
                 print(run);
-                // TODO: add to database
+                await RunsDatabase.instance.addRun(run);
                 // return to homepage
                 Navigator.pop(context);     
               }

@@ -1,88 +1,64 @@
+import 'dart:io';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:running_log/Run.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/sqlite_api.dart';
 
 class RunsDatabase {
-  static final RunsDatabase instance = RunsDatabase._init();
-
+  RunsDatabase._();
+  static final RunsDatabase instance = RunsDatabase._();
   static Database? _database;
 
-  RunsDatabase._init();
+  Future<Database> get database async => _database ??= await initDatabase();
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB("runs.db");
-    return _database!;
-  }
-
-  Future<Database> _initDB (String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
-    return await openDatabase(path, version: 1, onCreate: _creatDB);
-  }
-
-  Future _creatDB (Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE $tableNotes (
-        ${RunFields.id} INTEGER PRIMARY KEY AUTOINCREMENT,
-        ${RunFields.title} TEXT,
-        ${RunFields.distance} REAL,
-        ${RunFields.unit} TEXT,
-        ${RunFields.time} INTEGER,
-        ${RunFields.type} TEXT,
-        ${RunFields.notes} TEXT
-      )
-    ''');
-  }
-
-  Future<Run> create (Run run) async {
-    final db = await instance.database;
-    final id = await db.insert(tableNotes, run.toMap());
-    return run.copy(id: id);
-  }
-
-  Future<Run> readRun (int id) async {
-    final db = await instance.database;
-    final maps = await db.query(
-      tableNotes,
-      columns: RunFields.values,
-      where: '${RunFields.id} = ?',
-      whereArgs: [id],
-    );
-    if (maps.isNotEmpty) {
-      return Run.fromMap(maps.first);
-    } else {
-      throw Exception("ID $id not found");
-    }
-  }
-
-  Future<List<Run>> readAllRuns () async {
-    final db = await instance.database;
-    final result = await db.query(tableNotes);
-    return result.map((map) => Run.fromMap(map)).toList();
-  }
-
-  Future<int> update (Run run) async {
-    final db = await instance.database;
-    return db.update(
-      tableNotes,
-      run.toMap(),
-      where: "${RunFields.id} = ?",
-      whereArgs: [run.id],
+  initDatabase () async {
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, 'runs.db');
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: (db, version) async {
+        await db.execute('''
+          CREATE TABLE runs (
+            _id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            title TEXT, 
+            distance REAL, 
+            unit TEXT, 
+            time INTEGER, 
+            type TEXT, 
+            notes TEXT
+          )
+      ''');
+      },
     );
   }
 
-  Future<int> delete (int id) async {
-    final db = await instance.database;
-    return await db.delete(
-      tableNotes,
-      where: "${RunFields.id} = ?",
-      whereArgs: [id],
-    );
+  Future<List<Run>> getRuns () async {
+    Database db = await instance.database;
+    var runs = await db.query('runs');
+    List<Run> runsList = runs.isNotEmpty ? runs.map((c) => Run.fromMap(c)).toList() : [];
+    return runsList;
   }
 
-  Future close () async {
-    final db = await instance.database;
-    db.close();
+  Future<int> addRun (Run run) async {
+    Database db = await instance.database;
+    return await db.insert('runs', run.toMap());
+  }
+
+  Future<int> removeRun (int id) async {
+    Database db = await instance.database;
+    return await db.delete('runs', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> updateRun (Run run) async {
+    Database db = await instance.database;
+    return await db.update('runs', run.toMap(), where: 'id = ?', whereArgs: [run.id]);
+  }
+
+  Future<void> clearDatabase () async {
+    Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, 'runs.db');
+    databaseFactory.deleteDatabase(path);
   }
 }

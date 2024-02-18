@@ -40,6 +40,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
 
   String secondsToTime (int s) {
+    if (s == 0) return "-:--";
     int hours = s ~/ 3600;
     int minutes = (s - hours * 3600) ~/ 60;
     int seconds = s - (hours * 3600 + minutes * 60);
@@ -88,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
           future: RunsDatabase.instance.getRuns(),
           builder: (BuildContext context, AsyncSnapshot<List<Run>> snapshot) {
             if (!snapshot.hasData) {
-              return Center(child: Card(child: Text("Loading...")));
+              return Center(child: Text("Loading..."));
             }
             return snapshot.data!.isEmpty
             ? Center(child: Text("You have no runs."))
@@ -100,36 +101,65 @@ class _MyHomePageState extends State<MyHomePage> {
                       title: Center(child: Text(run.title)),
                       subtitle: Column(
                         children: [
+                          SizedBox(height: 5),
                           Builder(
                             builder: (context) {
                               if (run.type != "N/A") {
-                                return Card(
-                                  color: Theme.of(context).primaryColorLight,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: Text(run.type),
-                                  ),
+                                return Column(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.red),
+                                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                                      ),
+                                      child: Text(run.type),
+                                    ),
+                                    SizedBox(height: 5),
+                                  ],
                                 );
                               }
                               return SizedBox.shrink();
                             },
                           ),
+                          Divider(),
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Column(
-                                children: [
-                                  Text("${run.distance} ${run.unit}"),
-                                  Text("Distance"),
-                                ],
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    Text("${run.distance} ${run.unit}"),
+                                    Text("Distance"),
+                                  ],
+                                ),
                               ),
-                              SizedBox(width: 12),
-                              Column(
-                                children: [
-                                  Text(secondsToTime(run.time)),
-                                  Text("Time"),
-                                ],
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    Text(secondsToTime(run.time)),
+                                    Text("Time"),
+                                  ],
+                                ),
                               ),
                             ],
+                          ),
+                          Builder(
+                            builder: (context) {
+                              if (run.notes != "") {
+                                return Column(
+                                  children: [
+                                    Divider(),
+                                    Text(
+                                      run.notes,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                );
+                              }
+                              return SizedBox.shrink();
+                            }
                           ),
                         ],
                       ),
@@ -148,7 +178,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AddRunPage()),
-          );
+          ).then((_) => setState(() {}));
         },
       ),
     );
@@ -172,6 +202,26 @@ class _AddRunPageState extends State<AddRunPage> {
   String _type = "N/A";
   String _notes = "";
 
+  void submitForm () async {
+    if (formKey.currentState?.validate() == true) {
+      formKey.currentState?.save();
+      // Add run to database
+      int timeInSeconds = (_hours*60 + _minutes)*60 + _seconds;
+      var run = Run(
+        title: _title,
+        distance: _distance,
+        unit: _unit,
+        time: timeInSeconds,
+        type: _type,
+        notes: _notes,
+      );
+      print(run);
+      await RunsDatabase.instance.addRun(run);
+      // return to homepage
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -180,169 +230,159 @@ class _AddRunPageState extends State<AddRunPage> {
           appBar: AppBar(
             title: Text("Add Run"),
           ),
-          body: Form(
-            key: formKey,
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  StringInputBox(
-                    labelText: "Title",
-                    strValueSetter: (value) => _title = value,
-                  ),
-                  SizedBox(height: 12),
-                  Row(
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Form(
+                key: formKey,
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Flexible(
-                        child: DoubleInputBox(
-                          labelText: "Distance",
-                          doubleValueSetter: (value) => _distance = value,
-                        ),
+                      StringInputBox(
+                        labelText: "Title",
+                        strValueSetter: (value) => _title = value,
                       ),
-                      SizedBox(width: 12),
-                      SizedBox(
-                        height: 55,
-                        width: 90,
-                        child: DropdownButtonFormField(
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: "Units",
+                      SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: DoubleInputBox(
+                              labelText: "Distance",
+                              doubleValueSetter: (value) => _distance = value,
+                            ),
                           ),
-                          items: [
-                            DropdownMenuItem(value: "mi", child: Text("mi")),
-                            DropdownMenuItem(value: "km", child: Text("km")),
-                          ],
-                          onChanged: (newValue) {
-                            setState(() {
-                              _unit = newValue!;
-                            });
-                          },
-                          value: _unit,
-                          validator: (value) {
-                            if (value != "mi" && value != "km") {
-                              return "Invalid input";
-                            }
-                            return null;
-                          },
+                          SizedBox(width: 12),
+                          SizedBox(
+                            height: 55,
+                            width: 90,
+                            child: DropdownButtonFormField(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: "Units",
+                              ),
+                              items: [
+                                DropdownMenuItem(value: "mi", child: Text("mi")),
+                                DropdownMenuItem(value: "km", child: Text("km")),
+                              ],
+                              onChanged: (newValue) {
+                                setState(() {
+                                  _unit = newValue!;
+                                });
+                              },
+                              value: _unit,
+                              validator: (value) {
+                                if (value != "mi" && value != "km") {
+                                  return "Invalid input";
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: IntInputBox(
+                              labelText: "Hours",
+                              intValueSetter: (value) => _hours = value,
+                              validator: (value) {
+                                if (value != "" && int.tryParse(value) == null) {
+                                  return "Must be an integer";
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            ":",
+                            style: const TextStyle(fontSize: 20)
+                          ),
+                          SizedBox(width: 6),
+                          Flexible(
+                            child: IntInputBox(
+                              labelText: "Minutes",
+                              intValueSetter: (value) => _minutes = value,
+                              validator: (value) {
+                                if (value != "" && int.tryParse(value) == null) {
+                                  return "Must be an integer";
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            ":",
+                            style: const TextStyle(fontSize: 20)
+                          ),
+                          SizedBox(width: 6),
+                          Flexible(
+                            child: IntInputBox(
+                              labelText: "Seconds",
+                              intValueSetter: (value) => _seconds = value,
+                              validator: (value) {
+                                if (value != "" && int.tryParse(value) == null) {
+                                  return "Must be an integer";
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 12),
+                      DropdownButtonFormField(
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: "Type",
                         ),
+                        items: [
+                          DropdownMenuItem(value: "N/A", child: Text("N/A")),
+                          DropdownMenuItem(value: "Easy Run", child: Text("Easy Run")),
+                          DropdownMenuItem(value: "Long Run", child: Text("Long Run")),
+                          DropdownMenuItem(value: "Race", child: Text("Race")),
+                        ],
+                        onChanged: (newValue) {
+                          setState(() {
+                            _type = newValue!;
+                          });
+                        },
+                        value: _type,
+                        validator: (value) {
+                          if (value != "N/A" && value != "Easy Run" && value != "Long Run" && value != "Race") {
+                            return "Invalid input";
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 12),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: "Notes",
+                        ),
+                        maxLines: 3,
+                        onSaved: (value) => _notes = value!,
                       ),
                     ],
                   ),
-                  SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: IntInputBox(
-                          labelText: "Hours",
-                          intValueSetter: (value) => _hours = value,
-                          validator: (value) {
-                            if (value != "" && int.tryParse(value) == null) {
-                              return "Must be an integer";
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      SizedBox(width: 6),
-                      Text(
-                        ":",
-                        style: const TextStyle(fontSize: 20)
-                      ),
-                      SizedBox(width: 6),
-                      Flexible(
-                        child: IntInputBox(
-                          labelText: "Minutes",
-                          intValueSetter: (value) => _minutes = value,
-                          validator: (value) {
-                            if (value != "" && int.tryParse(value) == null) {
-                              return "Must be an integer";
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      SizedBox(width: 6),
-                      Text(
-                        ":",
-                        style: const TextStyle(fontSize: 20)
-                      ),
-                      SizedBox(width: 6),
-                      Flexible(
-                        child: IntInputBox(
-                          labelText: "Seconds",
-                          intValueSetter: (value) => _seconds = value,
-                          validator: (value) {
-                            if (value != "" && int.tryParse(value) == null) {
-                              return "Must be an integer";
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 12),
-                  DropdownButtonFormField(
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Type",
-                    ),
-                    items: [
-                      DropdownMenuItem(value: "N/A", child: Text("N/A")),
-                      DropdownMenuItem(value: "Easy Run", child: Text("Easy Run")),
-                      DropdownMenuItem(value: "Long Run", child: Text("Long Run")),
-                      DropdownMenuItem(value: "Race", child: Text("Race")),
-                    ],
-                    onChanged: (newValue) {
-                      setState(() {
-                        _type = newValue!;
-                      });
-                    },
-                    value: _type,
-                    validator: (value) {
-                      print(constraints.maxHeight);
-                      if (value != "N/A" && value != "Easy Run" && value != "Long Run" && value != "Race") {
-                        return "Invalid input";
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 12),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Notes",
-                    ),
-                    maxLines: 3,
-                    onSaved: (value) => _notes = value!,
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
-          floatingActionButton: FloatingActionButton(
-            child: Icon(Icons.check),
-            onPressed: () async {
-              // validate form
-              if (formKey.currentState?.validate() == true) {
-                formKey.currentState?.save();
-                // Add run to database
-                int timeInSeconds = (_hours*60 + _minutes)*60 + _seconds;
-                var run = Run(
-                  title: _title,
-                  distance: _distance,
-                  unit: _unit,
-                  time: timeInSeconds,
-                  type: _type,
-                  notes: _notes,
-                );
-                print(run);
-                await RunsDatabase.instance.addRun(run);
-                // return to homepage
-                Navigator.pop(context);     
-              }
-            },
+              SizedBox(
+                width: 90,
+                height: 32,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(textStyle: TextStyle(fontSize: 15)),
+                  onPressed: submitForm,
+                  child: Text("Save"),
+                ),
+              ),
+            ],
           ),
         );
       }

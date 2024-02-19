@@ -1,10 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:running_log/Run.dart';
 import 'package:running_log/RunsDatabase.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //RunsDatabase.instance.clearDatabase();
   runApp(MyApp());
 }
 
@@ -28,7 +31,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyAppState extends ChangeNotifier {
-  Run emptyRun = Run(id: 0, title: "", distance: 0, unit: "", time: 0, type: "", notes: "");
+
 }
 
 class MyHomePage extends StatefulWidget {
@@ -161,6 +164,55 @@ class _MyHomePageState extends State<MyHomePage> {
                               return SizedBox.shrink();
                             }
                           ),
+                          Builder(
+                            builder: (context) {
+                              List<Widget> result = [];
+                              List<Widget> reps = [];
+                              List<Widget> descriptions = [];
+                              if (run.reps!.isNotEmpty) {
+                                result.add(Divider());
+                                for (int i = 0; i < run.reps!.length; i++) {
+                                  reps.add(
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        "${run.reps![i]}X",
+                                        style: TextStyle(fontWeight: FontWeight.bold,),
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    )
+                                  );
+                                  descriptions.add(
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        run.descriptions![i],
+                                        textAlign: TextAlign.left,
+                                      ),
+                                    )
+                                  );
+                                }
+                                result.add(Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: reps,
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        children: descriptions,
+                                      ),
+                                    ),
+                                  ],
+                                ));
+                              }
+                              return Column(children: result,);
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -201,26 +253,10 @@ class _AddRunPageState extends State<AddRunPage> {
   int _seconds = 0;
   String _type = "N/A";
   String _notes = "";
-
-  void submitForm () async {
-    if (formKey.currentState?.validate() == true) {
-      formKey.currentState?.save();
-      // Add run to database
-      int timeInSeconds = (_hours*60 + _minutes)*60 + _seconds;
-      var run = Run(
-        title: _title,
-        distance: _distance,
-        unit: _unit,
-        time: timeInSeconds,
-        type: _type,
-        notes: _notes,
-      );
-      print(run);
-      await RunsDatabase.instance.addRun(run);
-      // return to homepage
-      Navigator.pop(context);
-    }
-  }
+  bool isChecked = false;
+  int _numSets = 2;
+  List<int>? _reps;
+  List<String>? _descriptions;
 
   @override
   Widget build(BuildContext context) {
@@ -369,6 +405,93 @@ class _AddRunPageState extends State<AddRunPage> {
                         maxLines: 3,
                         onSaved: (value) => _notes = value!,
                       ),
+                      SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Checkbox(
+                            checkColor: Colors.white,
+                            activeColor: Theme.of(context).primaryColor,
+                            value: isChecked,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                isChecked = value!;
+                              });
+                            }
+                          ),
+                          Text("Workout Structure", style: TextStyle(fontSize: 15)),
+                        ],
+                      ),
+                      SizedBox(height: 6),
+                      Builder(
+                        builder: (context) {
+                          if (isChecked) {
+                            return Column(
+                              children: [
+                                Builder(
+                                  builder: (context) {
+                                    List<Widget> result = [];
+                                    for (int i = 0; i < _numSets; i++) {
+                                      result.add(WorkoutStructureFormField(
+                                        repsSetter: (value) {
+                                          _reps?.add(int.parse(value));
+                                        },
+                                        descriptionSetter: (value) {
+                                          _descriptions?.add(value);
+                                        },
+                                        repsValidator: (value) {
+                                          if (value == "") {
+                                            return "Rqd";
+                                          } else if (int.tryParse(value) == null) {
+                                            return "# only";
+                                          }
+                                          return null;
+                                        },
+                                        descriptionValidator: (value) {
+                                          if (value == "") {
+                                            return "Required";
+                                          }
+                                          return null;
+                                        }
+                                      ));
+                                      if (i != _numSets-1) {
+                                        result.add(SizedBox(height: 12,));
+                                      }
+                                    }
+                                    return Column(children: result,);
+                                  },
+                                ),
+                                SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        if (_numSets > 1) {
+                                          _numSets--;
+                                          setState(() {});
+                                        }
+                                      },
+                                      child: Text("-")
+                                    ),
+                                    SizedBox(width: 8),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        if (_numSets < (constraints.maxHeight-735) ~/ 68 + 1) {
+                                          _numSets++;
+                                          setState(() {});
+                                        }
+                                      }, 
+                                      child: Text("+",)
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            );
+                          }
+                          return Container();
+                        }
+                      ),
                     ],
                   ),
                 ),
@@ -378,7 +501,29 @@ class _AddRunPageState extends State<AddRunPage> {
                 height: 32,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(textStyle: TextStyle(fontSize: 15)),
-                  onPressed: submitForm,
+                  onPressed: () async {
+                    _reps = [];
+                    _descriptions = [];
+                    if (formKey.currentState?.validate() == true) {
+                      formKey.currentState?.save();
+                      // Add run to database
+                      int timeInSeconds = (_hours*60 + _minutes)*60 + _seconds;
+                      var run = Run(
+                        title: _title,
+                        distance: _distance,
+                        unit: _unit,
+                        time: timeInSeconds,
+                        type: _type,
+                        notes: _notes,
+                        reps: _reps,
+                        descriptions: _descriptions,
+                      );
+                      print(run);
+                      await RunsDatabase.instance.addRun(run);
+                      // return to homepage
+                      Navigator.pop(context);
+                    }
+                  },
                   child: Text("Save"),
                 ),
               ),
@@ -386,6 +531,65 @@ class _AddRunPageState extends State<AddRunPage> {
           ),
         );
       }
+    );
+  }
+}
+
+class WorkoutStructureFormField extends StatelessWidget {
+  const WorkoutStructureFormField({
+    super.key,
+    required this.repsSetter,
+    required this.descriptionSetter,
+    required this.repsValidator,
+    required this.descriptionValidator,
+  });
+
+  final void Function(String value) repsSetter;
+  final void Function(String value) descriptionSetter;
+  final Function(String value) repsValidator;
+  final Function(String value) descriptionValidator;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 65,
+          child: TextFormField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              label: Text("Reps"),
+            ),
+            keyboardType: TextInputType.numberWithOptions(
+              decimal: false,
+              signed: false,
+            ),
+            validator: (value) {
+              return repsValidator(value!);
+            },
+            onSaved: (value) {
+              repsSetter(value!);
+            }
+          ),
+        ),
+        SizedBox(width: 4),
+        Text("X", style: TextStyle(fontWeight: FontWeight.bold)),
+        SizedBox(width: 4),
+        Expanded(
+          child: TextFormField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              label: Text("Description"),
+            ),
+            validator: (value) {
+              return descriptionValidator(value!);
+            },
+            onSaved: (value) {
+              descriptionSetter(value!);
+            }
+          ),
+        ),
+      ],
     );
   }
 }
@@ -450,13 +654,13 @@ class DoubleInputBox extends StatelessWidget {
       ),
       validator: (value) {
         if (value == "") {
-          return "Required";
+          return null;
         } else if (double.tryParse(value!) == null) {
           return "Must be a number";
         }
         return null;
       },
-      onSaved: (newValue) => doubleValueSetter(double.parse("$newValue")),
+      onSaved: (newValue) => doubleValueSetter(newValue == "" ? 0.0 : double.parse("$newValue")),
     );
   }
 }

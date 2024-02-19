@@ -1,3 +1,5 @@
+import "dart:convert";
+
 class Run {
   final int? id;
   final String title;
@@ -6,6 +8,8 @@ class Run {
   final int time;
   final String type;
   final String notes;
+  final List<dynamic>? reps;
+  final List<dynamic>? descriptions;
 
   const Run ({
     this.id,
@@ -15,6 +19,8 @@ class Run {
     required this.time,
     required this.type,
     required this.notes,
+    this.reps,
+    this.descriptions,
   });
 
   Map<String, dynamic> toMap () {
@@ -26,6 +32,8 @@ class Run {
       "time": time,
       "type": type,
       "notes": notes,
+      "reps": jsonEncode(reps),
+      "descriptions": jsonEncode(descriptions),
     };
   }
 
@@ -37,11 +45,13 @@ class Run {
     time: map['time'],
     type: map['type'],
     notes: map['notes'],
+    reps: jsonDecode(map['reps']),
+    descriptions: jsonDecode(map['descriptions']),
   );
 
   @override
   String toString() {
-    return 'Run{id: $id, title: $title, distance: $distance, unit: $unit, time: $time, type: $type, notes: $notes}';
+    return 'Run{id: $id, title: $title, distance: $distance, unit: $unit, time: $time, type: $type, notes: $notes, reps: ${reps.toString()}, descriptions: ${descriptions.toString()}}';
   }
 
 }

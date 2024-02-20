@@ -104,12 +104,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       title: Center(child: Text(run.title)),
                       subtitle: Column(
                         children: [
-                          SizedBox(height: 5),
                           Builder(
                             builder: (context) {
                               if (run.type != "N/A") {
                                 return Column(
                                   children: [
+                                    SizedBox(height: 5),
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 6),
                                       decoration: BoxDecoration(
@@ -125,28 +125,63 @@ class _MyHomePageState extends State<MyHomePage> {
                               return SizedBox.shrink();
                             },
                           ),
-                          Divider(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Column(
+                          Builder(
+                            builder: (context) {
+                              if (run.time > 0 && run.distance > 0) {
+                                return Column(
                                   children: [
-                                    Text("${run.distance} ${run.unit}"),
-                                    Text("Distance"),
+                                    Divider(),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            children: [
+                                              Text("${run.distance} ${run.unit}"),
+                                              Text("Distance"),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            children: [
+                                              Text(secondsToTime(run.time)),
+                                              Text("Time"),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ],
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Column(
+                                );
+                              } else if (run.time > 0 && run.distance == 0) {
+                                return Column(
                                   children: [
-                                    Text(secondsToTime(run.time)),
-                                    Text("Time"),
+                                    Divider(),
+                                    Column(
+                                      children: [
+                                        Text(secondsToTime(run.time)),
+                                        Text("Time"),
+                                      ],
+                                    ),
                                   ],
-                                ),
-                              ),
-                            ],
+                                );
+                              } else if (run.time == 0 && run.distance > 0) {
+                                return Column(
+                                  children: [
+                                    Divider(),
+                                    Column(
+                                      children: [
+                                        Text("${run.distance} ${run.unit}"),
+                                        Text("Distance"),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                              return SizedBox.shrink();
+                            }
                           ),
                           Builder(
                             builder: (context) {
@@ -266,268 +301,270 @@ class _AddRunPageState extends State<AddRunPage> {
           appBar: AppBar(
             title: Text("Add Run"),
           ),
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Form(
-                key: formKey,
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      StringInputBox(
-                        labelText: "Title",
-                        strValueSetter: (value) => _title = value,
-                      ),
-                      SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Flexible(
-                            child: DoubleInputBox(
-                              labelText: "Distance",
-                              doubleValueSetter: (value) => _distance = value,
-                            ),
-                          ),
-                          SizedBox(width: 12),
-                          SizedBox(
-                            height: 55,
-                            width: 90,
-                            child: DropdownButtonFormField(
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: "Units",
+          body: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Form(
+                  key: formKey,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        StringInputBox(
+                          labelText: "Title",
+                          strValueSetter: (value) => _title = value,
+                        ),
+                        SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Flexible(
+                              child: DoubleInputBox(
+                                labelText: "Distance",
+                                doubleValueSetter: (value) => _distance = value,
                               ),
-                              items: [
-                                DropdownMenuItem(value: "mi", child: Text("mi")),
-                                DropdownMenuItem(value: "km", child: Text("km")),
-                              ],
-                              onChanged: (newValue) {
-                                setState(() {
-                                  _unit = newValue!;
-                                });
-                              },
-                              value: _unit,
-                              validator: (value) {
-                                if (value != "mi" && value != "km") {
-                                  return "Invalid input";
-                                }
-                                return null;
-                              },
                             ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Flexible(
-                            child: IntInputBox(
-                              labelText: "Hours",
-                              intValueSetter: (value) => _hours = value,
-                              validator: (value) {
-                                if (value != "" && int.tryParse(value) == null) {
-                                  return "Must be an integer";
-                                }
-                                return null;
-                              },
+                            SizedBox(width: 12),
+                            SizedBox(
+                              height: 55,
+                              width: 90,
+                              child: DropdownButtonFormField(
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: "Units",
+                                ),
+                                items: [
+                                  DropdownMenuItem(value: "mi", child: Text("mi")),
+                                  DropdownMenuItem(value: "km", child: Text("km")),
+                                ],
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    _unit = newValue!;
+                                  });
+                                },
+                                value: _unit,
+                                validator: (value) {
+                                  if (value != "mi" && value != "km") {
+                                    return "Invalid input";
+                                  }
+                                  return null;
+                                },
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            ":",
-                            style: const TextStyle(fontSize: 20)
-                          ),
-                          SizedBox(width: 6),
-                          Flexible(
-                            child: IntInputBox(
-                              labelText: "Minutes",
-                              intValueSetter: (value) => _minutes = value,
-                              validator: (value) {
-                                if (value != "" && int.tryParse(value) == null) {
-                                  return "Must be an integer";
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            ":",
-                            style: const TextStyle(fontSize: 20)
-                          ),
-                          SizedBox(width: 6),
-                          Flexible(
-                            child: IntInputBox(
-                              labelText: "Seconds",
-                              intValueSetter: (value) => _seconds = value,
-                              validator: (value) {
-                                if (value != "" && int.tryParse(value) == null) {
-                                  return "Must be an integer";
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 12),
-                      DropdownButtonFormField(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: "Type",
+                          ],
                         ),
-                        items: [
-                          DropdownMenuItem(value: "N/A", child: Text("N/A")),
-                          DropdownMenuItem(value: "Easy Run", child: Text("Easy Run")),
-                          DropdownMenuItem(value: "Long Run", child: Text("Long Run")),
-                          DropdownMenuItem(value: "Race", child: Text("Race")),
-                        ],
-                        onChanged: (newValue) {
-                          setState(() {
-                            _type = newValue!;
-                          });
-                        },
-                        value: _type,
-                        validator: (value) {
-                          if (value != "N/A" && value != "Easy Run" && value != "Long Run" && value != "Race") {
-                            return "Invalid input";
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 12),
-                      TextFormField(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: "Notes",
+                        SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Flexible(
+                              child: IntInputBox(
+                                labelText: "Hours",
+                                intValueSetter: (value) => _hours = value,
+                                validator: (value) {
+                                  if (value != "" && int.tryParse(value) == null) {
+                                    return "Must be an integer";
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              ":",
+                              style: const TextStyle(fontSize: 20)
+                            ),
+                            SizedBox(width: 6),
+                            Flexible(
+                              child: IntInputBox(
+                                labelText: "Minutes",
+                                intValueSetter: (value) => _minutes = value,
+                                validator: (value) {
+                                  if (value != "" && int.tryParse(value) == null) {
+                                    return "Must be an integer";
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              ":",
+                              style: const TextStyle(fontSize: 20)
+                            ),
+                            SizedBox(width: 6),
+                            Flexible(
+                              child: IntInputBox(
+                                labelText: "Seconds",
+                                intValueSetter: (value) => _seconds = value,
+                                validator: (value) {
+                                  if (value != "" && int.tryParse(value) == null) {
+                                    return "Must be an integer";
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
                         ),
-                        maxLines: 3,
-                        onSaved: (value) => _notes = value!,
-                      ),
-                      SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Checkbox(
-                            checkColor: Colors.white,
-                            activeColor: Theme.of(context).primaryColor,
-                            value: isChecked,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                isChecked = value!;
-                              });
+                        SizedBox(height: 12),
+                        DropdownButtonFormField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: "Type",
+                          ),
+                          items: [
+                            DropdownMenuItem(value: "N/A", child: Text("N/A")),
+                            DropdownMenuItem(value: "Easy Run", child: Text("Easy Run")),
+                            DropdownMenuItem(value: "Long Run", child: Text("Long Run")),
+                            DropdownMenuItem(value: "Race", child: Text("Race")),
+                          ],
+                          onChanged: (newValue) {
+                            setState(() {
+                              _type = newValue!;
+                            });
+                          },
+                          value: _type,
+                          validator: (value) {
+                            if (value != "N/A" && value != "Easy Run" && value != "Long Run" && value != "Race") {
+                              return "Invalid input";
                             }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 12),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: "Notes",
                           ),
-                          Text("Workout Structure", style: TextStyle(fontSize: 15)),
-                        ],
-                      ),
-                      SizedBox(height: 6),
-                      Builder(
-                        builder: (context) {
-                          if (isChecked) {
-                            return Column(
-                              children: [
-                                Builder(
-                                  builder: (context) {
-                                    List<Widget> result = [];
-                                    for (int i = 0; i < _numSets; i++) {
-                                      result.add(WorkoutStructureFormField(
-                                        repsSetter: (value) {
-                                          _reps?.add(int.parse(value));
-                                        },
-                                        descriptionSetter: (value) {
-                                          _descriptions?.add(value);
-                                        },
-                                        repsValidator: (value) {
-                                          if (value == "") {
-                                            return "Rqd";
-                                          } else if (int.tryParse(value) == null) {
-                                            return "# only";
+                          maxLines: 3,
+                          onSaved: (value) => _notes = value!,
+                        ),
+                        SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Checkbox(
+                              checkColor: Colors.white,
+                              activeColor: Theme.of(context).primaryColor,
+                              value: isChecked,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  isChecked = value!;
+                                });
+                              }
+                            ),
+                            Text("Workout Structure", style: TextStyle(fontSize: 15)),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        Builder(
+                          builder: (context) {
+                            if (isChecked) {
+                              return Column(
+                                children: [
+                                  Builder(
+                                    builder: (context) {
+                                      List<Widget> result = [];
+                                      for (int i = 0; i < _numSets; i++) {
+                                        result.add(WorkoutStructureFormField(
+                                          repsSetter: (value) {
+                                            _reps?.add(int.parse(value));
+                                          },
+                                          descriptionSetter: (value) {
+                                            _descriptions?.add(value);
+                                          },
+                                          repsValidator: (value) {
+                                            if (value == "") {
+                                              return "Rqd";
+                                            } else if (int.tryParse(value) == null) {
+                                              return "# only";
+                                            }
+                                            return null;
+                                          },
+                                          descriptionValidator: (value) {
+                                            if (value == "") {
+                                              return "Required";
+                                            }
+                                            return null;
                                           }
-                                          return null;
-                                        },
-                                        descriptionValidator: (value) {
-                                          if (value == "") {
-                                            return "Required";
-                                          }
-                                          return null;
+                                        ));
+                                        if (i != _numSets-1) {
+                                          result.add(SizedBox(height: 12,));
                                         }
-                                      ));
-                                      if (i != _numSets-1) {
-                                        result.add(SizedBox(height: 12,));
                                       }
-                                    }
-                                    return Column(children: result,);
-                                  },
-                                ),
-                                SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        if (_numSets > 1) {
-                                          _numSets--;
-                                          setState(() {});
-                                        }
-                                      },
-                                      child: Text("-")
-                                    ),
-                                    SizedBox(width: 8),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        if (_numSets < (constraints.maxHeight-735) ~/ 68 + 1) {
-                                          _numSets++;
-                                          setState(() {});
-                                        }
-                                      }, 
-                                      child: Text("+",)
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            );
+                                      return Column(children: result,);
+                                    },
+                                  ),
+                                  SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          if (_numSets > 1) {
+                                            _numSets--;
+                                            setState(() {});
+                                          }
+                                        },
+                                        child: Text("-")
+                                      ),
+                                      SizedBox(width: 8),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          if (_numSets < 10) {
+                                            _numSets++;
+                                            setState(() {});
+                                          }
+                                        }, 
+                                        child: Text("+",)
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            }
+                            return Container();
                           }
-                          return Container();
-                        }
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(
-                width: 90,
-                height: 32,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(textStyle: TextStyle(fontSize: 15)),
-                  onPressed: () async {
-                    _reps = [];
-                    _descriptions = [];
-                    if (formKey.currentState?.validate() == true) {
-                      formKey.currentState?.save();
-                      // Add run to database
-                      int timeInSeconds = (_hours*60 + _minutes)*60 + _seconds;
-                      var run = Run(
-                        title: _title,
-                        distance: _distance,
-                        unit: _unit,
-                        time: timeInSeconds,
-                        type: _type,
-                        notes: _notes,
-                        reps: _reps,
-                        descriptions: _descriptions,
-                      );
-                      print(run);
-                      await RunsDatabase.instance.addRun(run);
-                      // return to homepage
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: Text("Save"),
+                SizedBox(
+                  width: 90,
+                  height: 32,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(textStyle: TextStyle(fontSize: 15)),
+                    onPressed: () async {
+                      _reps = [];
+                      _descriptions = [];
+                      if (formKey.currentState?.validate() == true) {
+                        formKey.currentState?.save();
+                        // Add run to database
+                        int timeInSeconds = (_hours*60 + _minutes)*60 + _seconds;
+                        var run = Run(
+                          title: _title,
+                          distance: _distance,
+                          unit: _unit,
+                          time: timeInSeconds,
+                          type: _type,
+                          notes: _notes,
+                          reps: _reps,
+                          descriptions: _descriptions,
+                        );
+                        print(run);
+                        await RunsDatabase.instance.addRun(run);
+                        // return to homepage
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Text("Save"),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       }

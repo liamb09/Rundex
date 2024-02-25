@@ -3,6 +3,6 @@
 A simple running log to track mileage.
 
 ## For the future
- - [ ] Add sets of workout
+ - [X] Add sets of workout
  - [ ] Improve UI
  - [ ] Add profile and settings pages

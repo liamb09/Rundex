@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:running_log/Run.dart';
 import 'package:running_log/RunsDatabase.dart';
@@ -22,7 +20,8 @@ class MyApp extends StatelessWidget {
         title: 'Running Log',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+          colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff012271), primary: Color(0xff012271), secondary: Color(0xffDEDA00)),
+          scaffoldBackgroundColor: Color(0xffFFFFFC),
         ),
         home: MyHomePage(),
       ),
@@ -64,15 +63,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
     @override
   Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
+    //var appState = context.watch<MyAppState>();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Running Log"),
+        scrolledUnderElevation: 0,
+        title: Text("Running Log", style: TextStyle(color: Colors.white)),
+        backgroundColor: Color(0xff012271),
+        iconTheme: IconThemeData(color: Colors.white,),
         actions: <Widget>[
           Row(
             children: [
-              Text("You"),
+              Text("You", style: TextStyle(color: Colors.white),),
               IconButton(
                 icon: const Icon(Icons.person_outline),
                 onPressed: () {
@@ -99,156 +101,156 @@ class _MyHomePageState extends State<MyHomePage> {
             : ListView(
               children: snapshot.data!.map((run) {
                 return Center(
-                  child: Card(
-                    child: ListTile(
-                      title: Center(child: Text(run.title)),
-                      subtitle: Column(
-                        children: [
-                          Builder(
-                            builder: (context) {
-                              if (run.type != "N/A") {
-                                return Column(
-                                  children: [
-                                    SizedBox(height: 5),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(color: Colors.red),
-                                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                                      ),
-                                      child: Text(run.type),
-                                    ),
-                                    SizedBox(height: 5),
-                                  ],
-                                );
-                              }
-                              return SizedBox.shrink();
-                            },
-                          ),
-                          Builder(
-                            builder: (context) {
-                              if (run.time > 0 && run.distance > 0) {
-                                return Column(
-                                  children: [
-                                    Divider(),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            children: [
-                                              Text("${run.distance} ${run.unit}"),
-                                              Text("Distance"),
-                                            ],
-                                          ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Card(
+                      elevation: 3,
+                      child: ListTile(
+                        title: Center(child: Text(run.title)),
+                        subtitle: Column(
+                          children: [
+                            Builder(
+                              builder: (context) {
+                                if (run.type != "N/A") {
+                                  return Column(
+                                    children: [
+                                      SizedBox(height: 5),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: Colors.red),
+                                          borderRadius: BorderRadius.all(Radius.circular(10)),
                                         ),
-                                        SizedBox(width: 8),
-                                        Expanded(
-                                          child: Column(
-                                            children: [
-                                              Text(secondsToTime(run.time)),
-                                              Text("Time"),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                );
-                              } else if (run.time > 0 && run.distance == 0) {
-                                return Column(
-                                  children: [
-                                    Divider(),
-                                    Column(
-                                      children: [
-                                        Text(secondsToTime(run.time)),
-                                        Text("Time"),
-                                      ],
-                                    ),
-                                  ],
-                                );
-                              } else if (run.time == 0 && run.distance > 0) {
-                                return Column(
-                                  children: [
-                                    Divider(),
-                                    Column(
-                                      children: [
-                                        Text("${run.distance} ${run.unit}"),
-                                        Text("Distance"),
-                                      ],
-                                    ),
-                                  ],
-                                );
-                              }
-                              return SizedBox.shrink();
-                            }
-                          ),
-                          Builder(
-                            builder: (context) {
-                              if (run.notes != "") {
-                                return Column(
-                                  children: [
-                                    Divider(),
-                                    Text(
-                                      run.notes,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                );
-                              }
-                              return SizedBox.shrink();
-                            }
-                          ),
-                          Builder(
-                            builder: (context) {
-                              List<Widget> result = [];
-                              List<Widget> reps = [];
-                              List<Widget> descriptions = [];
-                              if (run.reps!.isNotEmpty) {
-                                result.add(Divider());
-                                for (int i = 0; i < run.reps!.length; i++) {
-                                  reps.add(
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        "${run.reps![i]}X",
-                                        style: TextStyle(fontWeight: FontWeight.bold,),
-                                        textAlign: TextAlign.right,
+                                        child: Text(run.type),
                                       ),
-                                    )
-                                  );
-                                  descriptions.add(
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        run.descriptions![i],
-                                        textAlign: TextAlign.left,
-                                      ),
-                                    )
+                                      SizedBox(height: 5),
+                                    ],
                                   );
                                 }
-                                result.add(Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
+                                return SizedBox.shrink();
+                              },
+                            ),
+                            Builder(
+                              builder: (context) {
+                                if (run.time > 0 && run.distance > 0) {
+                                  return Column(
+                                    children: [
+                                      Divider(),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              children: [
+                                                Text("${run.distance} ${run.unit}"),
+                                                Text("Distance"),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(width: 8),
+                                          Expanded(
+                                            child: Column(
+                                              children: [
+                                                Text(secondsToTime(run.time)),
+                                                Text("Time"),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  );
+                                } else if (run.time > 0 && run.distance == 0) {
+                                  return Column(
+                                    children: [
+                                      Divider(),
+                                      Column(
+                                        children: [
+                                          Text(secondsToTime(run.time)),
+                                          Text("Time"),
+                                        ],
+                                      ),
+                                    ],
+                                  );
+                                } else if (run.time == 0 && run.distance > 0) {
+                                  return Column(
+                                    children: [
+                                      Divider(),
+                                      Column(
+                                        children: [
+                                          Text("${run.distance} ${run.unit}"),
+                                          Text("Distance"),
+                                        ],
+                                      ),
+                                    ],
+                                  );
+                                }
+                                return SizedBox.shrink();
+                              }
+                            ),
+                            Builder(
+                              builder: (context) {
+                                if (run.notes != "") {
+                                  return Column(
+                                    children: [
+                                      Divider(),
+                                      Text(
+                                        run.notes,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  );
+                                }
+                                return SizedBox.shrink();
+                              }
+                            ),
+                            Builder(
+                              builder: (context) {
+                                List<Widget> result = [];
+                                List<Widget> reps = [];
+                                List<Widget> descriptions = [];
+                                if (run.reps!.isNotEmpty) {
+                                  result.add(Divider());
+                                  for (int i = 0; i < run.reps!.length; i++) {
+                                    reps.add(
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          "${run.reps![i]}X",
+                                          style: TextStyle(fontWeight: FontWeight.bold,),
+                                          textAlign: TextAlign.right,
+                                        ),
+                                      )
+                                    );
+                                    descriptions.add(
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          run.descriptions![i],
+                                          textAlign: TextAlign.left,
+                                        ),
+                                      )
+                                    );
+                                  }
+                                  result.add(Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Column(
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: reps,
                                       ),
-                                    ),
-                                    SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
+                                      SizedBox(width: 10),
+                                      Column(
                                         children: descriptions,
                                       ),
-                                    ),
-                                  ],
-                                ));
-                              }
-                              return Column(children: result,);
-                            },
-                          ),
-                        ],
+                                    ],
+                                  ));
+                                }
+                                return Column(children: result,);
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -259,8 +261,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        label: Text("Add run"),
-        icon: Icon(Icons.add),
+        backgroundColor: Color(0xffDEDA00),
+        label: Text("Add run", style: TextStyle(color: Color(0xff012271))),
+        icon: IconTheme(data: IconThemeData(color: Color(0xff012271)), child: Icon(Icons.add)),
         onPressed: () {
           Navigator.push(
             context,
@@ -299,7 +302,13 @@ class _AddRunPageState extends State<AddRunPage> {
       builder: (context, constraints) {
         return Scaffold(
           appBar: AppBar(
-            title: Text("Add Run"),
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            backgroundColor: Color(0xff012271),
+            title: Text("Add Run", style: TextStyle(color: Colors.white),),
+            iconTheme: IconThemeData(color: Colors.white),
           ),
           body: SingleChildScrollView(
             child: Column(
@@ -502,23 +511,30 @@ class _AddRunPageState extends State<AddRunPage> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Color(0xff012271),
+                                          textStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                        ),
                                         onPressed: () {
                                           if (_numSets > 1) {
                                             _numSets--;
                                             setState(() {});
                                           }
                                         },
-                                        child: Text("-")
+                                        child: Text("-", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
                                       ),
                                       SizedBox(width: 8),
                                       ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Color(0xff012271),
+                                        ),
                                         onPressed: () {
                                           if (_numSets < 10) {
                                             _numSets++;
                                             setState(() {});
                                           }
                                         }, 
-                                        child: Text("+",)
+                                        child: Text("+", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
                                       ),
                                     ],
                                   ),
@@ -536,7 +552,10 @@ class _AddRunPageState extends State<AddRunPage> {
                   width: 90,
                   height: 32,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(textStyle: TextStyle(fontSize: 15)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xffDEDA00),
+                      textStyle: TextStyle(color: Color(0xff012271)),
+                    ),
                     onPressed: () async {
                       _reps = [];
                       _descriptions = [];
@@ -740,9 +759,23 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Profile"),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        backgroundColor: Color(0xff012271),
+        title: Text("Profile", style: TextStyle(color: Colors.white),),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
-      body: Placeholder(),
+      body: Center(
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(textStyle: TextStyle(fontSize: 15)),
+          onPressed: () {
+            RunsDatabase.instance.clearDatabase();
+          },
+          child: Text("Clear Data"),
+        ),
+      ),
     );
   }
 }

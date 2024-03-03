@@ -6,6 +6,7 @@ class Run {
   final double distance;
   final String unit;
   final int time;
+  final double? perceivedEffort;
   final String type;
   final String notes;
   final List<dynamic>? reps;
@@ -17,6 +18,7 @@ class Run {
     required this.distance,
     required this.unit,
     required this.time,
+    this.perceivedEffort,
     required this.type,
     required this.notes,
     this.reps,
@@ -30,6 +32,7 @@ class Run {
       "distance": distance,
       "unit": unit,
       "time": time,
+      "perceivedEffort": perceivedEffort,
       "type": type,
       "notes": notes,
       "reps": jsonEncode(reps),
@@ -43,6 +46,7 @@ class Run {
     distance: map['distance'],
     unit: map['unit'],
     time: map['time'],
+    perceivedEffort: map['perceivedEffort'],
     type: map['type'],
     notes: map['notes'],
     reps: jsonDecode(map['reps']),
@@ -51,7 +55,7 @@ class Run {
 
   @override
   String toString() {
-    return 'Run{id: $id, title: $title, distance: $distance, unit: $unit, time: $time, type: $type, notes: $notes, reps: ${reps.toString()}, descriptions: ${descriptions.toString()}}';
+    return 'Run{id: $id, title: $title, distance: $distance, unit: $unit, time: $time, perceivedEffort: $perceivedEffort type: $type, notes: $notes, reps: ${reps.toString()}, descriptions: ${descriptions.toString()}}';
   }
 
 }

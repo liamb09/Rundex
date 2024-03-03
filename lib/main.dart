@@ -102,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
               children: snapshot.data!.map((run) {
                 return Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
                     child: Card(
                       elevation: 3,
                       child: ListTile(
@@ -128,6 +128,20 @@ class _MyHomePageState extends State<MyHomePage> {
                                   );
                                 }
                                 return SizedBox.shrink();
+                              },
+                            ),
+                            Builder(
+                              builder: (context) {
+                                if (run.perceivedEffort != null) {
+                                  return Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text("Perceived Effort: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                                      Text("${run.perceivedEffort} / 10"),
+                                    ],
+                                  );
+                                }
+                                return Container();
                               },
                             ),
                             Builder(
@@ -289,9 +303,11 @@ class _AddRunPageState extends State<AddRunPage> {
   int _hours = 0;
   int _minutes = 0;
   int _seconds = 0;
+  bool perceivedEffort = false;
+  double? perceivedEffortRating;
   String _type = "N/A";
   String _notes = "";
-  bool isChecked = false;
+  bool workoutStructure = false;
   int _numSets = 2;
   List<int>? _reps;
   List<String>? _descriptions;
@@ -417,6 +433,44 @@ class _AddRunPageState extends State<AddRunPage> {
                           ],
                         ),
                         SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Checkbox(
+                              checkColor: Colors.white,
+                              activeColor: Theme.of(context).primaryColor,
+                              value: perceivedEffort,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  perceivedEffort = value!;
+                                });
+                              }
+                            ),
+                            Text("Perceived Effort", style: TextStyle(fontSize: 15)),
+                          ],
+                        ),
+                        Builder(
+                          builder: (context) {
+                            if (perceivedEffort) {
+                              return Column(
+                                children: [
+                                  Slider(
+                                    value: perceivedEffortRating ?? 5,
+                                    min: 0,
+                                    max: 10,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        perceivedEffortRating = value;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              );
+                            }
+                            return Container();
+                          },
+                        ),
+                        SizedBox(height: 12),
                         DropdownButtonFormField(
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
@@ -457,10 +511,10 @@ class _AddRunPageState extends State<AddRunPage> {
                             Checkbox(
                               checkColor: Colors.white,
                               activeColor: Theme.of(context).primaryColor,
-                              value: isChecked,
+                              value: workoutStructure,
                               onChanged: (bool? value) {
                                 setState(() {
-                                  isChecked = value!;
+                                  workoutStructure = value!;
                                 });
                               }
                             ),
@@ -470,7 +524,7 @@ class _AddRunPageState extends State<AddRunPage> {
                         SizedBox(height: 6),
                         Builder(
                           builder: (context) {
-                            if (isChecked) {
+                            if (workoutStructure) {
                               return Column(
                                 children: [
                                   Builder(
@@ -568,6 +622,7 @@ class _AddRunPageState extends State<AddRunPage> {
                           distance: _distance,
                           unit: _unit,
                           time: timeInSeconds,
+                          perceivedEffort: (perceivedEffortRating!*100).round()/100,
                           type: _type,
                           notes: _notes,
                           reps: _reps,

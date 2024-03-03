@@ -25,6 +25,7 @@ class RunsDatabase {
             distance REAL, 
             unit TEXT, 
             time INTEGER, 
+            perceivedEffort REAL,
             type TEXT, 
             notes TEXT,
             reps TEXT,

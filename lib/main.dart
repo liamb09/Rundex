@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:running_log/Run.dart';
@@ -65,226 +67,234 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     //var appState = context.watch<MyAppState>();
 
-    return Scaffold(
-      appBar: AppBar(
-        scrolledUnderElevation: 0,
-        title: Text("Running Log", style: TextStyle(color: Colors.white)),
-        backgroundColor: Color(0xff012271),
-        iconTheme: IconThemeData(color: Colors.white,),
-        actions: <Widget>[
-          Row(
-            children: [
-              Text("You", style: TextStyle(color: Colors.white),),
-              IconButton(
-                icon: const Icon(Icons.person_outline),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute<void>(
-                    builder: (BuildContext context) {
-                      return ProfilePage();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
+          appBar: AppBar(
+            scrolledUnderElevation: 0,
+            title: Text("Running Log", style: TextStyle(color: Colors.white)),
+            backgroundColor: Color(0xff012271),
+            iconTheme: IconThemeData(color: Colors.white,),
+            actions: <Widget>[
+              Row(
+                children: [
+                  Text("You", style: TextStyle(color: Colors.white),),
+                  IconButton(
+                    icon: const Icon(Icons.person_outline),
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute<void>(
+                        builder: (BuildContext context) {
+                          return ProfilePage();
+                        },
+                      ));
                     },
-                  ));
-                },
-              ),
+                  ),
+                ],
+              )
             ],
-          )
-        ],
-      ),
-      body: Center(
-        child: FutureBuilder<List<Run>>(
-          future: RunsDatabase.instance.getRuns(),
-          builder: (BuildContext context, AsyncSnapshot<List<Run>> snapshot) {
-            if (!snapshot.hasData) {
-              return Center(child: Text("Loading..."));
-            }
-            return snapshot.data!.isEmpty
-            ? Center(child: Text("You have no runs."))
-            : ListView(
-              children: snapshot.data!.map((run) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
-                    child: Card(
-                      elevation: 3,
-                      child: ListTile(
-                        title: Center(child: Text(run.title)),
-                        subtitle: Column(
-                          children: [
-                            Builder(
-                              builder: (context) {
-                                if (run.type != "N/A") {
-                                  return Column(
-                                    children: [
-                                      SizedBox(height: 5),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: Colors.red),
-                                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                                        ),
-                                        child: Text(run.type),
-                                      ),
-                                      SizedBox(height: 5),
-                                    ],
-                                  );
-                                }
-                                return SizedBox.shrink();
-                              },
-                            ),
-                            Builder(
-                              builder: (context) {
-                                if (run.perceivedEffort != null) {
-                                  return Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text("Perceived Effort: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                                      Text("${run.perceivedEffort} / 10"),
-                                    ],
-                                  );
-                                }
-                                return Container();
-                              },
-                            ),
-                            Builder(
-                              builder: (context) {
-                                if (run.time > 0 && run.distance > 0) {
-                                  return Column(
-                                    children: [
-                                      Divider(),
-                                      Row(
+          ),
+          body: Center(
+            child: FutureBuilder<List<Run>>(
+              future: RunsDatabase.instance.getRuns(),
+              builder: (BuildContext context, AsyncSnapshot<List<Run>> snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(child: Text("Loading..."));
+                }
+                return snapshot.data!.isEmpty
+                ? Center(child: Text("You have no runs."))
+                : ListView(
+                  children: snapshot.data!.map((run) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                        child: Card(
+                          elevation: 3,
+                          child: ListTile(
+                            title: Center(child: Text(run.title)),
+                            subtitle: Column(
+                              children: [
+                                Builder(
+                                  builder: (context) {
+                                    if (run.type != "N/A") {
+                                      return Column(
+                                        children: [
+                                          SizedBox(height: 5),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(color: Colors.red),
+                                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                                            ),
+                                            child: Text(run.type),
+                                          ),
+                                          SizedBox(height: 5),
+                                        ],
+                                      );
+                                    }
+                                    return SizedBox.shrink();
+                                  },
+                                ),
+                                Builder(
+                                  builder: (context) {
+                                    if (run.perceivedEffort != null) {
+                                      return Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          Expanded(
-                                            child: Column(
-                                              children: [
-                                                Text("${run.distance} ${run.unit}"),
-                                                Text("Distance"),
-                                              ],
-                                            ),
-                                          ),
-                                          SizedBox(width: 8),
-                                          Expanded(
-                                            child: Column(
-                                              children: [
-                                                Text(secondsToTime(run.time)),
-                                                Text("Time"),
-                                              ],
-                                            ),
-                                          ),
+                                          Text("Perceived Effort: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                                          Text("${run.perceivedEffort} / 10"),
                                         ],
-                                      ),
-                                    ],
-                                  );
-                                } else if (run.time > 0 && run.distance == 0) {
-                                  return Column(
-                                    children: [
-                                      Divider(),
-                                      Column(
+                                      );
+                                    }
+                                    return Container();
+                                  },
+                                ),
+                                Builder(
+                                  builder: (context) {
+                                    if (run.time > 0 && run.distance > 0) {
+                                      return Column(
                                         children: [
-                                          Text(secondsToTime(run.time)),
-                                          Text("Time"),
+                                          Divider(),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Expanded(
+                                                child: Column(
+                                                  children: [
+                                                    Text("${run.distance} ${run.unit}"),
+                                                    Text("Distance"),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(width: 8),
+                                              Expanded(
+                                                child: Column(
+                                                  children: [
+                                                    Text(secondsToTime(run.time)),
+                                                    Text("Time"),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ],
-                                      ),
-                                    ],
-                                  );
-                                } else if (run.time == 0 && run.distance > 0) {
-                                  return Column(
-                                    children: [
-                                      Divider(),
-                                      Column(
+                                      );
+                                    } else if (run.time > 0 && run.distance == 0) {
+                                      return Column(
                                         children: [
-                                          Text("${run.distance} ${run.unit}"),
-                                          Text("Distance"),
+                                          Divider(),
+                                          Column(
+                                            children: [
+                                              Text(secondsToTime(run.time)),
+                                              Text("Time"),
+                                            ],
+                                          ),
                                         ],
-                                      ),
-                                    ],
-                                  );
-                                }
-                                return SizedBox.shrink();
-                              }
-                            ),
-                            Builder(
-                              builder: (context) {
-                                if (run.notes != "") {
-                                  return Column(
-                                    children: [
-                                      Divider(),
-                                      Text(
-                                        run.notes,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  );
-                                }
-                                return SizedBox.shrink();
-                              }
-                            ),
-                            Builder(
-                              builder: (context) {
-                                List<Widget> result = [];
-                                List<Widget> reps = [];
-                                List<Widget> descriptions = [];
-                                if (run.reps!.isNotEmpty) {
-                                  result.add(Divider());
-                                  for (int i = 0; i < run.reps!.length; i++) {
-                                    reps.add(
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Text(
-                                          "${run.reps![i]}X",
-                                          style: TextStyle(fontWeight: FontWeight.bold,),
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      )
-                                    );
-                                    descriptions.add(
-                                      Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          run.descriptions![i],
-                                          textAlign: TextAlign.left,
-                                        ),
-                                      )
-                                    );
+                                      );
+                                    } else if (run.time == 0 && run.distance > 0) {
+                                      return Column(
+                                        children: [
+                                          Divider(),
+                                          Column(
+                                            children: [
+                                              Text("${run.distance} ${run.unit}"),
+                                              Text("Distance"),
+                                            ],
+                                          ),
+                                        ],
+                                      );
+                                    }
+                                    return SizedBox.shrink();
                                   }
-                                  result.add(Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.end,
-                                        children: reps,
-                                      ),
-                                      SizedBox(width: 10),
-                                      Column(
-                                        children: descriptions,
-                                      ),
-                                    ],
-                                  ));
-                                }
-                                return Column(children: result,);
-                              },
+                                ),
+                                Builder(
+                                  builder: (context) {
+                                    if (run.notes != "") {
+                                      return Column(
+                                        children: [
+                                          Divider(),
+                                          Text(
+                                            run.notes,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ],
+                                      );
+                                    }
+                                    return SizedBox.shrink();
+                                  }
+                                ),
+                                Builder(
+                                  builder: (context) {
+                                    List<Widget> result = [];
+                                    List<Widget> reps = [];
+                                    List<Widget> descriptions = [];
+                                    if (run.reps!.isNotEmpty) {
+                                      result.add(Divider());
+                                      for (int i = 0; i < run.reps!.length; i++) {
+                                        reps.add(
+                                          Align(
+                                            alignment: Alignment.centerRight,
+                                            child: Text(
+                                              "${run.reps![i]}X",
+                                              style: TextStyle(fontWeight: FontWeight.bold,),
+                                              textAlign: TextAlign.right,
+                                            ),
+                                          )
+                                        );
+                                        descriptions.add(
+                                          Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              run.descriptions![i],
+                                              textAlign: TextAlign.left,
+                                            ),
+                                          )
+                                        );
+                                      }
+                                      result.add(Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Column(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            children: reps,
+                                          ),
+                                          SizedBox(width: 10),
+                                          Column(
+                                            children: descriptions,
+                                          ),
+                                        ],
+                                      ));
+                                    }
+                                    return Column(children: result,);
+                                  },
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  }).toList()
                 );
-              }).toList()
-            );
-          }
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Color(0xffDEDA00),
-        label: Text("Add run", style: TextStyle(color: Color(0xff012271))),
-        icon: IconTheme(data: IconThemeData(color: Color(0xff012271)), child: Icon(Icons.add)),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddRunPage()),
-          ).then((_) => setState(() {}));
-        },
-      ),
+              }
+            ),
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            backgroundColor: Color(0xffDEDA00),
+            label: Text("Add run", style: TextStyle(color: Color(0xff012271))),
+            icon: IconTheme(data: IconThemeData(color: Color(0xff012271)), child: Icon(Icons.add)),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => Container(height: constraints.maxHeight, child: AddRunPage()),
+              ).then((_) => setState(() {}));
+              /*Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddRunPage()),
+              ).then((_) => setState(() {}));*/
+            },
+          ),
+        );
+      }
     );
   }
 
@@ -317,23 +327,16 @@ class _AddRunPageState extends State<AddRunPage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            backgroundColor: Color(0xff012271),
-            title: Text("Add Run", style: TextStyle(color: Colors.white),),
-            iconTheme: IconThemeData(color: Colors.white),
-          ),
           body: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                SizedBox(height: 10),
+                Text("Add a run", style: TextStyle(fontSize: 20)),
                 Form(
                   key: formKey,
                   child: Padding(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -622,7 +625,7 @@ class _AddRunPageState extends State<AddRunPage> {
                           distance: _distance,
                           unit: _unit,
                           time: timeInSeconds,
-                          perceivedEffort: (perceivedEffortRating!*100).round()/100,
+                          perceivedEffort: perceivedEffortRating == null ? null : (perceivedEffortRating!*100).round()/100,
                           type: _type,
                           notes: _notes,
                           reps: _reps,
@@ -812,25 +815,73 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        backgroundColor: Color(0xff012271),
-        title: Text("Profile", style: TextStyle(color: Colors.white),),
-        iconTheme: IconThemeData(color: Colors.white),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(textStyle: TextStyle(fontSize: 15)),
-          onPressed: () {
-            RunsDatabase.instance.clearDatabase();
-          },
-          child: Text("Clear Data"),
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            backgroundColor: Color(0xff012271),
+            title: Text("Profile", style: TextStyle(color: Colors.white),),
+            iconTheme: IconThemeData(color: Colors.white),
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Image.asset(
+                  "assets/default_avatar.png",
+                  alignment: Alignment.center,
+                  width: constraints.maxWidth,
+                  fit: BoxFit.fill,
+                  height: constraints.maxWidth,
+                ),
+                Divider(),
+                Row(
+                  children: [
+                    Expanded(child: Text("Age")),
+                    Expanded(child: Text("14", textAlign: TextAlign.right,)),
+                  ],
+                ),
+                Divider(),
+                Row(
+                  children: [
+                    Expanded(child: Text("Height")),
+                    Expanded(child: Text("6ft 2in", textAlign: TextAlign.right,)),
+                  ],
+                ),
+                Divider(),
+                Row(
+                  children: [
+                    Expanded(child: Text("Weight")),
+                    Expanded(child: Text("125lb", textAlign: TextAlign.right,)),
+                  ],
+                ),
+                Divider(),
+                TextButton(
+                  onPressed: () {},
+                  child: Row(
+                    children: [
+                      Expanded(child: Text("Your data")),
+                      Expanded(child: Text("→", textAlign: TextAlign.right,)),
+                    ],
+                  ),
+                ),
+                Divider(),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(textStyle: TextStyle(fontSize: 15)),
+                  onPressed: () {
+                    RunsDatabase.instance.clearDatabase();
+                  },
+                  child: Text("Clear Data"),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
     );
   }
 }

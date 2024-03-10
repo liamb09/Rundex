@@ -18,6 +18,10 @@ dependencies:
   path: ^1.8.3
   path_provider: ^2.1.2
   sqflite: ^2.3.2
+  google_maps_flutter: ^2.5.3
+  google_maps_flutter_web: ^0.5.4+3
+  xml: ^6.5.0
+  polyline_codec: ^0.1.6
 
 dev_dependencies:
   flutter_test:

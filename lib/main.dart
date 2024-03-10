@@ -1,13 +1,14 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:running_log/GPXHelper.dart';
 import 'package:running_log/Run.dart';
 import 'package:running_log/RunsDatabase.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //RunsDatabase.instance.clearDatabase();
+  print(GPXHelper.coordsToPolyline(GPXHelper.gpxToLatLong(await GPXHelper.readFromFile("assets/example_run.gpx"))));
   runApp(MyApp());
 }
 
@@ -285,12 +286,8 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () {
               showModalBottomSheet(
                 context: context,
-                builder: (context) => Container(height: constraints.maxHeight, child: AddRunPage()),
+                builder: (context) => SizedBox(height: constraints.maxHeight, child: AddRunPage()),
               ).then((_) => setState(() {}));
-              /*Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddRunPage()),
-              ).then((_) => setState(() {}));*/
             },
           ),
         );

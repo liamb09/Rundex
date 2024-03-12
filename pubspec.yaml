@@ -22,6 +22,8 @@ dependencies:
   google_maps_flutter_web: ^0.5.4+3
   xml: ^6.5.0
   polyline_codec: ^0.1.6
+  google_fonts: ^6.2.0
+  flutter_native_splash: ^2.3.10
 
 dev_dependencies:
   flutter_test:

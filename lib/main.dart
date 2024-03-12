@@ -7,8 +7,7 @@ import 'package:running_log/RunsDatabase.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  //RunsDatabase.instance.clearDatabase();
-  print(GPXHelper.coordsToPolyline(GPXHelper.gpxToLatLong(await GPXHelper.readFromFile("assets/example_run.gpx"))));
+  //print(GPXHelper.coordsToPolyline(GPXHelper.gpxToLatLong(await GPXHelper.readFromFile("assets/example_run.gpx"))));
   runApp(MyApp());
 }
 
@@ -23,8 +22,23 @@ class MyApp extends StatelessWidget {
         title: 'Running Log',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff012271), primary: Color(0xff012271), secondary: Color(0xffDEDA00)),
-          scaffoldBackgroundColor: Color(0xffFFFFFC),
+          colorScheme: ColorScheme.light(
+            background: Color(0xffFFFFFC),
+            primary: Color(0xff012271),
+            secondary: Color.fromARGB(255, 65, 101, 184),
+            tertiary: Colors.white,
+          ),
+          brightness: Brightness.light,
+        ),
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.dark(
+            background: Color.fromRGBO(51, 51, 51, 100),
+            primary: Color.fromARGB(255, 65, 101, 184),
+            secondary: Color.fromARGB(255, 160, 189, 255),
+            tertiary: Colors.black,
+          ),
+          brightness: Brightness.dark,
         ),
         home: MyHomePage(),
       ),
@@ -66,15 +80,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
     @override
   Widget build(BuildContext context) {
-    //var appState = context.watch<MyAppState>();
 
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.background,
           appBar: AppBar(
             scrolledUnderElevation: 0,
-            title: Text("Running Log", style: TextStyle(color: Colors.white)),
-            backgroundColor: Color(0xff012271),
+            title: Text("Running Log", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            backgroundColor: Theme.of(context).colorScheme.primary,
             iconTheme: IconThemeData(color: Colors.white,),
             actions: <Widget>[
               Row(
@@ -279,10 +293,11 @@ class _MyHomePageState extends State<MyHomePage> {
               }
             ),
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            backgroundColor: Color(0xffDEDA00),
-            label: Text("Add run", style: TextStyle(color: Color(0xff012271))),
-            icon: IconTheme(data: IconThemeData(color: Color(0xff012271)), child: Icon(Icons.add)),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            shape: CircleBorder(),
+            child: Icon(Icons.add, color: Colors.white),
             onPressed: () {
               showModalBottomSheet(
                 context: context,
@@ -324,12 +339,13 @@ class _AddRunPageState extends State<AddRunPage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.background,
           body: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(height: 10),
-                Text("Add a run", style: TextStyle(fontSize: 20)),
+                Text("Add a run", style: TextStyle(fontSize: 20,)),
                 Form(
                   key: formKey,
                   child: Padding(
@@ -458,6 +474,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                     value: perceivedEffortRating ?? 5,
                                     min: 0,
                                     max: 10,
+                                    inactiveColor: Theme.of(context).colorScheme.secondary,
                                     onChanged: (value) {
                                       setState(() {
                                         perceivedEffortRating = value;
@@ -566,7 +583,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                     children: [
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Color(0xff012271),
+                                          backgroundColor: Theme.of(context).colorScheme.primary,
                                           textStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                         ),
                                         onPressed: () {
@@ -580,7 +597,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                       SizedBox(width: 8),
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Color(0xff012271),
+                                          backgroundColor: Theme.of(context).colorScheme.primary,
                                         ),
                                         onPressed: () {
                                           if (_numSets < 10) {
@@ -607,8 +624,7 @@ class _AddRunPageState extends State<AddRunPage> {
                   height: 32,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xffDEDA00),
-                      textStyle: TextStyle(color: Color(0xff012271)),
+                      textStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
                     ),
                     onPressed: () async {
                       _reps = [];
@@ -634,9 +650,10 @@ class _AddRunPageState extends State<AddRunPage> {
                         Navigator.pop(context);
                       }
                     },
-                    child: Text("Save"),
+                    child: Text("Save", style: TextStyle(color: Theme.of(context).colorScheme.secondary),),
                   ),
                 ),
+                SizedBox(height: 10),
               ],
             ),
           ),
@@ -820,65 +837,128 @@ class _ProfilePageState extends State<ProfilePage> {
               icon: Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.of(context).pop(),
             ),
-            backgroundColor: Color(0xff012271),
+            backgroundColor: Theme.of(context).colorScheme.primary,
             title: Text("Profile", style: TextStyle(color: Colors.white),),
             iconTheme: IconThemeData(color: Colors.white),
+            actions: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute<void>(
+                    builder: (BuildContext context) {
+                      return SettingsPage();
+                    },
+                  ));
+                },
+              )
+            ],
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Image.asset(
-                  "assets/default_avatar.png",
-                  alignment: Alignment.center,
-                  width: constraints.maxWidth,
-                  fit: BoxFit.fill,
-                  height: constraints.maxWidth,
-                ),
-                Divider(),
-                Row(
-                  children: [
-                    Expanded(child: Text("Age")),
-                    Expanded(child: Text("14", textAlign: TextAlign.right,)),
-                  ],
-                ),
-                Divider(),
-                Row(
-                  children: [
-                    Expanded(child: Text("Height")),
-                    Expanded(child: Text("6ft 2in", textAlign: TextAlign.right,)),
-                  ],
-                ),
-                Divider(),
-                Row(
-                  children: [
-                    Expanded(child: Text("Weight")),
-                    Expanded(child: Text("125lb", textAlign: TextAlign.right,)),
-                  ],
-                ),
-                Divider(),
-                TextButton(
-                  onPressed: () {},
-                  child: Row(
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Container(
+                    width: 200,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                    child: Center(child: 
+                      Text(
+                        "L",
+                        style: TextStyle(color: Theme.of(context).colorScheme.tertiary, fontSize: 100),
+                      )
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Divider(),
+                  Row(
                     children: [
-                      Expanded(child: Text("Your data")),
-                      Expanded(child: Text("→", textAlign: TextAlign.right,)),
+                      Expanded(child: Text("Name")),
+                      Expanded(child: Text("First Last", textAlign: TextAlign.right,)),
                     ],
                   ),
-                ),
-                Divider(),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(textStyle: TextStyle(fontSize: 15)),
-                  onPressed: () {
-                    RunsDatabase.instance.clearDatabase();
-                  },
-                  child: Text("Clear Data"),
-                ),
-              ],
+                  Divider(),
+                  Row(
+                    children: [
+                      Expanded(child: Text("Age")),
+                      Expanded(child: Text("--", textAlign: TextAlign.right,)),
+                    ],
+                  ),
+                  Divider(),
+                  Row(
+                    children: [
+                      Expanded(child: Text("Height")),
+                      Expanded(child: Text("Xft Yin", textAlign: TextAlign.right,)),
+                    ],
+                  ),
+                  Divider(),
+                  Row(
+                    children: [
+                      Expanded(child: Text("Weight")),
+                      Expanded(child: Text("Xlb", textAlign: TextAlign.right,)),
+                    ],
+                  ),
+                  Divider()
+                ],
+              ),
             ),
           ),
         );
       }
+    );
+  }
+}
+
+class SettingsPage extends StatefulWidget {
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: Text("Settings", style: TextStyle(color: Colors.white),),
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              SizedBox(height: 10),
+              Divider(),
+              TextButton(
+                onPressed: () {},
+                child: Row(
+                  children: [
+                    Expanded(child: Text("Your data", style: TextStyle(color: Theme.of(context).colorScheme.secondary))),
+                    Expanded(child: Text("→", textAlign: TextAlign.right, style: TextStyle(color: Theme.of(context).colorScheme.secondary))),
+                  ],
+                ),
+              ),
+              Divider(),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(textStyle: TextStyle(fontSize: 15),),
+                onPressed: () {
+                  RunsDatabase.instance.clearDatabase();
+                  setState(() {});
+                },
+                child: Text("Clear Data", style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

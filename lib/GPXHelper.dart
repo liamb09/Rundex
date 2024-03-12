@@ -6,7 +6,6 @@ import 'package:polyline_codec/polyline_codec.dart';
 
 class GPXHelper {
 
-
   static List<List<double>> gpxToLatLong (String gpx) {
     var coordPairs = <List<double>>[];
     // Read all track points

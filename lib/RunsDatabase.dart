@@ -29,7 +29,8 @@ class RunsDatabase {
             type TEXT, 
             notes TEXT,
             reps TEXT,
-            descriptions TEXT
+            descriptions TEXT,
+            color TEXT
           )
       ''');
       },

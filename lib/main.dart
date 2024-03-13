@@ -4,11 +4,19 @@ import 'package:provider/provider.dart';
 import 'package:running_log/GPXHelper.dart';
 import 'package:running_log/Run.dart';
 import 'package:running_log/RunsDatabase.dart';
+import 'package:running_log/theme/theme.dart';
+import 'package:running_log/theme/theme_provider.dart';
+import 'package:flex_color_picker/flex_color_picker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //print(GPXHelper.coordsToPolyline(GPXHelper.gpxToLatLong(await GPXHelper.readFromFile("assets/example_run.gpx"))));
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: MyApp(),
+    )
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -20,26 +28,7 @@ class MyApp extends StatelessWidget {
       create: (context) => MyAppState(),
       child: MaterialApp(
         title: 'Running Log',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.light(
-            background: Color(0xffFFFFFC),
-            primary: Color(0xff012271),
-            secondary: Color.fromARGB(255, 65, 101, 184),
-            tertiary: Colors.white,
-          ),
-          brightness: Brightness.light,
-        ),
-        darkTheme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.dark(
-            background: Color.fromRGBO(51, 51, 51, 100),
-            primary: Color.fromARGB(255, 65, 101, 184),
-            secondary: Color.fromARGB(255, 160, 189, 255),
-            tertiary: Colors.black,
-          ),
-          brightness: Brightness.dark,
-        ),
+        theme: Provider.of<ThemeProvider>(context).themeData,
         home: MyHomePage(),
       ),
     );
@@ -124,8 +113,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
                         child: Card(
                           elevation: 3,
+                          color: run.color == null ? null : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000),
                           child: ListTile(
-                            title: Center(child: Text(run.title)),
+                            title: Center(
+                              child: Text(
+                                run.title, 
+                                style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),
+                              ),
+                            ),
                             subtitle: Column(
                               children: [
                                 Builder(
@@ -140,9 +135,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                               border: Border.all(color: Colors.red),
                                               borderRadius: BorderRadius.all(Radius.circular(10)),
                                             ),
-                                            child: Text(run.type),
+                                            child: Text(run.type, style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),),
                                           ),
-                                          SizedBox(height: 5),
                                         ],
                                       );
                                     }
@@ -152,11 +146,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                 Builder(
                                   builder: (context) {
                                     if (run.perceivedEffort != null) {
-                                      return Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                      return Column(
                                         children: [
-                                          Text("Perceived Effort: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                                          Text("${run.perceivedEffort} / 10"),
+                                          Divider(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text("Perceived Effort: ", style: TextStyle(fontWeight: FontWeight.bold, color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),),
+                                              Text("${run.perceivedEffort} / 10", style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),),
+                                            ],
+                                          ),
                                         ],
                                       );
                                     }
@@ -168,15 +167,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                     if (run.time > 0 && run.distance > 0) {
                                       return Column(
                                         children: [
-                                          Divider(),
+                                          Divider(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               Expanded(
                                                 child: Column(
                                                   children: [
-                                                    Text("${run.distance} ${run.unit}"),
-                                                    Text("Distance"),
+                                                    Text("${run.distance} ${run.unit}", style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),),
+                                                    Text("Distance", style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),),
                                                   ],
                                                 ),
                                               ),
@@ -184,8 +183,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                               Expanded(
                                                 child: Column(
                                                   children: [
-                                                    Text(secondsToTime(run.time)),
-                                                    Text("Time"),
+                                                    Text(secondsToTime(run.time), style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),),
+                                                    Text("Time", style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),),
                                                   ],
                                                 ),
                                               ),
@@ -196,11 +195,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                     } else if (run.time > 0 && run.distance == 0) {
                                       return Column(
                                         children: [
-                                          Divider(),
+                                          Divider(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),
                                           Column(
                                             children: [
-                                              Text(secondsToTime(run.time)),
-                                              Text("Time"),
+                                              Text(secondsToTime(run.time), style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),),
+                                              Text("Time", style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),),
                                             ],
                                           ),
                                         ],
@@ -208,11 +207,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                     } else if (run.time == 0 && run.distance > 0) {
                                       return Column(
                                         children: [
-                                          Divider(),
+                                          Divider(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),
                                           Column(
                                             children: [
-                                              Text("${run.distance} ${run.unit}"),
-                                              Text("Distance"),
+                                              Text("${run.distance} ${run.unit}", style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),),
+                                              Text("Distance", style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),),
                                             ],
                                           ),
                                         ],
@@ -226,10 +225,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                     if (run.notes != "") {
                                       return Column(
                                         children: [
-                                          Divider(),
+                                          Divider(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),
                                           Text(
                                             run.notes,
                                             textAlign: TextAlign.center,
+                                            style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),
                                           ),
                                         ],
                                       );
@@ -243,14 +243,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                     List<Widget> reps = [];
                                     List<Widget> descriptions = [];
                                     if (run.reps!.isNotEmpty) {
-                                      result.add(Divider());
+                                      result.add(Divider(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)));
                                       for (int i = 0; i < run.reps!.length; i++) {
                                         reps.add(
                                           Align(
                                             alignment: Alignment.centerRight,
                                             child: Text(
                                               "${run.reps![i]}X",
-                                              style: TextStyle(fontWeight: FontWeight.bold,),
+                                              style: TextStyle(fontWeight: FontWeight.bold, color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),
                                               textAlign: TextAlign.right,
                                             ),
                                           )
@@ -261,6 +261,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                             child: Text(
                                               run.descriptions![i],
                                               textAlign: TextAlign.left,
+                                              style: TextStyle(color: (run.color != null ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black)),
                                             ),
                                           )
                                         );
@@ -293,16 +294,21 @@ class _MyHomePageState extends State<MyHomePage> {
               }
             ),
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
           floatingActionButton: FloatingActionButton(
             backgroundColor: Theme.of(context).colorScheme.primary,
             shape: CircleBorder(),
             child: Icon(Icons.add, color: Colors.white),
             onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                builder: (context) => SizedBox(height: constraints.maxHeight, child: AddRunPage()),
-              ).then((_) => setState(() {}));
+              Navigator.push(context, MaterialPageRoute<void>(
+                builder: (BuildContext context) {
+                  return AddRunPage();
+                },
+              )).then((_) => setState(() {}));
+              // showModalBottomSheet(
+              //   context: context,
+              //   builder: (context) => SizedBox(height: constraints.maxHeight, child: AddRunPage()),
+              // ).then((_) => setState(() {}));
             },
           ),
         );
@@ -325,27 +331,35 @@ class _AddRunPageState extends State<AddRunPage> {
   int _hours = 0;
   int _minutes = 0;
   int _seconds = 0;
-  bool perceivedEffort = false;
-  double? perceivedEffortRating;
   String _type = "N/A";
   String _notes = "";
+  bool perceivedEffort = false;
+  double? perceivedEffortRating;
   bool workoutStructure = false;
   int _numSets = 2;
   List<int>? _reps;
   List<String>? _descriptions;
+  bool cardColor = false;
+  Color? otherCardColor;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            title: Text("Add a run", style: TextStyle(color: Colors.white),),
+            iconTheme: IconThemeData(color: Colors.white),
+          ),
           backgroundColor: Theme.of(context).colorScheme.background,
           body: SingleChildScrollView(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 10),
-                Text("Add a run", style: TextStyle(fontSize: 20,)),
                 Form(
                   key: formKey,
                   child: Padding(
@@ -449,45 +463,6 @@ class _AddRunPageState extends State<AddRunPage> {
                           ],
                         ),
                         SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Checkbox(
-                              checkColor: Colors.white,
-                              activeColor: Theme.of(context).primaryColor,
-                              value: perceivedEffort,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  perceivedEffort = value!;
-                                });
-                              }
-                            ),
-                            Text("Perceived Effort", style: TextStyle(fontSize: 15)),
-                          ],
-                        ),
-                        Builder(
-                          builder: (context) {
-                            if (perceivedEffort) {
-                              return Column(
-                                children: [
-                                  Slider(
-                                    value: perceivedEffortRating ?? 5,
-                                    min: 0,
-                                    max: 10,
-                                    inactiveColor: Theme.of(context).colorScheme.secondary,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        perceivedEffortRating = value;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              );
-                            }
-                            return Container();
-                          },
-                        ),
-                        SizedBox(height: 12),
                         DropdownButtonFormField(
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
@@ -528,6 +503,44 @@ class _AddRunPageState extends State<AddRunPage> {
                             Checkbox(
                               checkColor: Colors.white,
                               activeColor: Theme.of(context).primaryColor,
+                              value: perceivedEffort,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  perceivedEffort = value!;
+                                });
+                              }
+                            ),
+                            Text("Perceived Effort", style: TextStyle(fontSize: 15)),
+                          ],
+                        ),
+                        Builder(
+                          builder: (context) {
+                            if (perceivedEffort) {
+                              return Column(
+                                children: [
+                                  Slider(
+                                    value: perceivedEffortRating ?? 5,
+                                    min: 0,
+                                    max: 10,
+                                    inactiveColor: Theme.of(context).colorScheme.secondary,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        perceivedEffortRating = value;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              );
+                            }
+                            return Container();
+                          },
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Checkbox(
+                              checkColor: Colors.white,
+                              activeColor: Theme.of(context).primaryColor,
                               value: workoutStructure,
                               onChanged: (bool? value) {
                                 setState(() {
@@ -538,7 +551,6 @@ class _AddRunPageState extends State<AddRunPage> {
                             Text("Workout Structure", style: TextStyle(fontSize: 15)),
                           ],
                         ),
-                        SizedBox(height: 6),
                         Builder(
                           builder: (context) {
                             if (workoutStructure) {
@@ -609,12 +621,53 @@ class _AddRunPageState extends State<AddRunPage> {
                                       ),
                                     ],
                                   ),
+                                  SizedBox(height: 6),
                                 ],
                               );
                             }
                             return Container();
                           }
                         ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Checkbox(
+                              checkColor: Colors.white,
+                              activeColor: Theme.of(context).primaryColor,
+                              value: cardColor,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  cardColor = value!;
+                                });
+                                print(cardColor);
+                              }
+                            ),
+                            Text("Card Color", style: TextStyle(fontSize: 15)),
+                          ],
+                        ),
+                        Builder(
+                          builder: (context) {
+                            if (cardColor) {
+                              return ColorPicker(
+                                enableShadesSelection: false,
+                                pickersEnabled: <ColorPickerType, bool>{
+                                  ColorPickerType.primary: false,
+                                  ColorPickerType.accent: false,
+                                  ColorPickerType.wheel: true,
+                                },
+                                height: 40,
+                                showColorCode: true,
+                                colorCodeHasColor: true,
+                                copyPasteBehavior: ColorPickerCopyPasteBehavior(
+                                  copyFormat: ColorPickerCopyFormat.numHexRRGGBB,
+                                ),
+                                color: otherCardColor ?? Theme.of(context).colorScheme.secondary,
+                                onColorChanged: (Color color) => setState(() => otherCardColor = color),
+                              );
+                            }
+                            return Container();
+                          },
+                        )
                       ],
                     ),
                   ),
@@ -643,8 +696,8 @@ class _AddRunPageState extends State<AddRunPage> {
                           notes: _notes,
                           reps: _reps,
                           descriptions: _descriptions,
+                          color: cardColor ? (otherCardColor ?? Theme.of(context).colorScheme.secondary).value.toRadixString(16) : null,
                         );
-                        print(run);
                         await RunsDatabase.instance.addRun(run);
                         // return to homepage
                         Navigator.pop(context);
@@ -936,6 +989,30 @@ class _SettingsPageState extends State<SettingsPage> {
           child: Column(
             children: [
               SizedBox(height: 10),
+              Divider(),
+              Row(
+                children: [
+                  Expanded(child: Text("Theme")),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(Provider.of<ThemeProvider>(context).themeData == lightMode ? "Light" : "Dark", textAlign: TextAlign.right,),
+                        IconButton(
+                          icon: Icon(Provider.of<ThemeProvider>(context).themeData == lightMode ? Icons.light_mode : Icons.dark_mode),
+                          onPressed: () {
+                            if (Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode) {
+                              Provider.of<ThemeProvider>(context, listen: false).themeData = darkMode;
+                            } else {
+                              Provider.of<ThemeProvider>(context, listen: false).themeData = lightMode;
+                            }
+                          }
+                        ),
+                      ],
+                    )
+                  ),
+                ],
+              ),
               Divider(),
               TextButton(
                 onPressed: () {},

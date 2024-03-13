@@ -11,6 +11,7 @@ class Run {
   final String notes;
   final List<dynamic>? reps;
   final List<dynamic>? descriptions;
+  final String? color;
 
   const Run ({
     this.id,
@@ -23,6 +24,7 @@ class Run {
     required this.notes,
     this.reps,
     this.descriptions,
+    this.color,
   });
 
   Map<String, dynamic> toMap () {
@@ -37,6 +39,7 @@ class Run {
       "notes": notes,
       "reps": jsonEncode(reps),
       "descriptions": jsonEncode(descriptions),
+      "color": color,
     };
   }
 
@@ -51,11 +54,12 @@ class Run {
     notes: map['notes'],
     reps: jsonDecode(map['reps']),
     descriptions: jsonDecode(map['descriptions']),
+    color: map['color'],
   );
 
   @override
   String toString() {
-    return 'Run{id: $id, title: $title, distance: $distance, unit: $unit, time: $time, perceivedEffort: $perceivedEffort type: $type, notes: $notes, reps: ${reps.toString()}, descriptions: ${descriptions.toString()}}';
+    return 'Run{id: $id, title: $title, distance: $distance, unit: $unit, time: $time, perceivedEffort: $perceivedEffort type: $type, notes: $notes, reps: ${reps.toString()}, descriptions: ${descriptions.toString()}, color: $color}';
   }
 
 }

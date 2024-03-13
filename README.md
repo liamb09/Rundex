@@ -12,3 +12,4 @@ A simple running log to track mileage.
  - [ ] Add weather
  - [ ] Add starter survey
  - [ ] Add PR tracker
+ - [ ] Add edit feature to runs

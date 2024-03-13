@@ -12,4 +12,5 @@ A simple running log to track mileage.
  - [ ] Add weather
  - [ ] Add starter survey
  - [ ] Add PR tracker
+ - [X] Add custom colors for run cards
  - [ ] Add edit feature to runs

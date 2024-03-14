@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:running_log/Run.dart';
+import 'package:running_log/services_and_helpers/Run.dart';
 import 'package:sqflite/sqflite.dart';
 
 class RunsDatabase {
@@ -51,12 +51,12 @@ class RunsDatabase {
 
   Future<int> removeRun (int id) async {
     Database db = await instance.database;
-    return await db.delete('runs', where: 'id = ?', whereArgs: [id]);
+    return await db.delete('runs', where: '_id = ?', whereArgs: [id]);
   }
 
   Future<int> updateRun (Run run) async {
     Database db = await instance.database;
-    return await db.update('runs', run.toMap(), where: 'id = ?', whereArgs: [run.id]);
+    return await db.update('runs', run.toMap(), where: '_id = ?', whereArgs: [run.id]);
   }
 
   Future<void> clearDatabase () async {

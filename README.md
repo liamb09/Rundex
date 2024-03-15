@@ -17,5 +17,5 @@ A simple running log to track mileage.
  - [X] Add delete feature to runs
  - [X] Add edit feature to runs
  - [ ] Add time/date and display runs chronologically
- - [ ] Calculate pace with distance and time
+ - [X] Calculate average pace with distance and time
  - [ ] Add run sharing

@@ -143,6 +143,15 @@ class _MyHomePageState extends State<MyHomePage> {
                         Expanded(
                           child: Column(
                             children: [
+                              Text(secondsToTime((run.time/run.distance).round()), style: TextStyle(color: txtColorByBkgd(run.color)),),
+                              Text("Average Pace", style: TextStyle(color: txtColorByBkgd(run.color)),),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            children: [
                               Text(secondsToTime(run.time), style: TextStyle(color: txtColorByBkgd(run.color)),),
                               Text("Time", style: TextStyle(color: txtColorByBkgd(run.color)),),
                             ],

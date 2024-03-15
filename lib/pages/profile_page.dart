@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:running_log/pages/settings_page.dart';
+import 'package:running_log/services_and_helpers/User.dart';
+import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -7,10 +9,37 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+
+  Future<User> getUserFromDB (String cardColor) async {
+    var user = await UserDatabase.instance.getUser();
+    //UserDatabase.instance.clearDatabase();
+    print(cardColor);
+    if (user.isEmpty) {
+      UserDatabase.instance.addUser(User (
+        name: "First Last",
+        age: 30,
+        height: 100,
+        weight: 100,
+        types: ["N/A", "Easy Run", "Long Run", "Race"],
+        colors: [cardColor, cardColor, cardColor, cardColor]
+      ));
+      user = await UserDatabase.instance.getUser();
+    }
+    return user[0];
+  }
+
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
+
+    Future<User> user = getUserFromDB("ebedf3");
+
+    return FutureBuilder<User>(
+      future: user,
+      builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+        var userData = snapshot.data;
+        if (userData == null) {
+          return CircularProgressIndicator();
+        }
         return Scaffold(
           appBar: AppBar(
             leading: IconButton(
@@ -47,7 +76,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     child: Center(child: 
                       Text(
-                        "L",
+                        userData.name.substring(0, 1),
                         style: TextStyle(color: Theme.of(context).colorScheme.tertiary, fontSize: 100),
                       )
                     ),
@@ -57,28 +86,28 @@ class _ProfilePageState extends State<ProfilePage> {
                   Row(
                     children: [
                       Expanded(child: Text("Name")),
-                      Expanded(child: Text("First Last", textAlign: TextAlign.right,)),
+                      Expanded(child: Text(userData.name, textAlign: TextAlign.right,)),
                     ],
                   ),
                   Divider(),
                   Row(
                     children: [
                       Expanded(child: Text("Age")),
-                      Expanded(child: Text("--", textAlign: TextAlign.right,)),
+                      Expanded(child: Text("${userData.age}", textAlign: TextAlign.right,)),
                     ],
                   ),
                   Divider(),
                   Row(
                     children: [
                       Expanded(child: Text("Height")),
-                      Expanded(child: Text("Xft Yin", textAlign: TextAlign.right,)),
+                      Expanded(child: Text("${userData.height}", textAlign: TextAlign.right,)),
                     ],
                   ),
                   Divider(),
                   Row(
                     children: [
                       Expanded(child: Text("Weight")),
-                      Expanded(child: Text("Xlb", textAlign: TextAlign.right,)),
+                      Expanded(child: Text("${userData.weight}", textAlign: TextAlign.right,)),
                     ],
                   ),
                   Divider()

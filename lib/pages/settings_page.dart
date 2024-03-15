@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:running_log/pages/customize_types_and_colors_page.dart';
 import 'package:running_log/services_and_helpers/RunsDatabase.dart';
 import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';
@@ -12,6 +13,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -53,14 +55,30 @@ class _SettingsPageState extends State<SettingsPage> {
                 ],
               ),
               Divider(),
-              TextButton(
-                onPressed: () {},
-                child: Row(
-                  children: [
-                    Expanded(child: Text("Your data", style: TextStyle(color: Theme.of(context).colorScheme.secondary))),
-                    Expanded(child: Text("→", textAlign: TextAlign.right, style: TextStyle(color: Theme.of(context).colorScheme.secondary))),
-                  ],
-                ),
+              Row(
+                children: [
+                  Expanded(child: Text("Customize types and colors")),
+                  IconButton(
+                    icon: Icon(Icons.arrow_forward),
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute<void>(
+                        builder: (BuildContext context) {
+                          return CustomizeTypesAndColorsPage();
+                        },
+                      ));
+                    },
+                  ),
+                ],
+              ),
+              Divider(),
+              Row(
+                children: [
+                  Expanded(child: Text("Your data")),
+                  IconButton(
+                    icon: Icon(Icons.arrow_forward),
+                    onPressed: () {},
+                  ),
+                ],
               ),
               Divider(),
               ElevatedButton(

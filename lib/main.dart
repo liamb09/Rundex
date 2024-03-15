@@ -11,6 +11,7 @@ import 'package:tinycolor2/tinycolor2.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  //RunsDatabase.instance.clearDatabase();
   //print(GPXHelper.coordsToPolyline(GPXHelper.gpxToLatLong(await GPXHelper.readFromFile("assets/example_run.gpx"))));
   runApp(
     ChangeNotifierProvider(

@@ -30,7 +30,8 @@ class RunsDatabase {
             notes TEXT,
             reps TEXT,
             descriptions TEXT,
-            color TEXT
+            color TEXT,
+            timestamp INTEGER
           )
       ''');
       },
@@ -39,7 +40,7 @@ class RunsDatabase {
 
   Future<List<Run>> getRuns () async {
     Database db = await instance.database;
-    var runs = await db.query('runs');
+    var runs = await db.query('runs', orderBy: "timestamp DESC");
     List<Run> runsList = runs.isNotEmpty ? runs.map((r) => Run.fromMap(r)).toList() : [];
     return runsList;
   }

@@ -30,6 +30,7 @@ class _AddRunPageState extends State<AddRunPage> {
   Color? otherCardColor;
   int? editID;
   bool setupForEdit = false;
+  int? timestamp;
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +51,10 @@ class _AddRunPageState extends State<AddRunPage> {
       _numSets = editRun.reps!.length;
       _reps = editRun.reps?.cast<int>();
       _descriptions = editRun.descriptions?.cast<String>();
-      cardColor = editRun.color == null ? false : true;
+      cardColor = editRun.color == "ffebedf3" ? false : true;
       otherCardColor = editRun.color == null ? null : Color(int.parse(editRun.color!.substring(2, 8), radix: 16) + 0xFF000000);
       setupForEdit = true;
+      timestamp = editRun.timestamp;
     }
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -414,7 +416,8 @@ class _AddRunPageState extends State<AddRunPage> {
                           notes: _notes,
                           reps: _reps,
                           descriptions: _descriptions,
-                          color: cardColor ? (otherCardColor ?? Theme.of(context).colorScheme.secondary).value.toRadixString(16) : null,
+                          color: cardColor ? (otherCardColor ?? Theme.of(context).colorScheme.secondary).value.toRadixString(16) : "ffebedf3",
+                          timestamp: timestamp ?? (DateTime.now().millisecondsSinceEpoch/1000).round(),
                         );
                         if (editID == null) {
                           await RunsDatabase.instance.addRun(run);

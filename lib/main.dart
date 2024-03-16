@@ -5,6 +5,7 @@ import 'package:running_log/services_and_helpers/Run.dart';
 import 'package:running_log/services_and_helpers/RunsDatabase.dart';
 import 'package:running_log/pages/add_run_page.dart';
 import 'package:running_log/pages/profile_page.dart';
+import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
 import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';
 import 'package:tinycolor2/tinycolor2.dart';
@@ -12,6 +13,7 @@ import 'package:tinycolor2/tinycolor2.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //RunsDatabase.instance.clearDatabase();
+  //UserDatabase.instance.clearDatabase();
   //print(GPXHelper.coordsToPolyline(GPXHelper.gpxToLatLong(await GPXHelper.readFromFile("assets/example_run.gpx"))));
   runApp(
     ChangeNotifierProvider(

@@ -35,6 +35,9 @@ class _CustomizeTypesAndColorsPageState extends State<CustomizeTypesAndColorsPag
   Widget build (BuildContext context) {
 
     Future<User> user = getUserFromDB();
+    final _formKey = GlobalKey<FormState>();
+    String newType = "";
+    String newColor = "";
 
     return Scaffold(
       appBar: AppBar(
@@ -53,91 +56,189 @@ class _CustomizeTypesAndColorsPageState extends State<CustomizeTypesAndColorsPag
           if (userData == null) {
             return Center(child: Text("null"));
           }
-          return ListView.builder(
-            itemCount: userData.types.length,
-            itemBuilder: (context, index) {
-              var type = userData.types[index];
-              var color = userData.colors[index];
-              return ListTile(
-                title: Row(
-                  children: [
-                    Expanded(child: Text(type == "N/A" ? "Default" : type)),
-                    SizedBox(
-                      width: 40,
-                      height: 40,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          shape: CircleBorder(),
-                          backgroundColor: strToColor(color)
-                        ),
-                        onPressed: () {
-                          print(Theme.of(context).colorScheme.tertiary);
-                          String prevColor = color;
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  AlertDialog(
-                                    title: Text("Change color of \"${type == "N/A" ? "Default" : type}\""),
-                                    content: ColorPicker(
-                                      enableShadesSelection: false,
-                                      pickersEnabled: <ColorPickerType, bool>{
-                                        ColorPickerType.primary: false,
-                                        ColorPickerType.accent: false,
-                                        ColorPickerType.wheel: true,
-                                      },
-                                      height: 40,
-                                      showColorCode: true,
-                                      colorCodeHasColor: true,
-                                      copyPasteBehavior: ColorPickerCopyPasteBehavior(
-                                        copyFormat: ColorPickerCopyFormat.numHexRRGGBB,
-                                      ),
-                                      color: strToColor(color),
-                                      onColorChanged: (Color c) {},
-                                    ),
-                                    actionsAlignment: MainAxisAlignment.center,
-                                    actions: [
-                                      MaterialButton(
-                                        color: Theme.of(context).cardColor.darken(20),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(6),
-                                          child: Text("Cancel", style: TextStyle(
-                                            color: Theme.of(context).colorScheme.tertiary == Colors.white ? Colors.black : Colors.white,
-                                          ),),
+          return Column(
+            children: [
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: userData.types.length,
+                itemBuilder: (context, index) {
+                  var type = userData.types[index];
+                  var color = userData.colors[index];
+                  return ListTile(
+                    title: Row(
+                      children: [
+                        Expanded(child: Text(type == "N/A" ? "Default" : type)),
+                        SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: CircleBorder(),
+                              backgroundColor: strToColor(color)
+                            ),
+                            onPressed: () {
+                              String prevColor = color;
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      AlertDialog(
+                                        title: Text("Change color of \"${type == "N/A" ? "Default" : type}\""),
+                                        content: ColorPicker(
+                                          enableShadesSelection: false,
+                                          pickersEnabled: <ColorPickerType, bool>{
+                                            ColorPickerType.primary: false,
+                                            ColorPickerType.accent: false,
+                                            ColorPickerType.wheel: true,
+                                          },
+                                          height: 40,
+                                          showColorCode: true,
+                                          colorCodeHasColor: true,
+                                          copyPasteBehavior: ColorPickerCopyPasteBehavior(
+                                            copyFormat: ColorPickerCopyFormat.numHexRRGGBB,
+                                          ),
+                                          color: strToColor(color),
+                                          onColorChanged: (Color c) {
+                                            newColor = c.toString().substring(10, 16);
+                                          },
                                         ),
-                                        onPressed: () {
-                                          color = prevColor;
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                      MaterialButton(
-                                        color: Theme.of(context).colorScheme.secondary,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(6),
-                                          child: Text("Select", style: TextStyle(
-                                            color: Theme.of(context).colorScheme.tertiary,
-                                          ),),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
+                                        actionsAlignment: MainAxisAlignment.center,
+                                        actions: [
+                                          MaterialButton(
+                                            color: Theme.of(context).cardColor.darken(20),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(6),
+                                              child: Text("Cancel", style: TextStyle(
+                                                color: Theme.of(context).colorScheme.tertiary == Colors.white ? Colors.black : Colors.white,
+                                              ),),
+                                            ),
+                                            onPressed: () {
+                                              color = prevColor;
+                                              Navigator.pop(context);
+                                            },
+                                          ),
+                                          MaterialButton(
+                                            color: Theme.of(context).colorScheme.secondary,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(6),
+                                              child: Text("Select", style: TextStyle(
+                                                color: Theme.of(context).colorScheme.tertiary,
+                                              ),),
+                                            ),
+                                            onPressed: () {
+                                              userData.colors[index] = newColor;
+                                              UserDatabase.instance.updateUser(User (
+                                                name: userData.name,
+                                                age: userData.age,
+                                                weight: userData.weight,
+                                                height: userData.height,
+                                                types: userData.types,
+                                                colors: userData.colors,
+                                              )).then((_) => setState(() {}));
+                                              Navigator.pop(context);
+                                            },
+                                          ),
+                                        ],
                                       ),
                                     ],
-                                  ),
-                                ],
+                                  );
+                                }
                               );
-                            }
-                          );
-                        },
-                        child: Container(),
-                      ),
+                            },
+                            child: Container(),
+                          ),
+                        )
+                      ],
                     )
-                  ],
-                )
-              );
-            },
+                  );
+                },
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ElevatedButton(
+                    child: Row(
+                      children: [
+                        Text("Add new run type"),
+                        SizedBox(width: 5),
+                        Icon(Icons.add),
+                      ],
+                    ),
+                    onPressed: () {
+                      showDialog(context: context, builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text("Add new run type", textAlign: TextAlign.center, style: TextStyle(fontSize: 20)),
+                              SizedBox(height: 10),
+                              Form(
+                                key: _formKey,
+                                child: TextFormField(
+                                  style: TextStyle(fontSize: 15),
+                                  decoration: InputDecoration(
+                                    hintText: "Ex: fartlek, intervals, etc...",
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))
+                                  ),
+                                  validator: (value) {
+                                    if (value == "") {
+                                      return "Required";
+                                    }
+                                    return null;
+                                  },
+                                  onChanged: (String? value) => newType = value!,
+                                ),
+                              ),
+                            ],
+                          ),
+                          actionsAlignment: MainAxisAlignment.center,
+                          actions: [
+                            MaterialButton(
+                              color: Theme.of(context).cardColor.darken(20),
+                              child: Padding(
+                                padding: const EdgeInsets.all(6),
+                                child: Text("Cancel", style: TextStyle(
+                                  color: Theme.of(context).colorScheme.tertiary == Colors.white ? Colors.black : Colors.white,
+                                ),),
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                            MaterialButton(
+                              color: Theme.of(context).colorScheme.secondary,
+                              child: Padding(
+                                padding: const EdgeInsets.all(6),
+                                child: Text("Select", style: TextStyle(
+                                  color: Theme.of(context).colorScheme.tertiary,
+                                ),),
+                              ),
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  userData.types.add(newType);
+                                  userData.colors.add("ebedf3");
+                                  UserDatabase.instance.updateUser(User (
+                                    name: userData.name,
+                                    age: userData.age,
+                                    weight: userData.weight,
+                                    height: userData.height,
+                                    types: userData.types,
+                                    colors: userData.colors,
+                                  )).then((_) => setState(() {}));
+                                  Navigator.pop(context);
+                                }
+                              },
+                            ),
+                          ],
+                        );
+                      });
+                    },
+                  )
+                ],
+              ),
+            ],
           );
         }
       ),

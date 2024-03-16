@@ -20,6 +20,7 @@ class UserDatabase {
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE user (
+            _id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             age INTEGER,
             height REAL,

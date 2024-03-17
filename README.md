@@ -13,9 +13,11 @@ A simple running log to track mileage.
  - [ ] Add starter survey
  - [ ] Add PR tracker
  - [X] Add custom colors for run cards
-   - [ ] Set color for certain type in settings
+   - [X] Set color for certain type in settings
  - [X] Add delete feature to runs
  - [X] Add edit feature to runs
- - [ ] Add time/date and display runs chronologically
+ - [X] Add time/date and display runs chronologically
  - [X] Calculate average pace with distance and time
  - [ ] Add run sharing
+ - [ ] Add support for multiple types on one run
+ - [ ] Add mileage charts + goals

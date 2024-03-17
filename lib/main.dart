@@ -5,10 +5,13 @@ import 'package:running_log/services_and_helpers/Run.dart';
 import 'package:running_log/services_and_helpers/RunsDatabase.dart';
 import 'package:running_log/pages/add_run_page.dart';
 import 'package:running_log/pages/profile_page.dart';
+import 'package:running_log/pages/stats_page.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
 import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';
 import 'package:tinycolor2/tinycolor2.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:intl/intl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -104,6 +107,19 @@ class _MyHomePageState extends State<MyHomePage> {
               }
               return SizedBox.shrink();
             },
+          ),
+          Column(
+            children: [
+              Divider(color: txtColorByBkgd(run.color)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "${DateFormat('EEEE, MMM d, yyyy').format(DateTime.fromMillisecondsSinceEpoch(run.timestamp*1000))}${DateFormat('hh:mm a').format(DateTime.fromMillisecondsSinceEpoch(run.timestamp*1000)) == "12:00 AM" ? "" : " at ${DateFormat('hh:mm a').format(DateTime.fromMillisecondsSinceEpoch(run.timestamp*1000))}"}", 
+                    style: TextStyle(color: txtColorByBkgd(run.color)))
+                ],
+              ),
+            ],
           ),
           Builder(
             builder: (context) {
@@ -267,25 +283,30 @@ class _MyHomePageState extends State<MyHomePage> {
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.background,
           appBar: AppBar(
+            leading: IconButton(
+              icon: Icon(Icons.timeline),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute<void>(
+                  builder: (BuildContext context) {
+                    return StatsPage();
+                  },
+                ));
+              },
+            ),
             scrolledUnderElevation: 0,
             title: Text("Running Log", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             backgroundColor: Theme.of(context).colorScheme.primary,
             iconTheme: IconThemeData(color: Colors.white,),
             actions: <Widget>[
-              Row(
-                children: [
-                  Text("You", style: TextStyle(color: Colors.white),),
-                  IconButton(
-                    icon: const Icon(Icons.person_outline),
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute<void>(
-                        builder: (BuildContext context) {
-                          return ProfilePage();
-                        },
-                      ));
+              IconButton(
+                icon: const Icon(Icons.person_outline),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute<void>(
+                    builder: (BuildContext context) {
+                      return ProfilePage();
                     },
-                  ),
-                ],
+                  ));
+                },
               )
             ],
           ),

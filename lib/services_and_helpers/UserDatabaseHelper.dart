@@ -26,7 +26,9 @@ class UserDatabase {
             height REAL,
             weight INTEGER,
             types TEXT,
-            colors TEXT
+            colors TEXT,
+            goal INTEGER,
+            distUnit TEXT
           )
       ''');
       },
@@ -43,6 +45,19 @@ class UserDatabase {
   Future<int> addUser (User user) async {
     Database db = await instance.database;
     return await db.insert('user', user.toMap());
+  }
+
+  void addDefaultUser () async {
+    UserDatabase.instance.addUser(User (
+      name: "First Last",
+      age: 30,
+      height: 100,
+      weight: 100,
+      types: ["N/A", "Easy Run", "Long Run", "Race"],
+      colors: ["ebedf3", "ebedf3", "ebedf3", "ebedf3"],
+      goal: 20,
+      distUnit: "mi",
+    ));
   }
 
   Future<int> updateUser (User user) async {

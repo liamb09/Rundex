@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:running_log/services_and_helpers/Run.dart';
 import 'package:running_log/services_and_helpers/RunsDatabase.dart';
@@ -35,22 +34,35 @@ class _AddRunPageState extends State<AddRunPage> {
   bool setupForEdit = false;
   int? timestamp;
   bool isDateTime = false;
+  bool isTime = false;
 
   Future<User> getUserFromDB () async {
     var user = await UserDatabase.instance.getUser();
     //UserDatabase.instance.clearDatabase();
     if (user.isEmpty) {
-      UserDatabase.instance.addUser(User (
-        name: "First Last",
-        age: 30,
-        height: 100,
-        weight: 100,
-        types: ["N/A", "Easy Run", "Long Run", "Race"],
-        colors: ["ebedf3", "ebedf3", "ebedf3", "ebedf3"]
-      ));
+      UserDatabase.instance.addDefaultUser();
       user = await UserDatabase.instance.getUser();
     }
     return user[0];
+  }
+
+  Future<DateTime?> getDateTime () async {
+    DateTime? selectedDate = await showDatePicker(context: context, firstDate: DateTime(2000), lastDate: DateTime.now(), initialDate: timestamp != null ? DateTime.fromMillisecondsSinceEpoch(timestamp!*1000) : DateTime.now());
+    TimeOfDay? selectedTime;
+    if (selectedDate != null) {
+      selectedTime = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(DateTime.now()));
+    }
+    if (selectedTime != null) {
+      isTime = true;
+    }
+    DateTime? dateTime = selectedTime == null ? selectedDate : DateTime(
+      selectedDate!.year,
+      selectedDate.month,
+      selectedDate.day,
+      selectedTime.hour,
+      selectedTime.minute
+    );
+    return dateTime;
   }
 
   @override
@@ -100,6 +112,9 @@ class _AddRunPageState extends State<AddRunPage> {
                 var userData = snapshot.data;
                 if (userData == null) {
                   return CircularProgressIndicator();
+                }
+                if (!setupForEdit) {
+                  _unit = userData.distUnit;
                 }
                 List<DropdownMenuItem> types = [];
                 for (String type in userData.types) {
@@ -163,7 +178,7 @@ class _AddRunPageState extends State<AddRunPage> {
                               children: [
                                 Flexible(
                                   child: IntInputBox(
-                                    value: _hours != 0 || _hours == null ? "$_hours" : "",
+                                    value: _hours != 0 ? "$_hours" : "",
                                     labelText: "Hours",
                                     intValueSetter: (value) => _hours = value,
                                     validator: (value) {
@@ -224,6 +239,12 @@ class _AddRunPageState extends State<AddRunPage> {
                               onChanged: (newValue) {
                                 setState(() {
                                   _type = newValue!;
+                                  if (userData.colors[userData.types.indexOf(_type)] != "ebedf3") {
+                                    otherCardColor = Color(int.parse(userData.colors[userData.types.indexOf(_type)], radix: 16) + 0xff000000);
+                                    cardColor = true;
+                                  } else {
+                                    cardColor = false;
+                                  }
                                 });
                               },
                               value: _type,
@@ -254,16 +275,36 @@ class _AddRunPageState extends State<AddRunPage> {
                                       isDateTime = value!;
                                     });
                                     if (isDateTime) {
-                                      DateTime? selectedDate = await showDatePicker(context: context, firstDate: DateTime(2000), lastDate: DateTime.now(), initialDate: timestamp != null ? DateTime.fromMicrosecondsSinceEpoch(timestamp!) : DateTime.now());
-                                      if (selectedDate != null) {
+                                      DateTime? dateTime = await getDateTime();
+                                      if (dateTime != null) {
+                                        timestamp = (DateTime.parse(dateTime.toString()).millisecondsSinceEpoch/1000).round();
+                                      } else {
+                                        setState(() {
+                                          isDateTime = false;
+                                        });
                                       }
-                                      timestamp = (DateTime.parse(selectedDate.toString()).millisecondsSinceEpoch/1000).round();
-                                      print("$isDateTime $timestamp");
                                     }
                                     setState(() {});
                                   }
                                 ),
-                                Text("Date and time${isDateTime && timestamp != null ? ": ${DateFormat.yMMMEd().format(DateTime.fromMicrosecondsSinceEpoch(timestamp!*1000000))}" : ""}", style: TextStyle(fontSize: 15)),
+                                Row(
+                                  children: [
+                                    Text("Date and time${isDateTime && timestamp != null ? ": ${DateFormat.yMMMEd().format(DateTime.fromMillisecondsSinceEpoch(timestamp!*1000))}" : ""}${isTime && isDateTime ? " at ${DateFormat("hh:mm a").format(DateTime.fromMillisecondsSinceEpoch(timestamp!*1000))}" : ""}", style: TextStyle(fontSize: 15)),
+                                    Builder(
+                                      builder: (context) {
+                                        return isDateTime ? IconButton(
+                                          icon: Icon(Icons.edit_outlined),
+                                          onPressed: () async {
+                                            DateTime? dateTime = await getDateTime();
+                                            print(dateTime.toString());
+                                            timestamp = (DateTime.parse(dateTime.toString()).millisecondsSinceEpoch/1000).round();
+                                            setState(() {});
+                                          },
+                                        ) : Container();
+                                      }
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                             Row(
@@ -405,7 +446,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                 Checkbox(
                                   checkColor: Colors.white,
                                   activeColor: Theme.of(context).colorScheme.primary,
-                                  value: userData.colors[userData.types.indexOf(_type)] != "ebedf3",
+                                  value: cardColor,
                                   onChanged: (bool? value) {
                                     setState(() {
                                       cardColor = value!;
@@ -417,7 +458,8 @@ class _AddRunPageState extends State<AddRunPage> {
                             ),
                             Builder(
                               builder: (context) {
-                                if (userData.colors[userData.types.indexOf(_type)] != "ebedf3" || cardColor) {
+                                if (cardColor) {
+                                  //cardColor = true;
                                   return ColorPicker(
                                     enableShadesSelection: false,
                                     pickersEnabled: <ColorPickerType, bool>{

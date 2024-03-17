@@ -14,14 +14,7 @@ class _CustomizeTypesAndColorsPageState extends State<CustomizeTypesAndColorsPag
   Future<User> getUserFromDB () async {
     var user = await UserDatabase.instance.getUser();
     if (user.isEmpty) {
-      UserDatabase.instance.addUser(User (
-        name: "First Last",
-        age: 30,
-        height: 100,
-        weight: 100,
-        types: ["N/A", "Easy Run", "Long Run", "Race"],
-        colors: ["", "", "", ""]
-      ));
+      UserDatabase.instance.addDefaultUser();
       user = await UserDatabase.instance.getUser();
     }
     return user[0];
@@ -136,6 +129,8 @@ class _CustomizeTypesAndColorsPageState extends State<CustomizeTypesAndColorsPag
                                                 height: userData.height,
                                                 types: userData.types,
                                                 colors: userData.colors,
+                                                goal: userData.goal,
+                                                distUnit: userData.distUnit,
                                               )).then((_) => setState(() {}));
                                               Navigator.pop(context);
                                             },
@@ -226,6 +221,8 @@ class _CustomizeTypesAndColorsPageState extends State<CustomizeTypesAndColorsPag
                                     height: userData.height,
                                     types: userData.types,
                                     colors: userData.colors,
+                                    goal: userData.goal,
+                                    distUnit: userData.distUnit,
                                   )).then((_) => setState(() {}));
                                   Navigator.pop(context);
                                 }

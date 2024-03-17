@@ -10,28 +10,23 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
 
-  Future<User> getUserFromDB (String cardColor) async {
+  Future<User> getUserFromDB () async {
     var user = await UserDatabase.instance.getUser();
     //UserDatabase.instance.clearDatabase();
-    print(cardColor);
     if (user.isEmpty) {
-      UserDatabase.instance.addUser(User (
-        name: "First Last",
-        age: 30,
-        height: 100,
-        weight: 100,
-        types: ["N/A", "Easy Run", "Long Run", "Race"],
-        colors: [cardColor, cardColor, cardColor, cardColor]
-      ));
+      UserDatabase.instance.addDefaultUser();
       user = await UserDatabase.instance.getUser();
     }
     return user[0];
   }
 
+  bool editUnits = false;
+  String? newUnit;
+
   @override
   Widget build(BuildContext context) {
 
-    Future<User> user = getUserFromDB("ebedf3");
+    Future<User> user = getUserFromDB();
 
     return FutureBuilder<User>(
       future: user,
@@ -110,7 +105,60 @@ class _ProfilePageState extends State<ProfilePage> {
                       Expanded(child: Text("${userData.weight}", textAlign: TextAlign.right,)),
                     ],
                   ),
-                  Divider()
+                  Divider(),
+                  Row(
+                    children: [
+                      Expanded(child: Text("Weekly mileage goal")),
+                      Expanded(child: Text("${userData.goal != null ? "${userData.goal} ${userData.distUnit}" : "--"} ", textAlign: TextAlign.right,)),
+                    ],
+                  ),
+                  Divider(),
+                  // TODO: put dropdown when clicked to edit units
+                  Row(
+                    children: [
+                      Expanded(child: Text("Units")),
+                      InkWell(
+                        onTap: () {
+                          if (!editUnits) {
+                            editUnits = true;
+                          } else {
+                            editUnits = false;
+                          }
+                          setState(() {});
+                        },
+                        child: Builder(
+                          builder: (context) {
+                            if (editUnits) {
+                              return DropdownButtonFormField(
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: "Units",
+                                ),
+                                items: [
+                                  DropdownMenuItem(value: "mi", child: Text("mi")),
+                                  DropdownMenuItem(value: "km", child: Text("km")),
+                                ],
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    newUnit = newValue!;
+                                  });
+                                },
+                                value: userData.distUnit,
+                                validator: (value) {
+                                  if (value != "mi" && value != "km") {
+                                    return "Invalid input";
+                                  }
+                                  return null;
+                                },
+                              );
+                            }
+                            return Text(userData.distUnit, textAlign: TextAlign.right,);
+                          }
+                        )
+                      ),
+                    ],
+                  ),
+                  Divider(),
                 ],
               ),
             ),

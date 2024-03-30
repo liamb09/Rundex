@@ -9,12 +9,17 @@ import 'package:running_log/pages/stats_page.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
 import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:running_log/firebase_options.dart';
 import 'package:tinycolor2/tinycolor2.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+  );
   //RunsDatabase.instance.clearDatabase();
   //UserDatabase.instance.clearDatabase();
   //print(GPXHelper.coordsToPolyline(GPXHelper.gpxToLatLong(await GPXHelper.readFromFile("assets/example_run.gpx"))));

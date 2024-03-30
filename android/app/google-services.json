@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "178903937427",
+    "project_id": "running-log-af92b",
+    "storage_bucket": "running-log-af92b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:178903937427:android:db3c5433a4896d85b53866",
+        "android_client_info": {
+          "package_name": "com.example.running_log"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlEdAp5kQ2W9aMtzRSNZDpSbkxCmLfJm4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -68,7 +68,6 @@ class _StatsPageState extends State<StatsPage> {
         if (runs != null) {
           weeklyMileage = getWeekMileage(runs);
         }
-        print(weeklyMileage);
         return FutureBuilder<User>(
           future: user,
           builder: (BuildContext context, AsyncSnapshot<User> userSnapshot) {

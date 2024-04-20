@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:xml/xml.dart';
 import 'package:xml/xpath.dart';
 import 'package:polyline_codec/polyline_codec.dart';
@@ -29,5 +29,9 @@ class GPXHelper {
   static Future<String> readFromFile(String filePath) async {
     final file = await rootBundle.loadString(filePath);
     return file;
+  }
+
+  static Future<String> getPolyline (String filePath) async {
+    return coordsToPolyline(gpxToLatLong(await(readFromFile(filePath))));
   }
 }

@@ -6,6 +6,7 @@ import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
 import 'package:running_log/services_and_helpers/input_boxes.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:file_picker/file_picker.dart';
 
 class AddRunPage extends StatefulWidget {
   @override
@@ -479,7 +480,19 @@ class _AddRunPageState extends State<AddRunPage> {
                                 }
                                 return Container();
                               },
-                            )
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                textStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                              ),
+                              onPressed: () async {
+                                final result = await FilePicker.platform.pickFiles(allowedExtensions: ['gpx']);
+                                if (result != null) {
+                                  
+                                }
+                              },
+                              child: Text("Import GPX Data"),
+                            ),
                           ],
                         ),
                       ),

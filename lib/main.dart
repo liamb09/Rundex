@@ -9,19 +9,16 @@ import 'package:running_log/pages/stats_page.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
 import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:running_log/firebase_options.dart';
 import 'package:tinycolor2/tinycolor2.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
+import 'package:running_log/services_and_helpers/env.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-  );
   //RunsDatabase.instance.clearDatabase();
   //UserDatabase.instance.clearDatabase();
+  print(await GPXHelper.getPolyline("assets/example_run.gpx"));
   //print(GPXHelper.coordsToPolyline(GPXHelper.gpxToLatLong(await GPXHelper.readFromFile("assets/example_run.gpx"))));
   runApp(
     ChangeNotifierProvider(
@@ -236,8 +233,48 @@ class _MyHomePageState extends State<MyHomePage> {
               List<Widget> descriptions = [];
               if (run.reps!.isNotEmpty) {
                 result.add(Divider(color: txtColorByBkgd(run.color)));
+                List<Widget> workoutParts = [];
                 for (int i = 0; i < run.reps!.length; i++) {
-                  reps.add(
+                  if (run.reps![i] == 1) {
+                    workoutParts.add(Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            run.descriptions![i],
+                            textAlign: TextAlign.left,
+                            style: TextStyle(color: txtColorByBkgd(run.color)),
+                          ),
+                        )
+                      ],
+                    ));
+                  } else {
+                    workoutParts.add(Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            "${run.reps![i]}X",
+                            style: TextStyle(fontWeight: FontWeight.bold, color: txtColorByBkgd(run.color)),
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            run.descriptions![i],
+                            textAlign: TextAlign.left,
+                            style: TextStyle(color: txtColorByBkgd(run.color)),
+                          ),
+                        )
+                      ],
+                    ));
+                  }
+                  // Commented out section has code where all reps are aligned, above code doesn't do 1x but it's just center-aligned
+                  /*reps.add(
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
@@ -256,9 +293,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         style: TextStyle(color: txtColorByBkgd(run.color)),
                       ),
                     )
-                  );
+                  );*/
                 }
-                result.add(Row(
+                /*result.add(Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Column(
@@ -270,9 +307,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: descriptions,
                     ),
                   ],
-                ));
+                ));*/
+                result.add(Column(children: workoutParts,));
               }
-              return Column(children: result,);
+              return Column(mainAxisAlignment: MainAxisAlignment.center, children: result,);
             },
           ),
         ],

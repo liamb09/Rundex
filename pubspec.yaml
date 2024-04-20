@@ -29,13 +29,18 @@ dependencies:
   intl: ^0.19.0
   syncfusion_flutter_charts: ^25.1.35
   syncfusion_flutter_gauges: ^25.1.37
-  firebase_core: ^2.27.0
+  envied: ^0.5.4+1
+  json_annotation: ^4.8.1
+  envied_generator: ^0.5.4+1
+  file_picker: ^8.0.0+1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^3.0.1
+  build_runner: ^2.4.9
+  json_serializable: ^6.7.1
 
 flutter:
   uses-material-design: true

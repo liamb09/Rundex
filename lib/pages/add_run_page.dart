@@ -1,4 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:running_log/services_and_helpers/GPXHelper.dart';
 import 'package:running_log/services_and_helpers/Run.dart';
 import 'package:running_log/services_and_helpers/RunsDatabase.dart';
 import 'package:running_log/services_and_helpers/User.dart';
@@ -7,6 +10,8 @@ import 'package:running_log/services_and_helpers/input_boxes.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:running_log/services_and_helpers/env.dart';
+import 'package:http/http.dart' as http;
 
 class AddRunPage extends StatefulWidget {
   @override
@@ -36,6 +41,7 @@ class _AddRunPageState extends State<AddRunPage> {
   int? timestamp;
   bool isDateTime = false;
   bool isTime = false;
+  String? image;
 
   Future<User> getUserFromDB () async {
     var user = await UserDatabase.instance.getUser();
@@ -297,7 +303,6 @@ class _AddRunPageState extends State<AddRunPage> {
                                           icon: Icon(Icons.edit_outlined),
                                           onPressed: () async {
                                             DateTime? dateTime = await getDateTime();
-                                            print(dateTime.toString());
                                             timestamp = (DateTime.parse(dateTime.toString()).millisecondsSinceEpoch/1000).round();
                                             setState(() {});
                                           },
@@ -486,13 +491,37 @@ class _AddRunPageState extends State<AddRunPage> {
                                 textStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
                               ),
                               onPressed: () async {
-                                final result = await FilePicker.platform.pickFiles(allowedExtensions: ['gpx']);
+                                final result = await FilePicker.platform.pickFiles(withData: true);
                                 if (result != null) {
-                                  
+                                  var file = utf8.decode(result.files.single.bytes as List<int>);
+                                  var polyline = await GPXHelper.getPolyline(file);
+                                  final response = await http.get(Uri.parse("https://maps.googleapis.com/maps/api/staticmap?size=400x400&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:administrative|visibility:off&path=color:0x012271ff%7Cenc:$polyline&key=${Env.msApiKey}"));
+                                  if (response.statusCode == 200) {
+                                    print("Successfully fetched map");
+                                    image = base64.encode(response.bodyBytes);
+                                    print(base64.encode(gzip.encode(utf8.encode(image!))));
+                                    Image.memory(base64.decode(image!));
+                                    setState(() {});
+                                  } else {
+                                    print("Failed to fetch map");
+                                  }
                                 }
                               },
                               child: Text("Import GPX Data"),
                             ),
+                            Builder(
+                              builder: (context) {
+                                if (image != null) {
+                                  return Column(
+                                    children: [
+                                      SizedBox(height: 12,),
+                                      Image.memory(base64.decode(image!)),
+                                    ],
+                                  );
+                                }
+                                return Container();
+                              }
+                            )
                           ],
                         ),
                       ),
@@ -524,6 +553,7 @@ class _AddRunPageState extends State<AddRunPage> {
                               descriptions: _descriptions,
                               color: cardColor ? (otherCardColor ?? Theme.of(context).colorScheme.secondary).value.toRadixString(16) : "ffebedf3",
                               timestamp: timestamp ?? (DateTime.now().millisecondsSinceEpoch/1000).round(),
+                              image: image,
                             );
                             if (editID == null) {
                               await RunsDatabase.instance.addRun(run);

@@ -31,7 +31,8 @@ class RunsDatabase {
             reps TEXT,
             descriptions TEXT,
             color TEXT,
-            timestamp INTEGER
+            timestamp INTEGER,
+            image TEXT
           )
       ''');
       },

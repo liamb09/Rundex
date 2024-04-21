@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:running_log/services_and_helpers/GPXHelper.dart';
@@ -13,13 +16,23 @@ import 'package:tinycolor2/tinycolor2.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
 import 'package:running_log/services_and_helpers/env.dart';
+import 'package:http/http.dart' as http;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //RunsDatabase.instance.clearDatabase();
   //UserDatabase.instance.clearDatabase();
-  print(await GPXHelper.getPolyline("assets/example_run.gpx"));
+  // var examplePolyline = await GPXHelper.getPolylineFromFilePath("assets/example_run.gpx");
+  // print(examplePolyline);
   //print(GPXHelper.coordsToPolyline(GPXHelper.gpxToLatLong(await GPXHelper.readFromFile("assets/example_run.gpx"))));
+  // final response = await http.get(Uri.parse("https://maps.googleapis.com/maps/api/staticmap?size=400x400&path=color:0x0000ffff%7Cenc:${examplePolyline}&key=${Env.msApiKey}"));
+  // var image = Image.memory(response.bodyBytes).image;
+  // print(image);
+  // if (response.statusCode == 200) {
+  //   print("Successfully fetched map");
+  // } else {
+  //   print("Failed to fetch map");
+  // }
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeProvider(),
@@ -313,6 +326,19 @@ class _MyHomePageState extends State<MyHomePage> {
               return Column(mainAxisAlignment: MainAxisAlignment.center, children: result,);
             },
           ),
+          Builder(
+            builder: (context) {
+              if (run.image != null) {
+                return Column(
+                  children: [
+                    Divider(color: txtColorByBkgd(run.color)),
+                    Image.memory(base64.decode(run.image!)),
+                  ],
+                );
+              }
+              return Container();
+            },
+          )
         ],
       ),
     );

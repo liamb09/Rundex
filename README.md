@@ -8,7 +8,9 @@ A simple running log to track mileage.
     - [X] Dark/light mode
  - [ ] Finish profile and settings pages
  - [X] Add percieved effort
- - [ ] Add maps + gps data
+ - [X] Add maps + gps data
+    - [ ] Image compression
+    - [ ] Custom path colors
  - [ ] Add weather
  - [ ] Add starter survey
  - [ ] Add PR tracker

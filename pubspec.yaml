@@ -33,6 +33,7 @@ dependencies:
   json_annotation: ^4.8.1
   envied_generator: ^0.5.4+1
   file_picker: ^8.0.0+1
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:running_log/services_and_helpers/GPXHelper.dart';
 import 'package:running_log/services_and_helpers/Run.dart';
@@ -12,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:running_log/services_and_helpers/env.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class AddRunPage extends StatefulWidget {
   @override
@@ -41,7 +43,7 @@ class _AddRunPageState extends State<AddRunPage> {
   int? timestamp;
   bool isDateTime = false;
   bool isTime = false;
-  String? image;
+  Uint8List? image;
 
   Future<User> getUserFromDB () async {
     var user = await UserDatabase.instance.getUser();
@@ -57,7 +59,7 @@ class _AddRunPageState extends State<AddRunPage> {
     DateTime? selectedDate = await showDatePicker(context: context, firstDate: DateTime(2000), lastDate: DateTime.now(), initialDate: timestamp != null ? DateTime.fromMillisecondsSinceEpoch(timestamp!*1000) : DateTime.now());
     TimeOfDay? selectedTime;
     if (selectedDate != null) {
-      selectedTime = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(DateTime.now()));
+      selectedTime = await showTimePicker(context: context, initialTime: timestamp == null ? TimeOfDay.fromDateTime(DateTime.now()) : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(timestamp!*1000)));
     }
     if (selectedTime != null) {
       isTime = true;
@@ -97,7 +99,9 @@ class _AddRunPageState extends State<AddRunPage> {
       cardColor = editRun.color == "ffebedf3" ? false : true;
       otherCardColor = editRun.color == null ? null : Color(int.parse(editRun.color!.substring(2, 8), radix: 16) + 0xFF000000);
       setupForEdit = true;
+      isDateTime = true;
       timestamp = editRun.timestamp;
+      image = editRun.image;
     }
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -498,9 +502,13 @@ class _AddRunPageState extends State<AddRunPage> {
                                   final response = await http.get(Uri.parse("https://maps.googleapis.com/maps/api/staticmap?size=400x400&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:administrative|visibility:off&path=color:0x012271ff%7Cenc:$polyline&key=${Env.msApiKey}"));
                                   if (response.statusCode == 200) {
                                     print("Successfully fetched map");
-                                    image = base64.encode(response.bodyBytes);
-                                    print(base64.encode(gzip.encode(utf8.encode(image!))));
-                                    Image.memory(base64.decode(image!));
+                                    image = await FlutterImageCompress.compressWithList(
+                                      response.bodyBytes,
+                                      minHeight: 400,
+                                      minWidth: 400,
+                                      quality: 40
+                                    );
+                                    Image.memory(image!);
                                     setState(() {});
                                   } else {
                                     print("Failed to fetch map");
@@ -515,7 +523,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                   return Column(
                                     children: [
                                       SizedBox(height: 12,),
-                                      Image.memory(base64.decode(image!)),
+                                      Image.memory(image!),
                                     ],
                                   );
                                 }

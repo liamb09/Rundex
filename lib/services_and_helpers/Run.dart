@@ -1,4 +1,5 @@
 import "dart:convert";
+import "dart:typed_data";
 
 class Run {
   final int? id;
@@ -13,7 +14,7 @@ class Run {
   final List<dynamic>? descriptions;
   final String? color;
   final int timestamp;
-  final String? image;
+  final Uint8List? image;
 
   const Run ({
     this.id,

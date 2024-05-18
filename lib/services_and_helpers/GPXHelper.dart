@@ -32,7 +32,6 @@ class GPXHelper {
   }
 
   static Future<String> getPolylineFromFilePath (String filePath) async {
-    print(await readFromFile(filePath));
     return coordsToPolyline(gpxToLatLong(await(readFromFile(filePath))));
   }
 

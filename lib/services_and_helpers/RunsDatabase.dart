@@ -32,7 +32,7 @@ class RunsDatabase {
             descriptions TEXT,
             color TEXT,
             timestamp INTEGER,
-            image TEXT
+            image BLOB
           )
       ''');
       },

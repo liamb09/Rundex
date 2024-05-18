@@ -332,7 +332,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 return Column(
                   children: [
                     Divider(color: txtColorByBkgd(run.color)),
-                    Image.memory(base64.decode(run.image!)),
+                    Image.memory(run.image!),
                   ],
                 );
               }

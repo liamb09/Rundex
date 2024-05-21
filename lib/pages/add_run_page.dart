@@ -128,7 +128,7 @@ class _AddRunPageState extends State<AddRunPage> {
                   _unit = userData.distUnit;
                 }
                 List<DropdownMenuItem> types = [];
-                for (String type in userData.types) {
+                for (String type in userData.runColors.keys) {
                   types.add(DropdownMenuItem(value: type, child: Text(type)));
                 }
                 return Column(
@@ -250,10 +250,12 @@ class _AddRunPageState extends State<AddRunPage> {
                               onChanged: (newValue) {
                                 setState(() {
                                   _type = newValue!;
-                                  if (userData.colors[userData.types.indexOf(_type)] != "ebedf3") {
-                                    otherCardColor = Color(int.parse(userData.colors[userData.types.indexOf(_type)], radix: 16) + 0xff000000);
+                                  String currentCardColor = userData.runColors[_type]!;
+                                  if (currentCardColor != "ebedf3") {
+                                    otherCardColor = Color(int.parse(currentCardColor, radix: 16) + 0xff000000);
                                     cardColor = true;
                                   } else {
+                                    otherCardColor = Color(0xffebedf3);
                                     cardColor = false;
                                   }
                                 });
@@ -469,6 +471,7 @@ class _AddRunPageState extends State<AddRunPage> {
                             Builder(
                               builder: (context) {
                                 if (cardColor) {
+                                  print(userData.runColors[_type]!);
                                   //cardColor = true;
                                   return ColorPicker(
                                     enableShadesSelection: false,
@@ -483,7 +486,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                     copyPasteBehavior: ColorPickerCopyPasteBehavior(
                                       copyFormat: ColorPickerCopyFormat.numHexRRGGBB,
                                     ),
-                                    color: otherCardColor ?? Color(int.parse(userData.colors[userData.types.indexOf(_type)], radix: 16) + 0xff000000),
+                                    color: otherCardColor ?? Color(int.parse(userData.runColors[_type]!, radix: 16) + 0xff000000),
                                     onColorChanged: (Color color) => setState(() => otherCardColor = color),
                                   );
                                 }
@@ -508,7 +511,6 @@ class _AddRunPageState extends State<AddRunPage> {
                                       minWidth: 400,
                                       quality: 40
                                     );
-                                    Image.memory(image!);
                                     setState(() {});
                                   } else {
                                     print("Failed to fetch map");

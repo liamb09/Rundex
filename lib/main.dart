@@ -9,6 +9,7 @@ import 'package:running_log/services_and_helpers/RunsDatabase.dart';
 import 'package:running_log/pages/add_run_page.dart';
 import 'package:running_log/pages/profile_page.dart';
 import 'package:running_log/pages/stats_page.dart';
+import 'package:running_log/pages/routes_page.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
 import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';
@@ -22,17 +23,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   //RunsDatabase.instance.clearDatabase();
   //UserDatabase.instance.clearDatabase();
-  // var examplePolyline = await GPXHelper.getPolylineFromFilePath("assets/example_run.gpx");
-  // print(examplePolyline);
-  //print(GPXHelper.coordsToPolyline(GPXHelper.gpxToLatLong(await GPXHelper.readFromFile("assets/example_run.gpx"))));
-  // final response = await http.get(Uri.parse("https://maps.googleapis.com/maps/api/staticmap?size=400x400&path=color:0x0000ffff%7Cenc:${examplePolyline}&key=${Env.msApiKey}"));
-  // var image = Image.memory(response.bodyBytes).image;
-  // print(image);
-  // if (response.statusCode == 200) {
-  //   print("Successfully fetched map");
-  // } else {
-  //   print("Failed to fetch map");
-  // }
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeProvider(),
@@ -364,9 +354,20 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             scrolledUnderElevation: 0,
             title: Text("Running Log", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            centerTitle: true,
             backgroundColor: Theme.of(context).colorScheme.primary,
             iconTheme: IconThemeData(color: Colors.white,),
             actions: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.route_outlined),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute<void>(
+                    builder: (BuildContext context) {
+                      return RoutesPage();
+                    }
+                  ));
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.person_outline),
                 onPressed: () {

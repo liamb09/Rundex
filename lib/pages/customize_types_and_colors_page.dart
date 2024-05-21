@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:running_log/services_and_helpers/User.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
@@ -53,10 +55,10 @@ class _CustomizeTypesAndColorsPageState extends State<CustomizeTypesAndColorsPag
             children: [
               ListView.builder(
                 shrinkWrap: true,
-                itemCount: userData.types.length,
+                itemCount: userData.runColors.length,
                 itemBuilder: (context, index) {
-                  var type = userData.types[index];
-                  var color = userData.colors[index];
+                  var type = userData.runColors.keys.elementAt(index);
+                  var color = userData.runColors.values.elementAt(index);
                   return ListTile(
                     title: Row(
                       children: [
@@ -121,14 +123,14 @@ class _CustomizeTypesAndColorsPageState extends State<CustomizeTypesAndColorsPag
                                               ),),
                                             ),
                                             onPressed: () {
-                                              userData.colors[index] = newColor;
+                                              userData.runColors[userData.runColors.keys.elementAt(index)] = newColor;
+                                              print(userData.runColors);
                                               UserDatabase.instance.updateUser(User (
                                                 name: userData.name,
                                                 age: userData.age,
                                                 weight: userData.weight,
                                                 height: userData.height,
-                                                types: userData.types,
-                                                colors: userData.colors,
+                                                runColors: userData.runColors,
                                                 goal: userData.goal,
                                                 distUnit: userData.distUnit,
                                               )).then((_) => setState(() {}));
@@ -212,15 +214,13 @@ class _CustomizeTypesAndColorsPageState extends State<CustomizeTypesAndColorsPag
                               ),
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
-                                  userData.types.add(newType);
-                                  userData.colors.add("ebedf3");
+                                  userData.runColors.addAll({newType: "ebedf3"});
                                   UserDatabase.instance.updateUser(User (
                                     name: userData.name,
                                     age: userData.age,
                                     weight: userData.weight,
                                     height: userData.height,
-                                    types: userData.types,
-                                    colors: userData.colors,
+                                    runColors: userData.runColors,
                                     goal: userData.goal,
                                     distUnit: userData.distUnit,
                                   )).then((_) => setState(() {}));

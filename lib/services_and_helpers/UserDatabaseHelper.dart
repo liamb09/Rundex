@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:running_log/services_and_helpers/User.dart';
@@ -25,10 +26,10 @@ class UserDatabase {
             age INTEGER,
             height REAL,
             weight INTEGER,
-            types TEXT,
-            colors TEXT,
+            runColors TEXT,
             goal INTEGER,
-            distUnit TEXT
+            distUnit TEXT,
+            routes TEXT
           )
       ''');
       },
@@ -53,10 +54,10 @@ class UserDatabase {
       age: 30,
       height: 100,
       weight: 100,
-      types: ["N/A", "Easy Run", "Long Run", "Race"],
-      colors: ["ebedf3", "ebedf3", "ebedf3", "ebedf3"],
+      runColors: {"N/A":"ebedf3", "Easy Run":"ebedf3", "Long Run":"ebedf3", "Race":"ebedf3"},
       goal: 20,
       distUnit: "mi",
+      routes: {},
     ));
   }
 

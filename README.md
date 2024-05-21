@@ -9,7 +9,7 @@ A simple running log to track mileage.
  - [ ] Finish profile and settings pages
  - [X] Add percieved effort
  - [X] Add maps + gps data
-    - [ ] Image compression
+    - [X] Image compression
     - [ ] Custom path colors
  - [ ] Add weather
  - [ ] Add starter survey
@@ -23,3 +23,4 @@ A simple running log to track mileage.
  - [ ] Add run sharing
  - [ ] Add support for multiple types on one run
  - [ ] Add mileage charts + goals
+ - [ ] Add routes as an alternative to make up mileages

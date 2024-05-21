@@ -1,6 +1,8 @@
 import "dart:convert";
 import "dart:typed_data";
 
+// TODO: turn reps+descriptions into map
+
 class Run {
   final int? id;
   final String title;

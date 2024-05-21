@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class IntInputBox extends StatelessWidget {
   const IntInputBox({
@@ -160,6 +161,9 @@ class WorkoutStructureFormField extends StatelessWidget {
               border: OutlineInputBorder(),
               label: Text("Description"),
             ),
+            inputFormatters: [
+              LengthLimitingTextInputFormatter(40),
+            ],
             validator: (value) {
               return descriptionValidator(value!);
             },

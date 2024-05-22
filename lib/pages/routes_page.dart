@@ -153,7 +153,7 @@ class _RoutesPageState extends State<RoutesPage> {
                         validator: (value) {
                           if (value?.isEmpty == true) {
                             return "Required";
-                          } else if (user != null && user.routes!.containsKey(value)) {
+                          } else if (user != null && user.routes!.containsKey(value) && user.routes!.keys.toList().indexOf(value!) != index) {
                             return "Already a route";
                           }
                           return null;
@@ -216,6 +216,18 @@ class _RoutesPageState extends State<RoutesPage> {
                               children: [
                                 SizedBox(height: 12),
                                 Image.memory(_image!),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    textStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                                  ),
+                                  child: Text("Clear Map"),
+                                  onPressed: () {
+                                    setState(() => _image = null);
+                                    if (index != null) {
+                                      setState(() => showMap[index] = null);
+                                    }
+                                  },
+                                ),
                               ],
                             );
                           }
@@ -277,6 +289,23 @@ class _RoutesPageState extends State<RoutesPage> {
     ).then((_) => setState(() {}));
   }
 
+  void initializeShowMap (User user, bool afterLaunch) {
+    var entries = user.routes!.entries;
+    for (int i = 0; i < entries.length; i++) {
+      bool? currentImageStatus;
+      if (i < showMap.length) {
+        currentImageStatus = entries.elementAt(i).value.keys.first == null ? null : showMap[i] == true ? true : false;
+      } else {
+        currentImageStatus = entries.elementAt(i).value.keys.first == null ? null : false;
+      }
+      if (i >= showMap.length) {
+        showMap.add(currentImageStatus);
+      } else if (showMap[i] != currentImageStatus) {
+        showMap[i] = currentImageStatus;
+      }
+    }
+  }
+
   @override
   Widget build (BuildContext context) {
     return Scaffold(
@@ -316,17 +345,14 @@ class _RoutesPageState extends State<RoutesPage> {
                               _image = null;
                               _distance = 0;
                               launchRouteEditor(null, null);
+                              initializeShowMap(snapshot.data!, true);
+                              setState(() {});
                             },
                           ),
                         ],
                       ));
                     }
-                    var entries = snapshot.data!.routes!.entries;
-                    for (int i = 0; i < entries.length; i++) {
-                      if (i >= showMap.length) {
-                        showMap.add(entries.elementAt(i).value.keys.first == null ? null : false);
-                      }
-                    }
+                    initializeShowMap(snapshot.data!, false);
                     return Column(
                       children: [
                         ListView.builder(
@@ -337,7 +363,6 @@ class _RoutesPageState extends State<RoutesPage> {
                             String title = userData.routes!.keys.elementAt(index);
                             Uint8List? image = userData.routes!.values.elementAt(index).keys.elementAt(0);
                             double? distance = userData.routes!.values.elementAt(index).values.elementAt(0);
-                            // TODO: add clear map button when editing
                             return Column(
                               children: [
                                 Row(
@@ -350,7 +375,7 @@ class _RoutesPageState extends State<RoutesPage> {
                                             icon: showMap[index]! ? Icon(Icons.map) : Icon(Icons.map_outlined),
                                             onPressed: () {
                                               setState(() => showMap[index] = !showMap[index]!);
-                                              setState(() {});
+                                              //setState(() {});
                                             },
                                           );
                                         }
@@ -364,6 +389,8 @@ class _RoutesPageState extends State<RoutesPage> {
                                         _image = image;
                                         _distance = distance;
                                         launchRouteEditor(index, snapshot.data!);
+                                        initializeShowMap(snapshot.data!, true);
+                                        setState(() {});
                                       },
                                     ),
                                   ]
@@ -399,6 +426,8 @@ class _RoutesPageState extends State<RoutesPage> {
                             _image = null;
                             _distance = 0;
                             launchRouteEditor(null, snapshot.data!);
+                            initializeShowMap(snapshot.data!, true);
+                            setState(() {});
                           },
                         ),
                       ],

@@ -34,8 +34,11 @@ class _AddRunPageState extends State<AddRunPage> {
   double? perceivedEffortRating;
   bool workoutStructure = false;
   int _numSets = 2;
-  List<int>? _reps;
+  List<int?>? _reps;
   List<String>? _descriptions;
+  List<MapEntry<String, Map<Uint8List?, double?>>?>? _routes;
+  List<Uint8List?>? _images;
+  List<int?>? _paces;
   bool cardColor = false;
   Color? otherCardColor;
   int? editID;
@@ -92,10 +95,23 @@ class _AddRunPageState extends State<AddRunPage> {
       _notes = editRun.notes;
       perceivedEffort = editRun.perceivedEffort == null ? false : true;
       perceivedEffortRating = editRun.perceivedEffort;
-      workoutStructure = editRun.reps == null ? false : (editRun.reps!.isEmpty ? false : true);
-      _numSets = editRun.reps!.length;
-      _reps = editRun.reps?.cast<int>();
-      _descriptions = editRun.descriptions?.cast<String>();
+      workoutStructure = editRun.sets == null ? false : (editRun.sets!.isEmpty ? false : true);
+      if (workoutStructure) {
+        _numSets = editRun.sets!.length;
+        _reps = [];
+        _descriptions = [];
+        _routes = [];
+        _images = [];
+        _paces = [];
+        for (var entry in editRun.sets!.entries) {
+          _descriptions!.add(entry.value[0]);
+          _reps!.add(entry.value[2]);
+          _images!.add(entry.value[1]);
+          _paces!.add(entry.value[3]);
+          _routes!.add(null);
+        }
+        print(_paces);
+      }
       cardColor = editRun.color == "ffebedf3" ? false : true;
       otherCardColor = editRun.color == null ? null : Color(int.parse(editRun.color!.substring(2, 8), radix: 16) + 0xFF000000);
       setupForEdit = true;
@@ -190,7 +206,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                 Flexible(
                                   child: IntInputBox(
                                     value: _hours != 0 ? "$_hours" : "",
-                                    labelText: "Hours",
+                                    labelText: "HR",
                                     intValueSetter: (value) => _hours = value,
                                     validator: (value) {
                                       if (value != "" && int.tryParse(value) == null) {
@@ -209,7 +225,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                 Flexible(
                                   child: IntInputBox(
                                     value: _minutes != 0 ? "$_minutes" : "",
-                                    labelText: "Minutes",
+                                    labelText: "MIN",
                                     intValueSetter: (value) => _minutes = value,
                                     validator: (value) {
                                       if (value != "" && int.tryParse(value) == null) {
@@ -228,7 +244,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                 Flexible(
                                   child: IntInputBox(
                                     value: _seconds != 0 ? "$_seconds" : "",
-                                    labelText: "Seconds",
+                                    labelText: "SEC",
                                     intValueSetter: (value) => _seconds = value,
                                     validator: (value) {
                                       if (value != "" && int.tryParse(value) == null) {
@@ -368,6 +384,18 @@ class _AddRunPageState extends State<AddRunPage> {
                                     setState(() {
                                       workoutStructure = value!;
                                     });
+                                    _reps = [];
+                                    _descriptions = [];
+                                    _routes = [];
+                                    _images = [];
+                                    _paces = [];
+                                    for (var i = _descriptions!.length; i < _numSets; i++) {
+                                      _descriptions!.add("");
+                                      _reps!.add(null);
+                                      _images!.add(null);
+                                      _routes!.add(null);
+                                      _paces!.add(null);
+                                    }
                                   }
                                 ),
                                 Text("Workout Structure", style: TextStyle(fontSize: 15)),
@@ -382,14 +410,22 @@ class _AddRunPageState extends State<AddRunPage> {
                                         builder: (context) {
                                           List<Widget> result = [];
                                           for (int i = 0; i < _numSets; i++) {
+                                            // TODO: make up mileage and add image from routes
                                             result.add(WorkoutStructureFormField(
                                               repsValue: "${_reps?[i] ?? ""}",
-                                              descriptionValue: _descriptions?[i] ?? "",
+                                              descriptionValue: _descriptions![i],
+                                              paceValue: _paces![i],
                                               repsSetter: (value) {
-                                                _reps?.add(int.parse(value));
+                                                _reps?[i] = int.parse(value);
                                               },
                                               descriptionSetter: (value) {
-                                                _descriptions?.add(value);
+                                                _descriptions?[i] = value;
+                                              },
+                                              paceSetter: (value) {
+                                                setState(() {
+                                                  _paces?[i] = value;
+                                                });
+                                                print("set: $_paces");
                                               },
                                               repsValidator: (value) {
                                                 if (value == "") {
@@ -404,7 +440,14 @@ class _AddRunPageState extends State<AddRunPage> {
                                                   return "Required";
                                                 }
                                                 return null;
-                                              }
+                                              }, 
+                                              user: userData,
+                                              routeSetter: (value) {
+                                                _routes?.add(value);
+                                                setState(() {
+                                                  _descriptions![i] = value!.key;
+                                                });
+                                              },
                                             ));
                                             if (i != _numSets-1) {
                                               result.add(SizedBox(height: 12,));
@@ -425,6 +468,10 @@ class _AddRunPageState extends State<AddRunPage> {
                                             onPressed: () {
                                               if (_numSets > 1) {
                                                 _numSets--;
+                                                _descriptions!.removeLast();
+                                                _images!.removeLast();
+                                                _reps!.removeLast();
+                                                _paces!.removeLast();
                                                 setState(() {});
                                               }
                                             },
@@ -438,6 +485,10 @@ class _AddRunPageState extends State<AddRunPage> {
                                             onPressed: () {
                                               if (_numSets < 10) {
                                                 _numSets++;
+                                                _descriptions!.add("");
+                                                _images!.add(null);
+                                                _reps!.add(null);
+                                                _paces!.add(null);
                                                 setState(() {});
                                               }
                                             }, 
@@ -471,7 +522,6 @@ class _AddRunPageState extends State<AddRunPage> {
                             Builder(
                               builder: (context) {
                                 if (cardColor) {
-                                  print(userData.runColors[_type]!);
                                   //cardColor = true;
                                   return ColorPicker(
                                     enableShadesSelection: false,
@@ -544,12 +594,31 @@ class _AddRunPageState extends State<AddRunPage> {
                           textStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
                         ),
                         onPressed: () async {
-                          _reps = [];
-                          _descriptions = [];
+                          // _reps = [];
+                          // _descriptions = [];
+                          // _routes = [];
+                          // _images = [];
+                          // _paces = [];
+                          // for (var i = _descriptions!.length; i < _numSets; i++) {
+                          //   _descriptions!.add("");
+                          //   _reps!.add(null);
+                          //   _images!.add(null);
+                          //   _routes!.add(null);
+                          //   _paces!.add(null);
+                          // }
                           if (formKey.currentState?.validate() == true) {
                             formKey.currentState?.save();
                             // Add run to database
                             int timeInSeconds = (_hours*60 + _minutes)*60 + _seconds;
+                            Map<int, List<dynamic>> sets = {};
+                            if (_descriptions != null) {
+                              print(_paces);
+                              for (int i = 0; i < _descriptions!.length; i++) {
+                                List<dynamic> details = [_descriptions![i], _images![i], _reps![i], _paces![i]];
+                                sets.addAll({i : details});
+                              }
+                              print(_paces);
+                            }
                             var run = Run(
                               id: editID,
                               title: _title,
@@ -559,8 +628,7 @@ class _AddRunPageState extends State<AddRunPage> {
                               perceivedEffort: perceivedEffortRating == null ? null : (perceivedEffortRating!*100).round()/100,
                               type: _type,
                               notes: _notes,
-                              reps: _reps,
-                              descriptions: _descriptions,
+                              sets: sets,
                               color: cardColor ? (otherCardColor ?? Theme.of(context).colorScheme.secondary).value.toRadixString(16) : "ffebedf3",
                               timestamp: timestamp ?? (DateTime.now().millisecondsSinceEpoch/1000).round(),
                               image: image,

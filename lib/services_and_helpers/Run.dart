@@ -1,8 +1,6 @@
 import "dart:convert";
 import "dart:typed_data";
 
-// TODO: turn reps+descriptions into map
-
 class Run {
   final int? id;
   final String title;
@@ -12,8 +10,7 @@ class Run {
   final double? perceivedEffort;
   final String type;
   final String notes;
-  final List<dynamic>? reps;
-  final List<dynamic>? descriptions;
+  final Map<int, List<dynamic>>? sets;
   final String? color;
   final int timestamp;
   final Uint8List? image;
@@ -27,8 +24,7 @@ class Run {
     this.perceivedEffort,
     required this.type,
     required this.notes,
-    this.reps,
-    this.descriptions,
+    this.sets, // id : [description, image, reps, pace]}
     this.color,
     required this.timestamp,
     this.image,
@@ -44,12 +40,32 @@ class Run {
       "perceivedEffort": perceivedEffort,
       "type": type,
       "notes": notes,
-      "reps": jsonEncode(reps),
-      "descriptions": jsonEncode(descriptions),
+      "sets": encodeSets(sets),
       "color": color,
       "timestamp": timestamp,
       "image": image,
     };
+  }
+
+  static String encodeSets (Map<int, List<dynamic>>? s) {
+    Map<String, String>? newS = {};
+    if (s != null) {
+      for (var entry in s.entries) {
+        newS.addAll({jsonEncode(entry.key) : jsonEncode(entry.value)});
+      }
+    }
+    return jsonEncode(newS);
+  }
+
+  static Map<int, List<dynamic>>? decodeSets (String s) {
+    if (s == "") return null;
+    var newMap = jsonDecode(s) as Map<dynamic, dynamic>;
+    Map<int, List<dynamic>>? ret = {};
+    for (var entry in newMap.entries) {
+      List<dynamic> details = jsonDecode(entry.value);
+      ret.addAll({int.parse(entry.key) : details});
+    }
+    return ret;
   }
 
   static Run fromMap (Map<String, dynamic> map) => Run(
@@ -61,8 +77,7 @@ class Run {
     perceivedEffort: map['perceivedEffort'],
     type: map['type'],
     notes: map['notes'],
-    reps: jsonDecode(map['reps']),
-    descriptions: jsonDecode(map['descriptions']),
+    sets: decodeSets(map['sets']),
     color: map['color'],
     timestamp: map['timestamp'],
     image: map['image']
@@ -70,7 +85,7 @@ class Run {
 
   @override
   String toString() {
-    return 'Run{id: $id, title: $title, distance: $distance, unit: $unit, time: $time, perceivedEffort: $perceivedEffort type: $type, notes: $notes, reps: ${reps.toString()}, descriptions: ${descriptions.toString()}, color: $color, timestamp: $timestamp, image: $image}';
+    return 'Run{id: $id, title: $title, distance: $distance, unit: $unit, time: $time, perceivedEffort: $perceivedEffort type: $type, notes: $notes, sets: $sets, color: $color, timestamp: $timestamp, image: $image}';
   }
 
 }

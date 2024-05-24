@@ -28,8 +28,7 @@ class RunsDatabase {
             perceivedEffort REAL,
             type TEXT, 
             notes TEXT,
-            reps TEXT,
-            descriptions TEXT,
+            sets BLOB,
             color TEXT,
             timestamp INTEGER,
             image BLOB

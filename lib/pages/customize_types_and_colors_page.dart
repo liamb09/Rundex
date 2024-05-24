@@ -124,7 +124,6 @@ class _CustomizeTypesAndColorsPageState extends State<CustomizeTypesAndColorsPag
                                             ),
                                             onPressed: () {
                                               userData.runColors[userData.runColors.keys.elementAt(index)] = newColor;
-                                              print(userData.runColors);
                                               UserDatabase.instance.updateUser(User (
                                                 name: userData.name,
                                                 age: userData.age,

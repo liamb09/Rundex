@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:running_log/pages/settings_page.dart';
 import 'package:running_log/services_and_helpers/User.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
@@ -62,15 +63,12 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  Container(
+                  SizedBox(
                     width: 200,
                     height: 200,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    child: Center(child: 
-                      Text(
+                    child: CircleAvatar(
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      child: Text(
                         userData.name.substring(0, 1),
                         style: TextStyle(color: Theme.of(context).colorScheme.tertiary, fontSize: 100),
                       )

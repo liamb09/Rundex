@@ -10,6 +10,7 @@ import 'package:running_log/pages/add_run_page.dart';
 import 'package:running_log/pages/profile_page.dart';
 import 'package:running_log/pages/stats_page.dart';
 import 'package:running_log/pages/routes_page.dart';
+import 'package:running_log/services_and_helpers/User.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
 import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';
@@ -83,7 +84,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return (color != null ? Color(int.parse(color.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black);
   }
 
-  ListTile getRunDisplay (Run run) {
+  ListTile getRunDisplay (User user, Run run) {
+    //print(run);
     return ListTile(
       title: Center(
         child: Text(
@@ -232,24 +234,54 @@ class _MyHomePageState extends State<MyHomePage> {
           Builder(
             builder: (context) {
               List<Widget> result = [];
-              List<Widget> reps = [];
-              List<Widget> descriptions = [];
-              if (run.reps!.isNotEmpty) {
+              if (run.sets == null) {
+                return Container();
+              }
+              if (run.sets!.isNotEmpty) {
+                List<String> descriptions = [];
+                List<int> reps = [];
+                List<int?> paces = [];
+                for (var entry in run.sets!.values) {
+                  descriptions.add(entry[0]);
+                  reps.add(entry[2]);
+                  paces.add(entry[3]);
+                }
                 result.add(Divider(color: txtColorByBkgd(run.color)));
                 List<Widget> workoutParts = [];
-                for (int i = 0; i < run.reps!.length; i++) {
-                  if (run.reps![i] == 1) {
+                for (int i = 0; i < run.sets!.length; i++) {
+                  if (run.sets!.values.toList()[i][2] == 1) {
                     workoutParts.add(Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            run.descriptions![i],
+                            descriptions[i],
                             textAlign: TextAlign.left,
                             style: TextStyle(color: txtColorByBkgd(run.color)),
                           ),
-                        )
+                        ),
+                        Builder(
+                          builder: (context) {
+                            if (paces[i] != null) {
+                              return Row(
+                                children: [
+                                  SizedBox(width: 10),
+                                  Text(
+                                    "@",
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: txtColorByBkgd(run.color)),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    "${secondsToTime(paces[i]!)}/${user.distUnit}",
+                                    style: TextStyle(color: txtColorByBkgd(run.color)),
+                                  ),
+                                ],
+                              );
+                            }
+                            return Container();
+                          },
+                        ),
                       ],
                     ));
                   } else {
@@ -259,7 +291,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: Text(
-                            "${run.reps![i]}X",
+                            "${run.sets!.values.toList()[i][2]}X",
                             style: TextStyle(fontWeight: FontWeight.bold, color: txtColorByBkgd(run.color)),
                             textAlign: TextAlign.right,
                           ),
@@ -268,11 +300,32 @@ class _MyHomePageState extends State<MyHomePage> {
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            run.descriptions![i],
+                            descriptions[i],
                             textAlign: TextAlign.left,
                             style: TextStyle(color: txtColorByBkgd(run.color)),
                           ),
-                        )
+                        ),
+                        Builder(
+                          builder: (context) {
+                            if (paces[i] != null) {
+                              return Row(
+                                children: [
+                                  SizedBox(width: 10),
+                                  Text(
+                                    "@",
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: txtColorByBkgd(run.color)),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    "${secondsToTime(paces[i]!)}/${user.distUnit}",
+                                    style: TextStyle(color: txtColorByBkgd(run.color)),
+                                  ),
+                                ],
+                              );
+                            }
+                            return Container();
+                          },
+                        ),
                       ],
                     ));
                   }
@@ -334,6 +387,16 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Future<User> getUserFromDB () async {
+    var user = await UserDatabase.instance.getUser();
+    //UserDatabase.instance.clearDatabase();
+    if (user.isEmpty) {
+      UserDatabase.instance.addDefaultUser();
+      user = await UserDatabase.instance.getUser();
+    }
+    return user[0];
+  }
+
     @override
   Widget build(BuildContext context) {
 
@@ -380,175 +443,184 @@ class _MyHomePageState extends State<MyHomePage> {
               )
             ],
           ),
-          body: Center(
-            child: FutureBuilder<List<Run>>(
-              future: RunsDatabase.instance.getRuns(),
-              builder: (BuildContext context, AsyncSnapshot<List<Run>> snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(child: Text("Loading..."));
-                }
-                return snapshot.data!.isEmpty
-                ? Center(child: Text("You have no runs."))
-                : ListView(
-                  children: snapshot.data!.map((run) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 1.0),
-                        child: Card(
-                          elevation: 3,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          color: run.color == null ? null : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(15),
-                            onTap: () {
-                              showDialog(
-                                context: context, 
-                                builder: (context) {
-                                  return AlertDialog(
-                                    backgroundColor: run.color == null ? null : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        getRunDisplay(run),
-                                      ],
-                                    ),
-                                    actionsAlignment: MainAxisAlignment.center,
-                                    actions: [
-                                      MaterialButton(
-                                        color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(6.0),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.delete_forever_outlined, color: txtColorByBkgd(run.color),
-                                              ),
-                                              SizedBox(width: 5,),
-                                              Text(
-                                                "Delete",
-                                                style: TextStyle(
-                                                  color: txtColorByBkgd(run.color),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+          body: FutureBuilder<User>(
+            future: getUserFromDB(),
+            builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+              var user = snapshot.data;
+              if (user == null) {
+                return CircularProgressIndicator();
+              }
+              return Center(
+                child: FutureBuilder<List<Run>>(
+                  future: RunsDatabase.instance.getRuns(),
+                  builder: (BuildContext context, AsyncSnapshot<List<Run>> snapshot) {
+                    if (!snapshot.hasData) {
+                      return Center(child: Text("Loading..."));
+                    }
+                    return snapshot.data!.isEmpty
+                    ? Center(child: Text("You have no runs."))
+                    : ListView(
+                      children: snapshot.data!.map((run) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 1.0),
+                            child: Card(
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              color: run.color == null ? null : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(15),
+                                onTap: () {
+                                  showDialog(
+                                    context: context, 
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        backgroundColor: run.color == null ? null : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(15),
                                         ),
-                                        onPressed: () {
-                                          showDialog(context: context, builder: (context) {
-                                            return AlertDialog(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(10),
-                                              ),
-                                              content: Text("Delete \"${run.title}?\""),
-                                              actionsAlignment: MainAxisAlignment.center,
-                                              actions: [
-                                                Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    MaterialButton(
-                                                      color: Theme.of(context).cardColor.darken(20),
-                                                      child: Padding(
-                                                        padding: const EdgeInsets.all(6),
-                                                        child: Text("Delete", style: TextStyle(
-                                                          color: Provider.of<ThemeProvider>(context).themeData == lightMode ? Colors.red.darken(20) : Colors.red.lighten(20),
-                                                        ),),
-                                                      ),
-                                                      onPressed: () {
-                                                        RunsDatabase.instance.removeRun(run.id!).then((_) => Navigator.pop(context));
-                                                      },
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            getRunDisplay(user, run),
+                                          ],
+                                        ),
+                                        actionsAlignment: MainAxisAlignment.center,
+                                        actions: [
+                                          MaterialButton(
+                                            color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(6.0),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.delete_outline, color: txtColorByBkgd(run.color),
+                                                  ),
+                                                  SizedBox(width: 5,),
+                                                  Text(
+                                                    "Delete",
+                                                    style: TextStyle(
+                                                      color: txtColorByBkgd(run.color),
                                                     ),
-                                                    SizedBox(width: 10,),
-                                                    MaterialButton(
-                                                      color: Theme.of(context).colorScheme.secondary,
-                                                      child: Padding(
-                                                        padding: const EdgeInsets.all(6),
-                                                        child: Text("Cancel", style: TextStyle(color: Provider.of<ThemeProvider>(context).themeData == lightMode ? Colors.white : Colors.black),),
-                                                      ),
-                                                      onPressed: () {
-                                                        Navigator.pop(context);
-                                                      },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              showDialog(context: context, builder: (context) {
+                                                return AlertDialog(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(10),
+                                                  ),
+                                                  content: Text("Delete \"${run.title}?\""),
+                                                  actionsAlignment: MainAxisAlignment.center,
+                                                  actions: [
+                                                    Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        MaterialButton(
+                                                          color: Theme.of(context).cardColor.darken(20),
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.all(6),
+                                                            child: Text("Delete", style: TextStyle(
+                                                              color: Provider.of<ThemeProvider>(context).themeData == lightMode ? Colors.red.darken(20) : Colors.red.lighten(20),
+                                                            ),),
+                                                          ),
+                                                          onPressed: () {
+                                                            RunsDatabase.instance.removeRun(run.id!).then((_) => Navigator.pop(context));
+                                                          },
+                                                        ),
+                                                        SizedBox(width: 10,),
+                                                        MaterialButton(
+                                                          color: Theme.of(context).colorScheme.secondary,
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.all(6),
+                                                            child: Text("Cancel", style: TextStyle(color: Provider.of<ThemeProvider>(context).themeData == lightMode ? Colors.white : Colors.black),),
+                                                          ),
+                                                          onPressed: () {
+                                                            Navigator.pop(context);
+                                                          },
+                                                        )
+                                                      ],
                                                     )
                                                   ],
+                                                );
+                                              }).then((_) => Navigator.pop(context)).then((_) => setState(() {}));
+                                            },
+                                          ),
+                                          MaterialButton(
+                                            color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(6.0),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.edit_outlined, color: txtColorByBkgd(run.color),
+                                                  ),
+                                                  SizedBox(width: 5,),
+                                                  Text(
+                                                    "Edit",
+                                                    style: TextStyle(
+                                                      color: txtColorByBkgd(run.color),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              Navigator.push(context, MaterialPageRoute<void>(
+                                                builder: (BuildContext context) => AddRunPage(),
+                                                settings: RouteSettings(
+                                                  arguments: run,
                                                 )
-                                              ],
-                                            );
-                                          }).then((_) => Navigator.pop(context)).then((_) => setState(() {}));
-                                        },
-                                      ),
-                                      MaterialButton(
-                                        color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(6.0),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.edit_outlined, color: txtColorByBkgd(run.color),
-                                              ),
-                                              SizedBox(width: 5,),
-                                              Text(
-                                                "Edit",
-                                                style: TextStyle(
-                                                  color: txtColorByBkgd(run.color),
-                                                ),
-                                              ),
-                                            ],
+                                              )).then((_) => Navigator.pop(context)).then((_) => setState(() {}));
+                                            },
                                           ),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.push(context, MaterialPageRoute<void>(
-                                            builder: (BuildContext context) => AddRunPage(),
-                                            settings: RouteSettings(
-                                              arguments: run,
-                                            )
-                                          )).then((_) => Navigator.pop(context)).then((_) => setState(() {}));
-                                        },
-                                      ),
-                                      MaterialButton(
-                                        color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(6.0),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.share_outlined, color: txtColorByBkgd(run.color),
+                                          MaterialButton(
+                                            color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(6.0),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.share_outlined, color: txtColorByBkgd(run.color),
+                                                  ),
+                                                  SizedBox(width: 5,),
+                                                  Text(
+                                                    "Share",
+                                                    style: TextStyle(
+                                                      color: txtColorByBkgd(run.color),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                              SizedBox(width: 5,),
-                                              Text(
-                                                "Share",
-                                                style: TextStyle(
-                                                  color: txtColorByBkgd(run.color),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        onPressed: () {},
-                                      )
-                                    ],
+                                            ),
+                                            onPressed: () {},
+                                          )
+                                        ],
+                                      );
+                                    }
                                   );
-                                }
-                              );
-                            },
-                            child: getRunDisplay(run),
+                                },
+                                child: getRunDisplay(user, run),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      }).toList()
                     );
-                  }).toList()
-                );
-              }
-            ),
+                  }
+                ),
+              );
+            }
           ),
           //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
           floatingActionButton: FloatingActionButton(

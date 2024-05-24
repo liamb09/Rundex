@@ -216,6 +216,7 @@ class _RoutesPageState extends State<RoutesPage> {
                               children: [
                                 SizedBox(height: 12),
                                 Image.memory(_image!),
+                                SizedBox(height: 12),
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     textStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
@@ -272,7 +273,6 @@ class _RoutesPageState extends State<RoutesPage> {
                             );
                             UserDatabase.instance.updateUser(newUser);
                             setState(() {});
-                            //print(user);
                             Navigator.pop(context);
                           }
                         },

@@ -3,24 +3,23 @@
 A simple running log to track mileage.
 
 ## For the future
- - [X] Add sets of workout
+(roughly in order of importance)
+ - [ ] Add routes as an alternative to make up mileages
+ - [ ] Finish/polish up profile and settings pages
+ - [ ] Finish mileage charts + goals
+ - [ ] Add PR tracker
  - [ ] Improve UI
-    - [X] Dark/light mode
- - [ ] Finish profile and settings pages
+ - [ ] Add run sharing
+ - [ ] Add weather
+ - [ ] Add starter survey
+ - [X] Add sets of workout
+ - [X] Add dark/light mode
  - [X] Add percieved effort
  - [X] Add maps + gps data
     - [X] Image compression
-    - [ ] Custom path colors
- - [ ] Add weather
- - [ ] Add starter survey
- - [ ] Add PR tracker
  - [X] Add custom colors for run cards
    - [X] Set color for certain type in settings
  - [X] Add delete feature to runs
  - [X] Add edit feature to runs
  - [X] Add time/date and display runs chronologically
  - [X] Calculate average pace with distance and time
- - [ ] Add run sharing
- - [ ] Add support for multiple types on one run
- - [ ] Add mileage charts + goals
- - [ ] Add routes as an alternative to make up mileages

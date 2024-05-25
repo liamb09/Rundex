@@ -110,7 +110,6 @@ class _AddRunPageState extends State<AddRunPage> {
           _paces!.add(entry.value[3]);
           _routes!.add(null);
         }
-        print(_paces);
       }
       cardColor = editRun.color == "ffebedf3" ? false : true;
       otherCardColor = editRun.color == null ? null : Color(int.parse(editRun.color!.substring(2, 8), radix: 16) + 0xFF000000);
@@ -187,6 +186,11 @@ class _AddRunPageState extends State<AddRunPage> {
                                     onChanged: (newValue) {
                                       setState(() {
                                         _unit = newValue!;
+                                      });
+                                    },
+                                    onSaved: (value) {
+                                      setState(() {
+                                        _unit = value!;
                                       });
                                     },
                                     value: _unit,
@@ -425,7 +429,6 @@ class _AddRunPageState extends State<AddRunPage> {
                                                 setState(() {
                                                   _paces?[i] = value;
                                                 });
-                                                print("set: $_paces");
                                               },
                                               repsValidator: (value) {
                                                 if (value == "") {
@@ -612,12 +615,10 @@ class _AddRunPageState extends State<AddRunPage> {
                             int timeInSeconds = (_hours*60 + _minutes)*60 + _seconds;
                             Map<int, List<dynamic>> sets = {};
                             if (_descriptions != null) {
-                              print(_paces);
                               for (int i = 0; i < _descriptions!.length; i++) {
                                 List<dynamic> details = [_descriptions![i], _images![i], _reps![i], _paces![i]];
                                 sets.addAll({i : details});
                               }
-                              print(_paces);
                             }
                             var run = Run(
                               id: editID,
@@ -628,7 +629,7 @@ class _AddRunPageState extends State<AddRunPage> {
                               perceivedEffort: perceivedEffortRating == null ? null : (perceivedEffortRating!*100).round()/100,
                               type: _type,
                               notes: _notes,
-                              sets: sets,
+                              sets: workoutStructure ? sets : {},
                               color: cardColor ? (otherCardColor ?? Theme.of(context).colorScheme.secondary).value.toRadixString(16) : "ffebedf3",
                               timestamp: timestamp ?? (DateTime.now().millisecondsSinceEpoch/1000).round(),
                               image: image,
@@ -638,6 +639,7 @@ class _AddRunPageState extends State<AddRunPage> {
                             } else {
                               await RunsDatabase.instance.updateRun(run);
                             }
+                            print(run);
                             // return to homepage
                             Navigator.pop(context);
                           }

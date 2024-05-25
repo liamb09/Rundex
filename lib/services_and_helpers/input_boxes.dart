@@ -223,7 +223,10 @@ class WorkoutStructureFormField extends StatelessWidget {
                 },
                 onSaved: (value) {
                   descriptionSetter(value!);
-                }
+                },
+                onChanged: (value) {
+                  descriptionSetter(value);
+                },
               ),
             ),
             SizedBox(width: 4),

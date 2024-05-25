@@ -263,7 +263,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                         Builder(
                           builder: (context) {
-                            if (paces[i] != null) {
+                            if (paces[i] != null && paces[i] != 0) {
                               return Row(
                                 children: [
                                   SizedBox(width: 10),
@@ -307,7 +307,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                         Builder(
                           builder: (context) {
-                            if (paces[i] != null) {
+                            if (paces[i] != null && paces[i] != 0) {
                               return Row(
                                 children: [
                                   SizedBox(width: 10),

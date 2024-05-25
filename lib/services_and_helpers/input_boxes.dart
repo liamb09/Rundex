@@ -64,7 +64,8 @@ class DoubleInputBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      initialValue: value,
+      //initialValue: value,
+      controller: TextEditingController(text: value),
       decoration: InputDecoration(
         border: OutlineInputBorder(),
         labelText: labelText,
@@ -130,6 +131,7 @@ class WorkoutStructureFormField extends StatelessWidget {
     required this.descriptionValidator,
     required this.user,
     required this.routeSetter,
+    required this.mileageImageSetter,
   });
 
   final String repsValue;
@@ -142,6 +144,7 @@ class WorkoutStructureFormField extends StatelessWidget {
   final Function(String value) descriptionValidator;
   final User user;
   final Function(MapEntry<String, Map<Uint8List?, double?>>? value) routeSetter;
+  final Function() mileageImageSetter;
 
   Future<User> getUserFromDB () async {
     var user = await UserDatabase.instance.getUser();
@@ -439,6 +442,7 @@ class WorkoutStructureFormField extends StatelessWidget {
                               onPressed: () {
                                 Navigator.pop(context);
                                 routeSetter(chosenRoute);
+                                mileageImageSetter();
                               },
                             )
                           ],

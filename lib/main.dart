@@ -85,7 +85,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   ListTile getRunDisplay (User user, Run run) {
-    //print(run);
     return ListTile(
       title: Center(
         child: Text(
@@ -329,41 +328,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ],
                     ));
                   }
-                  // Commented out section has code where all reps are aligned, above code doesn't do 1x but it's just center-aligned
-                  /*reps.add(
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        "${run.reps![i]}X",
-                        style: TextStyle(fontWeight: FontWeight.bold, color: txtColorByBkgd(run.color)),
-                        textAlign: TextAlign.right,
-                      ),
-                    )
-                  );
-                  descriptions.add(
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        run.descriptions![i],
-                        textAlign: TextAlign.left,
-                        style: TextStyle(color: txtColorByBkgd(run.color)),
-                      ),
-                    )
-                  );*/
                 }
-                /*result.add(Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: reps,
-                    ),
-                    SizedBox(width: 10),
-                    Column(
-                      children: descriptions,
-                    ),
-                  ],
-                ));*/
                 result.add(Column(children: workoutParts,));
               }
               return Column(mainAxisAlignment: MainAxisAlignment.center, children: result,);

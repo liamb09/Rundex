@@ -186,7 +186,7 @@ class _RoutesPageState extends State<RoutesPage> {
                         style: ElevatedButton.styleFrom(
                           textStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
                         ),
-                        child: Text("Upload GPX Data"),
+                        child: Text("Upload GPS Data"),
                         onPressed: () async {
                           final result = await FilePicker.platform.pickFiles(withData: true);
                           if (result != null) {

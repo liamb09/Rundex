@@ -4,14 +4,15 @@ A simple running log to track mileage.
 
 ## For the future
 (roughly in order of importance)
- - [ ] Add routes as an alternative to make up mileages
  - [ ] Finish/polish up profile and settings pages
  - [ ] Finish mileage charts + goals
  - [ ] Add PR tracker
+ - [ ] Parse distance from GPS data
  - [ ] Improve UI
  - [ ] Add run sharing
  - [ ] Add weather
  - [ ] Add starter survey
+ - [X] Add routes as an alternative to make up mileages
  - [X] Add sets of workout
  - [X] Add dark/light mode
  - [X] Add percieved effort

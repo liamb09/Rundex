@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:running_log/services_and_helpers/GPXHelper.dart';
 import 'package:running_log/services_and_helpers/Run.dart';
@@ -47,6 +48,8 @@ class _AddRunPageState extends State<AddRunPage> {
   bool isDateTime = false;
   bool isTime = false;
   Uint8List? image;
+  bool distanceSetByRoute = false;
+  bool imageSetByRoute = false;
 
   Future<User> getUserFromDB () async {
     var user = await UserDatabase.instance.getUser();
@@ -75,6 +78,46 @@ class _AddRunPageState extends State<AddRunPage> {
       selectedTime.minute
     );
     return dateTime;
+  }
+
+  void setMilageAndImage () {
+    if (workoutStructure && _routes != null) {
+      MapEntry<String, Map<Uint8List?, double?>>? forMileageAndImage;
+      bool multiple = false;
+      double oldDistance = _distance;
+      _distance = 0;
+      for (var route in _routes!) {
+        if (route != null) {
+          if (route.value.keys.first != null || route.value.values.first != null) {
+            if (forMileageAndImage == null && !multiple) {
+              forMileageAndImage = route;
+            } else if (forMileageAndImage != null) {
+              multiple = true;
+            }
+          }
+          if ((oldDistance == 0 || distanceSetByRoute)  && route.value.values.first != null) {
+            _distance += route.value.values.first!;
+            distanceSetByRoute = true;
+          }
+        }
+      }
+      if (forMileageAndImage != null) {
+        if (image == null) {
+          image = forMileageAndImage.value.keys.first;
+          imageSetByRoute = true;
+        } else if (imageSetByRoute) {
+          image = null;
+        }
+        if (_distance == 0) {
+          _distance = oldDistance;
+        }
+        // if ((_distance == 0 || distanceSetByRoute) && forMileageAndImage.value.values.first != null) {
+        //   _distance += forMileageAndImage.value.values.first!;
+        //   distanceSetByRoute = true;
+        // }
+      }
+      setState(() {});
+    }
   }
 
   @override
@@ -166,7 +209,10 @@ class _AddRunPageState extends State<AddRunPage> {
                                 Flexible(
                                   child: DoubleInputBox(
                                     labelText: "Distance",
-                                    doubleValueSetter: (value) => _distance = value,
+                                    doubleValueSetter: (value) {
+                                      _distance = value;
+                                      distanceSetByRoute = false;
+                                    },
                                     value: _distance == 0 ? "" : "$_distance",
                                   ),
                                 ),
@@ -402,7 +448,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                     }
                                   }
                                 ),
-                                Text("Workout Structure", style: TextStyle(fontSize: 15)),
+                                Text("Sets", style: TextStyle(fontSize: 15)),
                               ],
                             ),
                             Builder(
@@ -420,7 +466,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                               descriptionValue: _descriptions![i],
                                               paceValue: _paces![i],
                                               repsSetter: (value) {
-                                                _reps?[i] = int.parse(value);
+                                                _reps?[i] = int.parse(value == "" ? "1" : value);
                                               },
                                               descriptionSetter: (value) {
                                                 _descriptions?[i] = value;
@@ -431,9 +477,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                 });
                                               },
                                               repsValidator: (value) {
-                                                if (value == "") {
-                                                  return "Rqd";
-                                                } else if (int.tryParse(value) == null) {
+                                                if (value != "" && int.tryParse(value) == null) {
                                                   return "# only";
                                                 }
                                                 return null;
@@ -451,6 +495,9 @@ class _AddRunPageState extends State<AddRunPage> {
                                                   _descriptions![i] = value!.key;
                                                 });
                                               },
+                                              mileageImageSetter: () {
+                                                setMilageAndImage();
+                                              }
                                             ));
                                             if (i != _numSets-1) {
                                               result.add(SizedBox(height: 12,));
@@ -553,6 +600,7 @@ class _AddRunPageState extends State<AddRunPage> {
                               onPressed: () async {
                                 final result = await FilePicker.platform.pickFiles(withData: true);
                                 if (result != null) {
+                                  imageSetByRoute = false;
                                   var file = utf8.decode(result.files.single.bytes as List<int>);
                                   var polyline = await GPXHelper.getPolyline(file);
                                   final response = await http.get(Uri.parse("https://maps.googleapis.com/maps/api/staticmap?size=400x400&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:administrative|visibility:off&path=color:0x012271ff%7Cenc:$polyline&key=${Env.msApiKey}"));
@@ -570,7 +618,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                   }
                                 }
                               },
-                              child: Text("Import GPX Data"),
+                              child: Text("Upload GPS Data"),
                             ),
                             Builder(
                               builder: (context) {
@@ -639,7 +687,6 @@ class _AddRunPageState extends State<AddRunPage> {
                             } else {
                               await RunsDatabase.instance.updateRun(run);
                             }
-                            print(run);
                             // return to homepage
                             Navigator.pop(context);
                           }

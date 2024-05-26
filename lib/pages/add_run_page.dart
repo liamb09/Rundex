@@ -80,6 +80,7 @@ class _AddRunPageState extends State<AddRunPage> {
     return dateTime;
   }
 
+  // BUG: distance goes away when you add/subtract sets
   void setMilageAndImage () {
     if (workoutStructure && _routes != null) {
       MapEntry<String, Map<Uint8List?, double?>>? forMileageAndImage;
@@ -108,6 +109,7 @@ class _AddRunPageState extends State<AddRunPage> {
         } else if (imageSetByRoute) {
           image = null;
         }
+        print(oldDistance);
         if (_distance == 0) {
           _distance = oldDistance;
         }

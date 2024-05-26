@@ -1,8 +1,11 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:running_log/pages/settings_page.dart';
 import 'package:running_log/services_and_helpers/User.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
+import 'package:running_log/services_and_helpers/profile_edit_field.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -21,8 +24,8 @@ class _ProfilePageState extends State<ProfilePage> {
     return user[0];
   }
 
-  bool editUnits = false;
   String? newUnit;
+  String inEdit = "";
 
   @override
   Widget build(BuildContext context) {
@@ -75,88 +78,173 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   SizedBox(height: 16),
-                  Divider(),
+                  Divider(
+                    height: 0,
+                    thickness: 1,
+                  ),
                   Row(
                     children: [
                       Expanded(child: Text("Name")),
-                      Expanded(child: Text(userData.name, textAlign: TextAlign.right,)),
-                    ],
-                  ),
-                  Divider(),
-                  Row(
-                    children: [
-                      Expanded(child: Text("Age")),
-                      Expanded(child: Text("${userData.age}", textAlign: TextAlign.right,)),
-                    ],
-                  ),
-                  Divider(),
-                  Row(
-                    children: [
-                      Expanded(child: Text("Height")),
-                      Expanded(child: Text("${userData.height}", textAlign: TextAlign.right,)),
-                    ],
-                  ),
-                  Divider(),
-                  Row(
-                    children: [
-                      Expanded(child: Text("Weight")),
-                      Expanded(child: Text("${userData.weight}", textAlign: TextAlign.right,)),
-                    ],
-                  ),
-                  Divider(),
-                  Row(
-                    children: [
-                      Expanded(child: Text("Weekly mileage goal")),
-                      Expanded(child: Text("${userData.goal != null ? "${userData.goal} ${userData.distUnit}" : "--"} ", textAlign: TextAlign.right,)),
-                    ],
-                  ),
-                  Divider(),
-                  // TODO: put dropdown when clicked to edit units
-                  Row(
-                    children: [
-                      Expanded(child: Text("Units")),
-                      InkWell(
-                        onTap: () {
-                          if (!editUnits) {
-                            editUnits = true;
-                          } else {
-                            editUnits = false;
-                          }
-                          setState(() {});
-                        },
-                        child: Builder(
-                          builder: (context) {
-                            if (editUnits) {
-                              return DropdownButtonFormField(
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  labelText: "Units",
-                                ),
-                                items: [
-                                  DropdownMenuItem(value: "mi", child: Text("mi")),
-                                  DropdownMenuItem(value: "km", child: Text("km")),
-                                ],
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    newUnit = newValue!;
-                                  });
-                                },
-                                value: userData.distUnit,
-                                validator: (value) {
-                                  if (value != "mi" && value != "km") {
-                                    return "Invalid input";
-                                  }
-                                  return null;
-                                },
-                              );
+                      ProfileEditField(
+                        value: userData.name,
+                        identifier: "name",
+                        inEdit: inEdit == "name",
+                        user: userData,
+                        intOnly: false,
+                        toggleEdit: () {
+                          setState(() {
+                            if (inEdit == "name") {
+                              inEdit = "";
+                            } else {
+                              inEdit = "name";
                             }
-                            return Text(userData.distUnit, textAlign: TextAlign.right,);
-                          }
-                        )
+                          });
+                        },
                       ),
                     ],
                   ),
-                  Divider(),
+                  Divider(
+                    height: 0,
+                    thickness: 1,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: Text("Age")),
+                      ProfileEditField(
+                        value: "${userData.age}",
+                        identifier: "age",
+                        inEdit: inEdit == "age",
+                        user: userData,
+                        intOnly: true,
+                        toggleEdit: () {
+                          setState(() {
+                            if (inEdit == "age") {
+                              inEdit = "";
+                            } else {
+                              inEdit = "age";
+                            }
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  // Divider(),
+                  // Row(
+                  //   children: [
+                  //     Expanded(child: Text("Height")),
+                  //     Expanded(child: Text("${userData.height}", textAlign: TextAlign.right,)),
+                  //   ],
+                  // ),
+                  // Divider(),
+                  // Row(
+                  //   children: [
+                  //     Expanded(child: Text("Weight")),
+                  //     Expanded(child: Text("${userData.weight}", textAlign: TextAlign.right,)),
+                  //   ],
+                  // ),
+                  Divider(
+                    height: 0,
+                    thickness: 1,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: Text("Weekly mileage goal")),
+                      ProfileEditField(
+                        value: "${userData.goal}",
+                        identifier: "goal",
+                        inEdit: inEdit == "goal",
+                        user: userData,
+                        intOnly: true,
+                        toggleEdit: () {
+                          setState(() {
+                            if (inEdit == "goal") {
+                              inEdit = "";
+                            } else {
+                              inEdit = "goal";
+                            }
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  Divider(
+                    height: 0,
+                    thickness: 1,
+                  ),
+                  // todo: put dropdown when clicked to edit units
+                  SizedBox(
+                    height: 48,
+                    child: Row(
+                      children: [
+                        Expanded(child: Text("Units")),
+                        Row(
+                          children: [
+                            Card(
+                              color: userData.distUnit == "mi" ? Theme.of(context).colorScheme.secondary : null,
+                              child: InkWell(
+                                highlightColor: Colors.transparent,
+                                splashColor: Colors.transparent,
+                                borderRadius: BorderRadius.circular(15),
+                                onTap: () {
+                                  if (userData.distUnit != "mi") {
+                                    UserDatabase.instance.updateUser(User(
+                                      name: userData.name,
+                                      age: userData.age,
+                                      height: userData.height,
+                                      weight: userData.weight,
+                                      runColors: userData.runColors,
+                                      goal: userData.goal,
+                                      distUnit: "mi",
+                                      routes: userData.routes,
+                                    ));
+                                    setState(() {});
+                                  }
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 10),
+                                  child: Text("mi", style: TextStyle(color: userData.distUnit == "mi" ? Theme.of(context).colorScheme.tertiary : null),),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 2,),
+                            Text("|"),
+                            SizedBox(width: 2,),
+                            Card(
+                              color: userData.distUnit == "km" ? Theme.of(context).colorScheme.secondary : null,
+                              child: InkWell(
+                                highlightColor: Colors.transparent,
+                                splashColor: Colors.transparent,
+                                borderRadius: BorderRadius.circular(15),
+                                onTap: () {
+                                  if (userData.distUnit != "km") {
+                                    UserDatabase.instance.updateUser(User(
+                                      name: userData.name,
+                                      age: userData.age,
+                                      height: userData.height,
+                                      weight: userData.weight,
+                                      runColors: userData.runColors,
+                                      goal: userData.goal,
+                                      distUnit: "km",
+                                      routes: userData.routes,
+                                    ));
+                                    setState(() {});
+                                  }
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 10),
+                                  child: Text("km", style: TextStyle(color: userData.distUnit == "km" ? Theme.of(context).colorScheme.tertiary : null),),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(
+                    height: 0,
+                    thickness: 1,
+                  ),
                 ],
               ),
             ),

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -137,10 +138,10 @@ class WorkoutStructureFormField extends StatelessWidget {
 
   final String repsValue;
   final String descriptionValue;
-  final int? paceValue;
+  final dynamic paceValue;
   final void Function(String value) repsSetter;
   final void Function(String value) descriptionSetter;
-  final void Function(int value) paceSetter;
+  final void Function(dynamic value) paceSetter;
   final Function(String value) repsValidator;
   final Function(String value) descriptionValidator;
   final User user;
@@ -236,11 +237,11 @@ class WorkoutStructureFormField extends StatelessWidget {
             SizedBox(width: 4),
             Builder(
               builder: (context) {
-                if (paceValue != null && paceValue! > 0) {
+                if (paceValue != null) {
                   return Row(
                     children: [
                       Text(
-                        "@ ${secondsToTime(paceValue!)}/${user.distUnit}",
+                        "@ ${paceValue is String ? "$paceValue pace" : "${secondsToTime(paceValue!)}/${user.distUnit}"}",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       SizedBox(width: 4),
@@ -256,10 +257,12 @@ class WorkoutStructureFormField extends StatelessWidget {
                 final formKey = GlobalKey<FormState>();
                 int _minutes = 0;
                 int _seconds = 0;
-                if (paceValue != null) {
+                if (paceValue != null && paceValue is! String) {
                   _minutes = (paceValue! / 60).floor();
                   _seconds = paceValue! % 60;
                 }
+                String paceType = "time";
+                String relativePace = "";
                 showDialog(
                   context: context,
                   builder: (context) {
@@ -283,46 +286,87 @@ class WorkoutStructureFormField extends StatelessWidget {
                                     style: TextStyle(fontSize: 20),
                                   ),
                                   SizedBox(height: 12),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: 60,
-                                        child: IntInputBox(
-                                          value: _minutes != 0 ? "$_minutes" : "",
-                                          labelText: "MIN",
-                                          intValueSetter: (value) => _minutes = value,
-                                          validator: (value) {
-                                            if (value != "" && int.tryParse(value) == null) {
-                                              return "# only";
-                                            }
-                                            return null;
+                                  CupertinoSlidingSegmentedControl(
+                                    groupValue: paceType,
+                                    onValueChanged: (String? value) {
+                                      setState(() => paceType = value!);
+                                    },
+                                    children: <String, Widget>{
+                                      "time": Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 20),
+                                        child: Text("min/${user.distUnit}"),
+                                      ),
+                                      "relative": Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 20),
+                                        child: Text("Relative")
+                                      )
+                                    },
+                                  ),
+                                  SizedBox(height: 12),
+                                  Builder(
+                                    builder: (context) {
+                                      if (paceType == "time") {
+                                        return Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            SizedBox(
+                                              width: 60,
+                                              child: IntInputBox(
+                                                value: _minutes != 0 ? "$_minutes" : "",
+                                                labelText: "MIN",
+                                                intValueSetter: (value) => _minutes = value,
+                                                validator: (value) {
+                                                  if (value != "" && int.tryParse(value) == null) {
+                                                    return "# only";
+                                                  }
+                                                  return null;
+                                                },
+                                              ),
+                                            ),
+                                            SizedBox(width: 6),
+                                            Text(
+                                              ":",
+                                              style: const TextStyle(fontSize: 20)
+                                            ),
+                                            SizedBox(width: 6),
+                                            SizedBox(
+                                              width: 60,
+                                              child: IntInputBox(
+                                                value: _seconds != 0 ? "$_seconds" : "",
+                                                labelText: "SEC",
+                                                intValueSetter: (value) => _seconds = value,
+                                                validator: (value) {
+                                                  if (value != "" && int.tryParse(value) == null) {
+                                                    return "# only";
+                                                  }
+                                                  return null;
+                                                },
+                                              ),
+                                            ),
+                                            SizedBox(width: 6,),
+                                            Text("/${user.distUnit}", style: const TextStyle(fontSize: 20)),
+                                          ],
+                                        );
+                                      }
+                                      return Container();
+                                    }
+                                  ),
+                                  Builder(
+                                    builder: (context) {
+                                      if (paceType == "relative") {
+                                        return TextFormField(
+                                          initialValue: "",
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: "Relative pace",
+                                          ),
+                                          onSaved: (value) {
+                                            relativePace = value!;
                                           },
-                                        ),
-                                      ),
-                                      SizedBox(width: 6),
-                                      Text(
-                                        ":",
-                                        style: const TextStyle(fontSize: 20)
-                                      ),
-                                      SizedBox(width: 6),
-                                      SizedBox(
-                                        width: 60,
-                                        child: IntInputBox(
-                                          value: _seconds != 0 ? "$_seconds" : "",
-                                          labelText: "SEC",
-                                          intValueSetter: (value) => _seconds = value,
-                                          validator: (value) {
-                                            if (value != "" && int.tryParse(value) == null) {
-                                              return "# only";
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                      SizedBox(width: 6,),
-                                      Text("/${user.distUnit}", style: const TextStyle(fontSize: 20)),
-                                    ],
+                                        );
+                                      }
+                                      return Container();
+                                    },
                                   ),
                                 ],
                               ),
@@ -358,7 +402,11 @@ class WorkoutStructureFormField extends StatelessWidget {
                               onPressed: () {
                                 if (formKey.currentState?.validate() == true) {
                                   formKey.currentState?.save();
-                                  paceSetter(_minutes*60 + _seconds);
+                                  if (paceType == "time") {
+                                    paceSetter(_minutes*60 + _seconds);
+                                  } else {
+                                    paceSetter(relativePace);
+                                  }
                                   Navigator.pop(context);
                                 }
                               },

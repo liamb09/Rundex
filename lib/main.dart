@@ -239,7 +239,7 @@ class _MyHomePageState extends State<MyHomePage> {
               if (run.sets!.isNotEmpty) {
                 List<String> descriptions = [];
                 List<int> reps = [];
-                List<int?> paces = [];
+                List<dynamic> paces = [];
                 for (var entry in run.sets!.values) {
                   descriptions.add(entry[0]);
                   reps.add(entry[2]);
@@ -272,7 +272,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   SizedBox(width: 10),
                                   Text(
-                                    "${secondsToTime(paces[i]!)}/${user.distUnit}",
+                                    paces[i] is String ? "${paces[i]} pace" : "${secondsToTime(paces[i]!)}/${user.distUnit}",
                                     style: TextStyle(color: txtColorByBkgd(run.color)),
                                   ),
                                 ],
@@ -316,7 +316,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   SizedBox(width: 10),
                                   Text(
-                                    "${secondsToTime(paces[i]!)}/${user.distUnit}",
+                                    paces[i] is String ? "${paces[i]} pace" : "${secondsToTime(paces[i]!)}/${user.distUnit}",
                                     style: TextStyle(color: txtColorByBkgd(run.color)),
                                   ),
                                 ],

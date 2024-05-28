@@ -39,7 +39,7 @@ class _AddRunPageState extends State<AddRunPage> {
   List<String>? _descriptions;
   List<MapEntry<String, Map<Uint8List?, double?>>?>? _routes;
   List<Uint8List?>? _images;
-  List<int?>? _paces;
+  List<dynamic>? _paces;
   bool cardColor = false;
   Color? otherCardColor;
   int? editID;
@@ -82,14 +82,12 @@ class _AddRunPageState extends State<AddRunPage> {
   // BUG: distance goes away when you add/subtract sets
   void setMilageAndImage (MapEntry<String, Map<Uint8List?, double?>> chosenRoute) {
     if (route) {
-      print("${chosenRoute.value.values.first}  $_distance");
       if (_distance == 0 && chosenRoute.value.values.first != null) {
         _distance = chosenRoute.value.values.first!;
       }
       if (image == null && chosenRoute.value.keys.first != null) {
         image = chosenRoute.value.keys.first!;
       }
-      print("then $_distance");
       setState(() {});
     }
   }

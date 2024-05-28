@@ -59,7 +59,7 @@ class DoubleInputBox extends StatelessWidget {
 
   final String labelText;
   final String value;
-  final void Function(double value) doubleValueSetter;
+  final void Function(double? value) doubleValueSetter;
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +82,7 @@ class DoubleInputBox extends StatelessWidget {
         }
         return null;
       },
+      onChanged: (value) => doubleValueSetter(value == "" ? 0 : double.tryParse(value)),
       onSaved: (newValue) => doubleValueSetter(newValue == "" ? 0.0 : double.parse("$newValue")),
     );
   }
@@ -370,89 +371,89 @@ class WorkoutStructureFormField extends StatelessWidget {
                 );
               },
             ),
-            IconButton(
-              icon: Icon(Icons.route_outlined),
-              onPressed: () {
-                MapEntry<String, Map<Uint8List?, double?>>? chosenRoute;
-                List<DropdownMenuItem<Object>>? userRoutes = [];
-                for (String route in user.routes!.keys) {
-                  userRoutes.add(DropdownMenuItem(value: route, child: Text(route)));
-                }
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      backgroundColor: Theme.of(context).colorScheme.tertiary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      content: StatefulBuilder(
-                        builder: (BuildContext context, StateSetter setState) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  "Choose a route",
-                                  style: TextStyle(fontSize: 20),
-                                ),
-                                SizedBox(height: 12,),
-                                DropdownButtonFormField(
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: "Route",
-                                  ),
-                                  items: userRoutes,
-                                  onChanged: (value) {
-                                    chosenRoute = user.routes!.entries.elementAt(user.routes!.keys.toList().indexOf(value as String));
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                      actionsAlignment: MainAxisAlignment.center,
-                      actions: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            MaterialButton(
-                              color: Theme.of(context).cardColor.darken(20),
-                              child: Padding(
-                                padding: const EdgeInsets.all(6),
-                                child: Text("Cancel", style: TextStyle(
-                                  color: Provider.of<ThemeProvider>(context).themeData == lightMode ? Colors.black : Colors.white,
-                                ),),
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                            ),
-                            SizedBox(width: 10,),
-                            MaterialButton(
-                              color: Theme.of(context).colorScheme.secondary,
-                              child: Padding(
-                                padding: const EdgeInsets.all(6),
-                                child: Text("Choose", style: TextStyle(color: Provider.of<ThemeProvider>(context).themeData == lightMode ? Colors.white : Colors.black),),
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                                routeSetter(chosenRoute);
-                                mileageImageSetter();
-                              },
-                            )
-                          ],
-                        )
-                      ],
-                    );
-                  }
-                );
-              },
-            ),
+            // IconButton(
+            //   icon: Icon(Icons.route_outlined),
+            //   onPressed: () {
+            //     MapEntry<String, Map<Uint8List?, double?>>? chosenRoute;
+            //     List<DropdownMenuItem<Object>>? userRoutes = [];
+            //     for (String route in user.routes!.keys) {
+            //       userRoutes.add(DropdownMenuItem(value: route, child: Text(route)));
+            //     }
+            //     showDialog(
+            //       context: context,
+            //       builder: (context) {
+            //         return AlertDialog(
+            //           backgroundColor: Theme.of(context).colorScheme.tertiary,
+            //           shape: RoundedRectangleBorder(
+            //             borderRadius: BorderRadius.circular(15),
+            //           ),
+            //           content: StatefulBuilder(
+            //             builder: (BuildContext context, StateSetter setState) {
+            //               return Padding(
+            //                 padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+            //                 child: Column(
+            //                   mainAxisAlignment: MainAxisAlignment.center,
+            //                   mainAxisSize: MainAxisSize.min,
+            //                   children: [
+            //                     Text(
+            //                       "Choose a route",
+            //                       style: TextStyle(fontSize: 20),
+            //                     ),
+            //                     SizedBox(height: 12,),
+            //                     DropdownButtonFormField(
+            //                       decoration: InputDecoration(
+            //                         border: OutlineInputBorder(),
+            //                         labelText: "Route",
+            //                       ),
+            //                       items: userRoutes,
+            //                       onChanged: (value) {
+            //                         chosenRoute = user.routes!.entries.elementAt(user.routes!.keys.toList().indexOf(value as String));
+            //                       },
+            //                     ),
+            //                   ],
+            //                 ),
+            //               );
+            //             },
+            //           ),
+            //           actionsAlignment: MainAxisAlignment.center,
+            //           actions: [
+            //             Row(
+            //               mainAxisSize: MainAxisSize.min,
+            //               mainAxisAlignment: MainAxisAlignment.center,
+            //               children: [
+            //                 MaterialButton(
+            //                   color: Theme.of(context).cardColor.darken(20),
+            //                   child: Padding(
+            //                     padding: const EdgeInsets.all(6),
+            //                     child: Text("Cancel", style: TextStyle(
+            //                       color: Provider.of<ThemeProvider>(context).themeData == lightMode ? Colors.black : Colors.white,
+            //                     ),),
+            //                   ),
+            //                   onPressed: () {
+            //                     Navigator.pop(context);
+            //                   },
+            //                 ),
+            //                 SizedBox(width: 10,),
+            //                 MaterialButton(
+            //                   color: Theme.of(context).colorScheme.secondary,
+            //                   child: Padding(
+            //                     padding: const EdgeInsets.all(6),
+            //                     child: Text("Choose", style: TextStyle(color: Provider.of<ThemeProvider>(context).themeData == lightMode ? Colors.white : Colors.black),),
+            //                   ),
+            //                   onPressed: () {
+            //                     Navigator.pop(context);
+            //                     routeSetter(chosenRoute);
+            //                     mileageImageSetter();
+            //                   },
+            //                 )
+            //               ],
+            //             )
+            //           ],
+            //         );
+            //       }
+            //     );
+            //   },
+            // ),
           ],
         );
       }

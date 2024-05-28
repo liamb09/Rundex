@@ -48,8 +48,7 @@ class _AddRunPageState extends State<AddRunPage> {
   bool isDateTime = false;
   bool isTime = false;
   Uint8List? image;
-  bool distanceSetByRoute = false;
-  bool imageSetByRoute = false;
+  bool route = false;
 
   Future<User> getUserFromDB () async {
     var user = await UserDatabase.instance.getUser();
@@ -81,43 +80,16 @@ class _AddRunPageState extends State<AddRunPage> {
   }
 
   // BUG: distance goes away when you add/subtract sets
-  void setMilageAndImage () {
-    if (workoutStructure && _routes != null) {
-      MapEntry<String, Map<Uint8List?, double?>>? forMileageAndImage;
-      bool multiple = false;
-      double oldDistance = _distance;
-      _distance = 0;
-      for (var route in _routes!) {
-        if (route != null) {
-          if (route.value.keys.first != null || route.value.values.first != null) {
-            if (forMileageAndImage == null && !multiple) {
-              forMileageAndImage = route;
-            } else if (forMileageAndImage != null) {
-              multiple = true;
-            }
-          }
-          if ((oldDistance == 0 || distanceSetByRoute)  && route.value.values.first != null) {
-            _distance += route.value.values.first!;
-            distanceSetByRoute = true;
-          }
-        }
+  void setMilageAndImage (MapEntry<String, Map<Uint8List?, double?>> chosenRoute) {
+    if (route) {
+      print("${chosenRoute.value.values.first}  $_distance");
+      if (_distance == 0 && chosenRoute.value.values.first != null) {
+        _distance = chosenRoute.value.values.first!;
       }
-      if (forMileageAndImage != null) {
-        if (image == null) {
-          image = forMileageAndImage.value.keys.first;
-          imageSetByRoute = true;
-        } else if (imageSetByRoute) {
-          image = null;
-        }
-        print(oldDistance);
-        if (_distance == 0) {
-          _distance = oldDistance;
-        }
-        // if ((_distance == 0 || distanceSetByRoute) && forMileageAndImage.value.values.first != null) {
-        //   _distance += forMileageAndImage.value.values.first!;
-        //   distanceSetByRoute = true;
-        // }
+      if (image == null && chosenRoute.value.keys.first != null) {
+        image = chosenRoute.value.keys.first!;
       }
+      print("then $_distance");
       setState(() {});
     }
   }
@@ -212,8 +184,9 @@ class _AddRunPageState extends State<AddRunPage> {
                                   child: DoubleInputBox(
                                     labelText: "Distance",
                                     doubleValueSetter: (value) {
-                                      _distance = value;
-                                      distanceSetByRoute = false;
+                                      if (value != null) {
+                                        _distance = value;
+                                      }
                                     },
                                     value: _distance == 0 ? "" : "$_distance",
                                   ),
@@ -431,10 +404,53 @@ class _AddRunPageState extends State<AddRunPage> {
                                 Checkbox(
                                   checkColor: Colors.white,
                                   activeColor: Theme.of(context).colorScheme.primary,
+                                  value: cardColor,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      cardColor = value!;
+                                    });
+                                  }
+                                ),
+                                Text("Card Color", style: TextStyle(fontSize: 15)),
+                              ],
+                            ),
+                            Builder(
+                              builder: (context) {
+                                if (cardColor) {
+                                  //cardColor = true;
+                                  return ColorPicker(
+                                    enableShadesSelection: false,
+                                    pickersEnabled: <ColorPickerType, bool>{
+                                      ColorPickerType.primary: false,
+                                      ColorPickerType.accent: false,
+                                      ColorPickerType.wheel: true,
+                                    },
+                                    height: 40,
+                                    showColorCode: true,
+                                    colorCodeHasColor: true,
+                                    copyPasteBehavior: ColorPickerCopyPasteBehavior(
+                                      copyFormat: ColorPickerCopyFormat.numHexRRGGBB,
+                                    ),
+                                    color: otherCardColor ?? Color(int.parse(userData.runColors[_type]!, radix: 16) + 0xff000000),
+                                    onColorChanged: (Color color) => setState(() => otherCardColor = color),
+                                  );
+                                }
+                                return Container();
+                              },
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Checkbox(
+                                  checkColor: Colors.white,
+                                  activeColor: Theme.of(context).colorScheme.primary,
                                   value: workoutStructure,
                                   onChanged: (bool? value) {
                                     setState(() {
                                       workoutStructure = value!;
+                                      if (value) {
+                                        route = false;
+                                      }
                                     });
                                     _reps = [];
                                     _descriptions = [];
@@ -451,6 +467,21 @@ class _AddRunPageState extends State<AddRunPage> {
                                   }
                                 ),
                                 Text("Sets", style: TextStyle(fontSize: 15)),
+                                SizedBox(width: 10),
+                                Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
+                                SizedBox(width: 10,),
+                                Checkbox(
+                                  value: route,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      route = value!;
+                                      if (value) {
+                                        workoutStructure = false;
+                                      }
+                                    });
+                                  },
+                                ),
+                                Text("Route"),
                               ],
                             ),
                             Builder(
@@ -462,7 +493,6 @@ class _AddRunPageState extends State<AddRunPage> {
                                         builder: (context) {
                                           List<Widget> result = [];
                                           for (int i = 0; i < _numSets; i++) {
-                                            // TODO: make up mileage and add image from routes
                                             result.add(WorkoutStructureFormField(
                                               repsValue: "${_reps?[i] ?? ""}",
                                               descriptionValue: _descriptions![i],
@@ -498,7 +528,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                 });
                                               },
                                               mileageImageSetter: () {
-                                                setMilageAndImage();
+                                                // remove this method
                                               }
                                             ));
                                             if (i != _numSets-1) {
@@ -555,41 +585,31 @@ class _AddRunPageState extends State<AddRunPage> {
                                 return Container();
                               }
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Checkbox(
-                                  checkColor: Colors.white,
-                                  activeColor: Theme.of(context).colorScheme.primary,
-                                  value: cardColor,
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      cardColor = value!;
-                                    });
-                                  }
-                                ),
-                                Text("Card Color", style: TextStyle(fontSize: 15)),
-                              ],
-                            ),
                             Builder(
                               builder: (context) {
-                                if (cardColor) {
-                                  //cardColor = true;
-                                  return ColorPicker(
-                                    enableShadesSelection: false,
-                                    pickersEnabled: <ColorPickerType, bool>{
-                                      ColorPickerType.primary: false,
-                                      ColorPickerType.accent: false,
-                                      ColorPickerType.wheel: true,
-                                    },
-                                    height: 40,
-                                    showColorCode: true,
-                                    colorCodeHasColor: true,
-                                    copyPasteBehavior: ColorPickerCopyPasteBehavior(
-                                      copyFormat: ColorPickerCopyFormat.numHexRRGGBB,
-                                    ),
-                                    color: otherCardColor ?? Color(int.parse(userData.runColors[_type]!, radix: 16) + 0xff000000),
-                                    onColorChanged: (Color color) => setState(() => otherCardColor = color),
+                                if (route) {
+                                  List<DropdownMenuItem<Object>>? userRoutes = [];
+                                  for (String route in userData.routes!.keys) {
+                                    userRoutes.add(DropdownMenuItem(value: route, child: Text(route)));
+                                  }
+                                  return Column(
+                                    children: [
+                                      DropdownButtonFormField(
+                                        decoration: InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          labelText: "Route",
+                                        ),
+                                        items: userRoutes,
+                                        onChanged: (value) {
+                                          MapEntry<String, Map<Uint8List?, double?>> chosenRoute = userData.routes!.entries.elementAt(userData.routes!.keys.toList().indexOf(value as String));
+                                          setMilageAndImage(chosenRoute);
+                                        },
+                                        validator: (value) {
+                                          return null;
+                                        },
+                                      ),
+                                      SizedBox(height: 6),
+                                    ],
                                   );
                                 }
                                 return Container();
@@ -602,7 +622,6 @@ class _AddRunPageState extends State<AddRunPage> {
                               onPressed: () async {
                                 final result = await FilePicker.platform.pickFiles(withData: true);
                                 if (result != null) {
-                                  imageSetByRoute = false;
                                   var file = utf8.decode(result.files.single.bytes as List<int>);
                                   var polyline = await GPXHelper.getPolyline(file);
                                   final response = await http.get(Uri.parse("https://maps.googleapis.com/maps/api/staticmap?size=400x400&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:administrative|visibility:off&path=color:0x012271ff%7Cenc:$polyline&key=${Env.msApiKey}"));

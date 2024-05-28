@@ -11,7 +11,7 @@ A simple running log to track mileage.
  - [ ] Add run sharing
  - [ ] Add weather
  - [ ] Add starter survey
- - [ ] Edit user in profile
+ - [X] Edit user in profile
  - [X] Add routes as an alternative to make up mileages
  - [X] Add sets of workout
  - [X] Add dark/light mode

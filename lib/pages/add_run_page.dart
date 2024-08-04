@@ -79,7 +79,6 @@ class _AddRunPageState extends State<AddRunPage> {
     return dateTime;
   }
 
-  // BUG: distance goes away when you add/subtract sets
   void setMilageAndImage (MapEntry<String, Map<Uint8List?, double?>> chosenRoute) {
     if (route) {
       if (_distance == 0 && chosenRoute.value.values.first != null) {
@@ -136,15 +135,6 @@ class _AddRunPageState extends State<AddRunPage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            title: Text(editRun == null ? "Add a run" : "Edit run", style: TextStyle(color: Colors.white),),
-            iconTheme: IconThemeData(color: Colors.white),
-          ),
           backgroundColor: Theme.of(context).colorScheme.background,
           body: SingleChildScrollView(
             child: FutureBuilder<User>(

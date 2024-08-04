@@ -40,27 +40,6 @@ class _ProfilePageState extends State<ProfilePage> {
           return CircularProgressIndicator();
         }
         return Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            title: Text("Profile", style: TextStyle(color: Colors.white),),
-            iconTheme: IconThemeData(color: Colors.white),
-            actions: <Widget>[
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute<void>(
-                    builder: (BuildContext context) {
-                      return SettingsPage();
-                    },
-                  ));
-                },
-              )
-            ],
-          ),
           body: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16.0),

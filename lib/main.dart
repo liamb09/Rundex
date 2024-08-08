@@ -66,7 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
   final _pages = [
     HomePage(),
     StatsPage(),
-    AddRunPage(),
     Placeholder(),
     ProfilePage(),
   ];
@@ -78,45 +77,6 @@ class _MyHomePageState extends State<MyHomePage> {
       builder: (context, constraints) {
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
-          // appBar: AppBar(
-          //   leading: IconButton(
-          //     icon: Icon(Icons.timeline),
-          //     onPressed: () {
-          //       Navigator.push(context, MaterialPageRoute<void>(
-          //         builder: (BuildContext context) {
-          //           return StatsPage();
-          //         },
-          //       ));
-          //     },
-          //   ),
-          //   scrolledUnderElevation: 0,
-          //   title: Text("Running Log", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          //   centerTitle: true,
-          //   backgroundColor: Theme.of(context).colorScheme.primary,
-          //   iconTheme: IconThemeData(color: Colors.white,),
-          //   actions: <Widget>[
-          //     IconButton(
-          //       icon: const Icon(Icons.route_outlined),
-          //       onPressed: () {
-          //         Navigator.push(context, MaterialPageRoute<void>(
-          //           builder: (BuildContext context) {
-          //             return RoutesPage();
-          //           }
-          //         ));
-          //       },
-          //     ),
-          //     IconButton(
-          //       icon: const Icon(Icons.person_outline),
-          //       onPressed: () {
-          //         Navigator.push(context, MaterialPageRoute<void>(
-          //           builder: (BuildContext context) {
-          //             return ProfilePage();
-          //           },
-          //         ));
-          //       },
-          //     )
-          //   ],
-          // ),
           body: _pages[_currentPage],
           bottomNavigationBar: NavigationBar(
             onDestinationSelected: (int index) {
@@ -136,11 +96,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 selectedIcon: Icon(Icons.timeline_rounded),
                 icon: Icon(Icons.timeline_rounded),
                 label: 'Stats',
-              ),
-              NavigationDestination(
-                selectedIcon: Icon(Icons.add_circle_rounded),
-                icon: Icon(Icons.add_circle_outline_rounded),
-                label: 'Add',
               ),
               NavigationDestination(
                 selectedIcon: Icon(Icons.emoji_events),

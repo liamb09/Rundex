@@ -513,22 +513,32 @@ class _HomePageState extends State<HomePage> {
           );
         }
       ),
-      //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        shape: CircleBorder(),
-        child: Icon(Icons.add, color: Colors.white),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute<void>(
-            builder: (BuildContext context) {
-              return AddRunPage();
-            },
-          )).then((_) => setState(() {}));
-          // showModalBottomSheet(
-          //   context: context,
-          //   builder: (context) => SizedBox(height: constraints.maxHeight, child: AddRunPage()),
-          // ).then((_) => setState(() {}));
-        },
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: SizedBox(
+        width: 150,
+        height: 40,
+        child: FloatingActionButton.extended(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
+          icon: Icon(Icons.add, color: Colors.black),
+          label: Text("New run", style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w900,
+          )),
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute<void>(
+              builder: (BuildContext context) {
+                return AddRunPage();
+              },
+            )).then((_) => setState(() {}));
+            // showModalBottomSheet(
+            //   context: context,
+            //   builder: (context) => SizedBox(height: constraints.maxHeight, child: AddRunPage()),
+            // ).then((_) => setState(() {}));
+          },
+        ),
       ),
     );
   }

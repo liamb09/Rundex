@@ -6,11 +6,15 @@ ThemeData lightMode = ThemeData(
   brightness: Brightness.light,
   colorScheme: ColorScheme.light(
     primary: Color(0xff38e078),
-    secondary: Color.fromARGB(255, 65, 101, 184),
+    secondary: Color(0xff626262),
     tertiary: Colors.white,
     surface: Color(0xfff5f5f5),
   ),
   textTheme: GoogleFonts.publicSansTextTheme(),
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: Color(0xfff5f5f5),
+  ),
 );
 
 ThemeData darkMode = ThemeData(
@@ -23,4 +27,8 @@ ThemeData darkMode = ThemeData(
     surface: Color(0xfff5f5f5),
   ),
   textTheme: GoogleFonts.publicSansTextTheme(),
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: Color(0xfff5f5f5),
+  ),
 );

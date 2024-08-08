@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:running_log/services_and_helpers/GPXHelper.dart';
 import 'package:running_log/services_and_helpers/Run.dart';
 import 'package:running_log/services_and_helpers/RunsDatabase.dart';
@@ -15,6 +17,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:running_log/services_and_helpers/env.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:running_log/theme/theme_provider.dart';
 
 class AddRunPage extends StatefulWidget {
   @override
@@ -25,11 +28,13 @@ class _AddRunPageState extends State<AddRunPage> {
   final formKey = GlobalKey<FormState>();
   String _title = "";
   double _distance = 0;
-  String _unit = "mi";
+  List<Widget> zeroTo100 = [];
+  String? _unit;
   int _hours = 0;
   int _minutes = 0;
   int _seconds = 0;
-  String _type = "N/A";
+  List<Widget> zeroTo60 = [];
+  String _type = "Road run";
   String _notes = "";
   bool perceivedEffort = false;
   double? perceivedEffortRating;
@@ -40,6 +45,7 @@ class _AddRunPageState extends State<AddRunPage> {
   List<MapEntry<String, Map<Uint8List?, double?>>?>? _routes;
   List<Uint8List?>? _images;
   List<dynamic>? _paces;
+  List<Widget> oneTo20 = [];
   bool cardColor = false;
   Color? otherCardColor;
   int? editID;
@@ -47,6 +53,7 @@ class _AddRunPageState extends State<AddRunPage> {
   int? timestamp;
   bool isDateTime = false;
   bool isTime = false;
+  final now = DateTime.now();
   Uint8List? image;
   bool route = false;
 
@@ -61,11 +68,11 @@ class _AddRunPageState extends State<AddRunPage> {
   }
 
   Future<DateTime?> getDateTime () async {
-    DateTime? selectedDate = await showDatePicker(context: context, firstDate: DateTime(2000), lastDate: DateTime.now(), initialDate: timestamp != null ? DateTime.fromMillisecondsSinceEpoch(timestamp!*1000) : DateTime.now());
+    DateTime? selectedDate = await showDatePicker(context: context, firstDate: DateTime(2000), lastDate: DateTime.now(), initialDate: timestamp != null ? DateTime.fromMillisecondsSinceEpoch(timestamp!*1000) : now);
     TimeOfDay? selectedTime;
-    if (selectedDate != null) {
-      selectedTime = await showTimePicker(context: context, initialTime: timestamp == null ? TimeOfDay.fromDateTime(DateTime.now()) : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(timestamp!*1000)));
-    }
+    // if (selectedDate != null) {
+    //   selectedTime = await showTimePicker(context: context, initialTime: timestamp == null ? TimeOfDay.fromDateTime(now) : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(timestamp!*1000)));
+    // }
     if (selectedTime != null) {
       isTime = true;
     }
@@ -91,8 +98,44 @@ class _AddRunPageState extends State<AddRunPage> {
     }
   }
 
+  String secondsToTime (int s) {
+    if (s == 0) return "-:--";
+    int hours = s ~/ 3600;
+    int minutes = (s - hours * 3600) ~/ 60;
+    int seconds = s - (hours * 3600 + minutes * 60);
+    String secondsStr = "$seconds";
+    if (seconds < 10) {
+      secondsStr = "0$seconds";
+    }
+    if (hours > 0) {
+      String minutesStr = "$minutes";
+      if (minutes < 10) {
+        minutesStr = "0$minutes";
+      }
+      return "$hours:$minutesStr:$secondsStr";
+    } else {
+      return "$minutes:$secondsStr";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    if (zeroTo100.isEmpty) {
+      for (int i = 0; i < 100; i++) {
+        zeroTo100.add(Center(child: Text("$i")));
+      }
+    }
+    if (zeroTo60.isEmpty) {
+      for (int i = 0; i < 60; i++) {
+        zeroTo60.add(Center(child: Text("$i")));
+      }
+    }
+    if (oneTo20.isEmpty) {
+      for (int i = 1; i <= 20; i++) {
+        oneTo20.add(Center(child: Text("$i")));
+      }
+    }
 
     var user = getUserFromDB();
 
@@ -135,6 +178,22 @@ class _AddRunPageState extends State<AddRunPage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: Icon(Icons.close),
+              onPressed: () {
+                Navigator.pop(context);
+              }
+            ),
+            title: Text(
+              "New run",
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+              ),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.tertiary,
+          ),
           backgroundColor: Theme.of(context).colorScheme.background,
           body: SingleChildScrollView(
             child: FutureBuilder<User>(
@@ -144,7 +203,7 @@ class _AddRunPageState extends State<AddRunPage> {
                 if (userData == null) {
                   return CircularProgressIndicator();
                 }
-                if (!setupForEdit) {
+                if (!setupForEdit && _unit == null) {
                   _unit = userData.distUnit;
                 }
                 List<DropdownMenuItem> types = [];
@@ -160,419 +219,984 @@ class _AddRunPageState extends State<AddRunPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            StringInputBox(
+                            // Title
+                            InputBox(
                               labelText: "Title",
-                              strValueSetter: (value) => _title = value,
                               value: _title,
+                              setter: (String? value) {
+                                _title = value as String;
+                              },
+                              validator: (String? value) {
+                                return value == null || value == "" ? "Required" : null;
+                              },
                             ),
                             SizedBox(height: 12),
+                            // Distance + units
                             Row(
                               children: [
-                                Flexible(
-                                  child: DoubleInputBox(
-                                    labelText: "Distance",
-                                    doubleValueSetter: (value) {
-                                      if (value != null) {
-                                        _distance = value;
-                                      }
-                                    },
-                                    value: _distance == 0 ? "" : "$_distance",
-                                  ),
-                                ),
-                                SizedBox(width: 12),
-                                SizedBox(
-                                  height: 55,
-                                  width: 90,
-                                  child: DropdownButtonFormField(
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      labelText: "Units",
-                                    ),
-                                    items: [
-                                      DropdownMenuItem(value: "mi", child: Text("mi")),
-                                      DropdownMenuItem(value: "km", child: Text("km")),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Distance",
+                                        style: Theme.of(context).textTheme.titleMedium,
+                                      ),
+                                      InkWell(
+                                        highlightColor: Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                        splashColor: Colors.transparent,
+                                        splashFactory: NoSplash.splashFactory,
+                                        onTap: () {
+                                          if (_unit == "mi") {
+                                            setState(() {
+                                              _unit = "km";
+                                            });
+                                          } else {
+                                            setState(() {
+                                              _unit = "mi";
+                                            });
+                                          }
+                                        },
+                                        child: Text(
+                                          _unit == "mi" ? "Miles" : "Kilometers",
+                                          textAlign: TextAlign.left,
+                                          style: TextStyle(
+                                            fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                            color: Theme.of(context).colorScheme.secondary,
+                                          ),
+                                        ),
+                                      ),
                                     ],
-                                    onChanged: (newValue) {
-                                      setState(() {
-                                        _unit = newValue!;
-                                      });
-                                    },
-                                    onSaved: (value) {
-                                      setState(() {
-                                        _unit = value!;
-                                      });
-                                    },
-                                    value: _unit,
-                                    validator: (value) {
-                                      if (value != "mi" && value != "km") {
-                                        return "Invalid input";
-                                      }
-                                      return null;
-                                    },
                                   ),
                                 ),
-                              ],
+                                InkWell(
+                                  highlightColor: Colors.transparent,
+                                  hoverColor: Colors.transparent,
+                                  splashColor: Colors.transparent,
+                                  splashFactory: NoSplash.splashFactory,
+                                  onTap: () async {
+                                    showCupertinoModalPopup(
+                                      context: context,
+                                      builder: (context) {
+                                        return Container(
+                                          color: Colors.white,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text("Distance", style: Theme.of(context).textTheme.titleLarge),
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    SizedBox(
+                                                      height: 200,
+                                                      width: 100,
+                                                      child: CupertinoPicker(
+                                                        itemExtent: 40,
+                                                        onSelectedItemChanged: (index) {
+                                                          setState(() {
+                                                            _distance = index + (_distance - _distance.floor());
+                                                          });
+                                                        },
+                                                        scrollController: FixedExtentScrollController(
+                                                          initialItem: _distance.floor(),
+                                                        ),
+                                                        children: zeroTo100,
+                                                      ),
+                                                    ),
+                                                    Text(".", style: Theme.of(context).textTheme.headlineLarge),
+                                                    SizedBox(
+                                                      height: 200,
+                                                      width: 100,
+                                                      child: CupertinoPicker(
+                                                        itemExtent: 40,
+                                                        onSelectedItemChanged: (index) {
+                                                          setState(() {
+                                                            _distance = _distance.floor() + index/100;
+                                                          });
+                                                        },
+                                                        scrollController: FixedExtentScrollController(
+                                                          initialItem: (((_distance - _distance.floor())*100).round()).toInt(),
+                                                        ),
+                                                        children: zeroTo100,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                MaterialButton(
+                                                  color: Theme.of(context).colorScheme.primary,
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(6.0),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        SizedBox(
+                                                          child: Text(
+                                                            "OK",
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    );
+                                  },
+                                  child: Text(
+                                    _distance == 0 ? "—" : "${(_distance*100).round()/100}",
+                                    textAlign: TextAlign.left,
+                                    style: TextStyle(
+                                      fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                      color: Theme.of(context).colorScheme.secondary,
+                                    ),
+                                  ),
+                                ),
+                              ]
                             ),
                             SizedBox(height: 12),
+                            // Time
                             Row(
                               children: [
-                                Flexible(
-                                  child: IntInputBox(
-                                    value: _hours != 0 ? "$_hours" : "",
-                                    labelText: "HR",
-                                    intValueSetter: (value) => _hours = value,
-                                    validator: (value) {
-                                      if (value != "" && int.tryParse(value) == null) {
-                                        return "Must be an integer";
-                                      }
-                                      return null;
-                                    },
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Time",
+                                        style: Theme.of(context).textTheme.titleMedium,
+                                      ),
+                                      Text(
+                                        "h:m:s",
+                                        textAlign: TextAlign.left,
+                                        style: TextStyle(
+                                          fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                          color: Theme.of(context).colorScheme.secondary,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                SizedBox(width: 6),
-                                Text(
-                                  ":",
-                                  style: const TextStyle(fontSize: 20)
-                                ),
-                                SizedBox(width: 6),
-                                Flexible(
-                                  child: IntInputBox(
-                                    value: _minutes != 0 ? "$_minutes" : "",
-                                    labelText: "MIN",
-                                    intValueSetter: (value) => _minutes = value,
-                                    validator: (value) {
-                                      if (value != "" && int.tryParse(value) == null) {
-                                        return "Must be an integer";
+                                InkWell(
+                                  highlightColor: Colors.transparent,
+                                  hoverColor: Colors.transparent,
+                                  splashColor: Colors.transparent,
+                                  splashFactory: NoSplash.splashFactory,
+                                  onTap: () async {
+                                    showCupertinoModalPopup(
+                                      context: context,
+                                      builder: (context) {
+                                        return Container(
+                                          color: Colors.white,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text("Time", style: Theme.of(context).textTheme.titleLarge),
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    SizedBox(
+                                                      height: 200,
+                                                      width: 100,
+                                                      child: CupertinoPicker(
+                                                        itemExtent: 40,
+                                                        onSelectedItemChanged: (index) {
+                                                          setState(() {
+                                                            _hours = index;
+                                                          });
+                                                        },
+                                                        scrollController: FixedExtentScrollController(
+                                                          initialItem: _hours,
+                                                        ),
+                                                        children: zeroTo60,
+                                                      ),
+                                                    ),
+                                                    Text(":", style: Theme.of(context).textTheme.headlineLarge),
+                                                    SizedBox(
+                                                      height: 200,
+                                                      width: 100,
+                                                      child: CupertinoPicker(
+                                                        itemExtent: 40,
+                                                        onSelectedItemChanged: (index) {
+                                                          setState(() {
+                                                            _minutes = index;
+                                                          });
+                                                        },
+                                                        scrollController: FixedExtentScrollController(
+                                                          initialItem: _minutes,
+                                                        ),
+                                                        children: zeroTo60,
+                                                      ),
+                                                    ),
+                                                    Text(":", style: Theme.of(context).textTheme.headlineLarge),
+                                                    SizedBox(
+                                                      height: 200,
+                                                      width: 100,
+                                                      child: CupertinoPicker(
+                                                        itemExtent: 40,
+                                                        onSelectedItemChanged: (index) {
+                                                          setState(() {
+                                                            _seconds = index;
+                                                          });
+                                                        },
+                                                        scrollController: FixedExtentScrollController(
+                                                          initialItem: _seconds,
+                                                        ),
+                                                        children: zeroTo60,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                MaterialButton(
+                                                  color: Theme.of(context).colorScheme.primary,
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(6.0),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        SizedBox(
+                                                          child: Text(
+                                                            "OK",
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
                                       }
-                                      return null;
-                                    },
+                                    );
+                                  },
+                                  child: Text(
+                                    _hours*60*60 + _minutes*60 + _seconds == 0 ? "—" : secondsToTime(_hours*60*60 + _minutes*60 + _seconds),
+                                    textAlign: TextAlign.left,
+                                    style: TextStyle(
+                                      fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                      color: Theme.of(context).colorScheme.secondary,
+                                    ),
                                   ),
                                 ),
-                                SizedBox(width: 6),
-                                Text(
-                                  ":",
-                                  style: const TextStyle(fontSize: 20)
-                                ),
-                                SizedBox(width: 6),
-                                Flexible(
-                                  child: IntInputBox(
-                                    value: _seconds != 0 ? "$_seconds" : "",
-                                    labelText: "SEC",
-                                    intValueSetter: (value) => _seconds = value,
-                                    validator: (value) {
-                                      if (value != "" && int.tryParse(value) == null) {
-                                        return "Must be an integer";
-                                      }
-                                      return null;
+                              ]
+                            ),
+                            SizedBox(height: 12),
+                            // Type
+                            Column(
+                              children: [
+                                Container(
+                                  decoration: ShapeDecoration(
+                                    shape: RoundedRectangleBorder(
+                                      side: BorderSide(
+                                        color: Theme.of(context).colorScheme.surface,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.all(Radius.circular(8))
+                                    ),
+                                  ),
+                                  child: RadioListTile(
+                                    value: "Road run",
+                                    groupValue: _type,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _type = value!;
+                                      });
                                     },
+                                    title: Text("Road"),
                                   ),
                                 ),
+                                SizedBox(height: 6),
+                                Container(
+                                  decoration: ShapeDecoration(
+                                    shape: RoundedRectangleBorder(
+                                      side: BorderSide(
+                                        color: Theme.of(context).colorScheme.surface,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.all(Radius.circular(8))
+                                    ),
+                                  ),
+                                  child: RadioListTile(
+                                    
+                                    value: "Trail run",
+                                    groupValue: _type,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _type = value!;
+                                      });
+                                    },
+                                    title: Text("Trail"),
+                                  ),
+                                ),
+                                SizedBox(height: 6),
+                                Container(
+                                  decoration: ShapeDecoration(
+                                    shape: RoundedRectangleBorder(
+                                      side: BorderSide(
+                                        color: Theme.of(context).colorScheme.surface,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.all(Radius.circular(8))
+                                    ),
+                                  ),
+                                  child: RadioListTile(
+                                    value: "Track run",
+                                    groupValue: _type,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _type = value!;
+                                      });
+                                    },
+                                    title: Text("Track"),
+                                  ),
+                                ),
+                                // Possible other option (look into later)
+                                // TextFormField(
+                                //   decoration: InputDecoration(
+                                //     hintText: "Other",
+                                //     fillColor: Colors.white,
+                                //     enabledBorder: OutlineInputBorder(
+                                //       borderSide: BorderSide(
+                                //         color: Theme.of(context).colorScheme.surface,
+                                //         width: 2,
+                                //       ),
+                                //       borderRadius: BorderRadius.all(Radius.circular(8)),
+                                //     ),
+                                //     focusedBorder: OutlineInputBorder(
+                                //       borderSide: BorderSide(
+                                //         color: Theme.of(context).colorScheme.surface,
+                                //         width: 2,
+                                //       ),
+                                //       borderRadius: BorderRadius.all(Radius.circular(8)),
+                                //     ),
+                                //   ),
+                                // ),
                               ],
                             ),
+                            // DropdownButtonFormField(
+                            //   decoration: InputDecoration(
+                            //     border: OutlineInputBorder(),
+                            //     labelText: "Type",
+                            //   ),
+                            //   items: types,
+                            //   onChanged: (newValue) {
+                            //     setState(() {
+                            //       _type = newValue!;
+                            //       String currentCardColor = userData.runColors[_type]!;
+                            //       if (currentCardColor != "ebedf3") {
+                            //         otherCardColor = Color(int.parse(currentCardColor, radix: 16) + 0xff000000);
+                            //         cardColor = true;
+                            //       } else {
+                            //         otherCardColor = Color(0xffebedf3);
+                            //         cardColor = false;
+                            //       }
+                            //     });
+                            //   },
+                            //   value: _type,
+                            //   validator: (value) {
+                            //     return null;
+                            //   },
+                            // ),
                             SizedBox(height: 12),
-                            DropdownButtonFormField(
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: "Type",
-                              ),
-                              items: types,
-                              onChanged: (newValue) {
-                                setState(() {
-                                  _type = newValue!;
-                                  String currentCardColor = userData.runColors[_type]!;
-                                  if (currentCardColor != "ebedf3") {
-                                    otherCardColor = Color(int.parse(currentCardColor, radix: 16) + 0xff000000);
-                                    cardColor = true;
-                                  } else {
-                                    otherCardColor = Color(0xffebedf3);
-                                    cardColor = false;
-                                  }
-                                });
-                              },
-                              value: _type,
-                              validator: (value) {
-                                return null;
-                              },
+                            // Notes
+                            InputBox(
+                              labelText: "Notes",
+                              value: _notes,
+                              setter: (value) => _notes = value,
+                              validator: (value) => null,
+                              maxLines: 5,
                             ),
                             SizedBox(height: 12),
-                            TextFormField(
-                              initialValue: _notes,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: "Notes",
-                              ),
-                              maxLines: 3,
-                              onSaved: (value) => _notes = value!,
-                            ),
-                            SizedBox(height: 6),
+                            // Date & Time
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Checkbox(
-                                  checkColor: Colors.white,
-                                  activeColor: Theme.of(context).colorScheme.primary,
-                                  value: isDateTime,
-                                  onChanged: (bool? value) async {
-                                    setState(() {
-                                      isDateTime = value!;
-                                    });
-                                    if (isDateTime) {
-                                      DateTime? dateTime = await getDateTime();
-                                      if (dateTime != null) {
-                                        timestamp = (DateTime.parse(dateTime.toString()).millisecondsSinceEpoch/1000).round();
-                                      } else {
-                                        setState(() {
-                                          isDateTime = false;
-                                        });
-                                      }
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Date & Time",
+                                        style: Theme.of(context).textTheme.titleMedium,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                InkWell(
+                                  highlightColor: Colors.transparent,
+                                  hoverColor: Colors.transparent,
+                                  splashColor: Colors.transparent,
+                                  splashFactory: NoSplash.splashFactory,
+                                  onTap: () async {
+                                    DateTime? dateTime = await getDateTime();
+                                    if (dateTime != null) {
+                                      timestamp = (DateTime.parse(dateTime.toString()).millisecondsSinceEpoch/1000).round();
                                     }
                                     setState(() {});
-                                  }
-                                ),
-                                Row(
-                                  children: [
-                                    Text("Date and time${isDateTime && timestamp != null ? ": ${DateFormat.yMMMEd().format(DateTime.fromMillisecondsSinceEpoch(timestamp!*1000))}" : ""}${isTime && isDateTime ? " at ${DateFormat("hh:mm a").format(DateTime.fromMillisecondsSinceEpoch(timestamp!*1000))}" : ""}", style: TextStyle(fontSize: 15)),
-                                    Builder(
-                                      builder: (context) {
-                                        return isDateTime ? IconButton(
-                                          icon: Icon(Icons.edit_outlined),
-                                          onPressed: () async {
-                                            DateTime? dateTime = await getDateTime();
-                                            timestamp = (DateTime.parse(dateTime.toString()).millisecondsSinceEpoch/1000).round();
-                                            setState(() {});
-                                          },
-                                        ) : Container();
-                                      }
+                                  },
+                                  child: Text(
+                                    timestamp == null || timestamp == (DateTime.parse(now.toString()).millisecondsSinceEpoch/1000).round() ?
+                                      "Now" :
+                                      DateFormat.yMMMEd().format(DateTime.fromMillisecondsSinceEpoch(timestamp!*1000)),
+                                    textAlign: TextAlign.left,
+                                    style: TextStyle(
+                                      fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                      color: Theme.of(context).colorScheme.secondary,
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ],
+                              ]
                             ),
+                            SizedBox(height: 12,),
+                            // Perceived Effort
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Checkbox(
-                                  checkColor: Colors.white,
-                                  activeColor: Theme.of(context).colorScheme.primary,
-                                  value: perceivedEffort,
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      perceivedEffort = value!;
-                                    });
-                                  }
-                                ),
-                                Text("Perceived Effort", style: TextStyle(fontSize: 15)),
-                              ],
-                            ),
-                            Builder(
-                              builder: (context) {
-                                if (perceivedEffort) {
-                                  return Column(
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Slider(
-                                        value: perceivedEffortRating ?? 5,
-                                        min: 0,
-                                        max: 10,
-                                        inactiveColor: Theme.of(context).colorScheme.secondary,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            perceivedEffortRating = value;
-                                          });
-                                        },
+                                      Text(
+                                        "Perceived Effort",
+                                        style: Theme.of(context).textTheme.titleMedium,
                                       ),
                                     ],
-                                  );
-                                }
-                                return Container();
-                              },
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Checkbox(
-                                  checkColor: Colors.white,
-                                  activeColor: Theme.of(context).colorScheme.primary,
-                                  value: cardColor,
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      cardColor = value!;
-                                    });
-                                  }
+                                  ),
                                 ),
-                                Text("Card Color", style: TextStyle(fontSize: 15)),
-                              ],
-                            ),
-                            Builder(
-                              builder: (context) {
-                                if (cardColor) {
-                                  //cardColor = true;
-                                  return ColorPicker(
-                                    enableShadesSelection: false,
-                                    pickersEnabled: <ColorPickerType, bool>{
-                                      ColorPickerType.primary: false,
-                                      ColorPickerType.accent: false,
-                                      ColorPickerType.wheel: true,
-                                    },
-                                    height: 40,
-                                    showColorCode: true,
-                                    colorCodeHasColor: true,
-                                    copyPasteBehavior: ColorPickerCopyPasteBehavior(
-                                      copyFormat: ColorPickerCopyFormat.numHexRRGGBB,
-                                    ),
-                                    color: otherCardColor ?? Color(int.parse(userData.runColors[_type]!, radix: 16) + 0xff000000),
-                                    onColorChanged: (Color color) => setState(() => otherCardColor = color),
-                                  );
-                                }
-                                return Container();
-                              },
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Checkbox(
-                                  checkColor: Colors.white,
-                                  activeColor: Theme.of(context).colorScheme.primary,
-                                  value: workoutStructure,
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      workoutStructure = value!;
-                                      if (value) {
-                                        route = false;
-                                      }
-                                    });
-                                    _reps = [];
-                                    _descriptions = [];
-                                    _routes = [];
-                                    _images = [];
-                                    _paces = [];
-                                    for (var i = _descriptions!.length; i < _numSets; i++) {
-                                      _descriptions!.add("");
-                                      _reps!.add(null);
-                                      _images!.add(null);
-                                      _routes!.add(null);
-                                      _paces!.add(null);
-                                    }
-                                  }
-                                ),
-                                Text("Sets", style: TextStyle(fontSize: 15)),
-                                SizedBox(width: 10),
-                                Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
-                                SizedBox(width: 10,),
-                                Checkbox(
-                                  value: route,
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      route = value!;
-                                      if (value) {
-                                        workoutStructure = false;
-                                      }
-                                    });
-                                  },
-                                ),
-                                Text("Route"),
-                              ],
-                            ),
-                            Builder(
-                              builder: (context) {
-                                if (workoutStructure) {
-                                  return Column(
-                                    children: [
-                                      Builder(
-                                        builder: (context) {
-                                          List<Widget> result = [];
-                                          for (int i = 0; i < _numSets; i++) {
-                                            result.add(WorkoutStructureFormField(
-                                              repsValue: "${_reps?[i] ?? ""}",
-                                              descriptionValue: _descriptions![i],
-                                              paceValue: _paces![i],
-                                              repsSetter: (value) {
-                                                _reps?[i] = int.parse(value == "" ? "1" : value);
-                                              },
-                                              descriptionSetter: (value) {
-                                                _descriptions?[i] = value;
-                                              },
-                                              paceSetter: (value) {
-                                                setState(() {
-                                                  _paces?[i] = value;
-                                                });
-                                              },
-                                              repsValidator: (value) {
-                                                if (value != "" && int.tryParse(value) == null) {
-                                                  return "# only";
-                                                }
-                                                return null;
-                                              },
-                                              descriptionValidator: (value) {
-                                                if (value == "") {
-                                                  return "Required";
-                                                }
-                                                return null;
-                                              }, 
-                                              user: userData,
-                                              routeSetter: (value) {
-                                                _routes?.add(value);
-                                                setState(() {
-                                                  _descriptions![i] = value!.key;
-                                                });
-                                              },
-                                              mileageImageSetter: () {
-                                                // remove this method
-                                              }
-                                            ));
-                                            if (i != _numSets-1) {
-                                              result.add(SizedBox(height: 12,));
-                                            }
-                                          }
-                                          return Column(children: result,);
-                                        },
-                                      ),
-                                      SizedBox(height: 8),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Theme.of(context).colorScheme.primary,
-                                              textStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                InkWell(
+                                  highlightColor: Colors.transparent,
+                                  hoverColor: Colors.transparent,
+                                  splashColor: Colors.transparent,
+                                  splashFactory: NoSplash.splashFactory,
+                                  onTap: () async {
+                                    await showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return StatefulBuilder(
+                                          builder: (context, setState) => AlertDialog(
+                                            title: Text(
+                                              "Perceived Effort",
+                                              textAlign: TextAlign.center,
                                             ),
-                                            onPressed: () {
-                                              if (_numSets > 1) {
-                                                _numSets--;
-                                                _descriptions!.removeLast();
-                                                _images!.removeLast();
-                                                _reps!.removeLast();
-                                                _paces!.removeLast();
-                                                setState(() {});
-                                              }
-                                            },
-                                            child: Text("-", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
+                                            content: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Slider(
+                                                  value: perceivedEffortRating ?? 5,
+                                                  min: 0,
+                                                  max: 10,
+                                                  divisions: 100,
+                                                  label: perceivedEffortRating == null ? "5" : "${(perceivedEffortRating!*10).round()/10}",
+                                                  inactiveColor: Theme.of(context).colorScheme.secondary,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      perceivedEffortRating = value;
+                                                      perceivedEffort = true;
+                                                    });
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                            actionsAlignment: MainAxisAlignment.center,
+                                            actions: [
+                                              MaterialButton(
+                                                color: Theme.of(context).colorScheme.primary,
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(6.0),
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      SizedBox(
+                                                        child: Text(
+                                                          "OK",
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  perceivedEffortRating ??= 5;
+                                                  Navigator.pop(context);
+                                                },
+                                              ),
+                                            ],
                                           ),
-                                          SizedBox(width: 8),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Theme.of(context).colorScheme.primary,
-                                            ),
-                                            onPressed: () {
-                                              if (_numSets < 10) {
-                                                _numSets++;
-                                                _descriptions!.add("");
-                                                _images!.add(null);
-                                                _reps!.add(null);
-                                                _paces!.add(null);
-                                                setState(() {});
-                                              }
-                                            }, 
-                                            child: Text("+", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
+                                        );
+                                      },
+                                    );
+                                  },
+                                  child: Text(
+                                    perceivedEffortRating == null ? "—" : "${(perceivedEffortRating!*10).round()/10}/10",
+                                    textAlign: TextAlign.left,
+                                    style: TextStyle(
+                                      fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                      color: Theme.of(context).colorScheme.secondary,
+                                    ),
+                                  ),
+                                ),
+                              ]
+                            ),
+                            SizedBox(height: 12,),
+                            // Card color
+                            // Row(
+                            //   mainAxisAlignment: MainAxisAlignment.center,
+                            //   children: [
+                            //     Checkbox(
+                            //       checkColor: Colors.white,
+                            //       activeColor: Theme.of(context).colorScheme.primary,
+                            //       value: cardColor,
+                            //       onChanged: (bool? value) {
+                            //         setState(() {
+                            //           cardColor = value!;
+                            //         });
+                            //       }
+                            //     ),
+                            //     Text("Card Color", style: TextStyle(fontSize: 15)),
+                            //   ],
+                            // ),
+                            // Builder(
+                            //   builder: (context) {
+                            //     if (cardColor) {
+                            //       //cardColor = true;
+                            //       return ColorPicker(
+                            //         enableShadesSelection: false,
+                            //         pickersEnabled: <ColorPickerType, bool>{
+                            //           ColorPickerType.primary: false,
+                            //           ColorPickerType.accent: false,
+                            //           ColorPickerType.wheel: true,
+                            //         },
+                            //         height: 40,
+                            //         showColorCode: true,
+                            //         colorCodeHasColor: true,
+                            //         copyPasteBehavior: ColorPickerCopyPasteBehavior(
+                            //           copyFormat: ColorPickerCopyFormat.numHexRRGGBB,
+                            //         ),
+                            //         color: otherCardColor ?? Color(int.parse(userData.runColors[_type]!, radix: 16) + 0xff000000),
+                            //         onColorChanged: (Color color) => setState(() => otherCardColor = color),
+                            //       );
+                            //     }
+                            //     return Container();
+                            //   },
+                            // ),
+                            // Sets
+                            Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Sets",
+                                            style: Theme.of(context).textTheme.titleMedium,
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: 6),
-                                    ],
-                                  );
-                                }
-                                return Container();
-                              }
+                                    ),
+                                    InkWell(
+                                      highlightColor: Colors.transparent,
+                                      hoverColor: Colors.transparent,
+                                      splashColor: Colors.transparent,
+                                      splashFactory: NoSplash.splashFactory,
+                                      onTap: () async {
+                                        setState(() {
+                                          workoutStructure = true;
+                                          _numSets = 2;
+                                          _reps = [1, 1];
+                                          _descriptions = ["", ""];
+                                        });
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Builder(
+                                            builder: (context) {
+                                              return Text(
+                                                workoutStructure ? "$_numSets" : "—",
+                                                textAlign: TextAlign.left,
+                                                style: TextStyle(
+                                                  fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                                  color: Theme.of(context).colorScheme.secondary,
+                                                ),
+                                              );
+                                            }
+                                          ),
+                                          Builder(
+                                            builder: (context) {
+                                              if (workoutStructure) {
+                                                return IconButton(
+                                                  padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                                                  constraints: BoxConstraints(),
+                                                  iconSize: 20,
+                                                  icon: Icon(Icons.delete_outline),
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      _numSets = 2;
+                                                      workoutStructure = false;
+                                                    });
+                                                  },
+                                                );
+                                              }
+                                              return Container();
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ]
+                                ),
+                                Builder(
+                                  builder: (context) {
+                                    if (workoutStructure) {
+                                      return Column(
+                                        children: [
+                                          ListView.builder(
+                                            shrinkWrap: true,
+                                            itemCount: _numSets,
+                                            itemBuilder: (context, builderIndex) {
+                                              return Column(
+                                                children: [
+                                                  SizedBox(height: 6,),
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      InkWell(
+                                                        borderRadius: BorderRadius.circular(8),
+                                                        onTap: () {
+                                                          showCupertinoModalPopup(
+                                                            context: context,
+                                                            builder: (context) {
+                                                              return Container(
+                                                                color: Colors.white,
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets.all(16.0),
+                                                                  child: Column(
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: [
+                                                                      Text("Reps", style: Theme.of(context).textTheme.titleLarge),
+                                                                      Row(
+                                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                                        children: [
+                                                                          SizedBox(
+                                                                            height: 200,
+                                                                            width: 100,
+                                                                            child: CupertinoPicker(
+                                                                              itemExtent: 40,
+                                                                              onSelectedItemChanged: (index) {
+                                                                                setState(() {
+                                                                                  _reps![builderIndex] = index+1;
+                                                                                });
+                                                                              },
+                                                                              scrollController: FixedExtentScrollController(
+                                                                                initialItem: _distance.floor(),
+                                                                              ),
+                                                                              children: oneTo20,
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                      MaterialButton(
+                                                                        color: Theme.of(context).colorScheme.primary,
+                                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                                        child: Padding(
+                                                                          padding: const EdgeInsets.all(6.0),
+                                                                          child: Row(
+                                                                            mainAxisSize: MainAxisSize.min,
+                                                                            children: [
+                                                                              SizedBox(
+                                                                                child: Text(
+                                                                                  "OK",
+                                                                                ),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                        ),
+                                                                        onPressed: () {
+                                                                          Navigator.pop(context);
+                                                                        },
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              );
+                                                            }
+                                                          );
+                                                        },
+                                                        child: SizedBox(
+                                                          width: 48,
+                                                          height: 48,
+                                                          child: Container(
+                                                            alignment: Alignment.center,
+                                                            decoration: ShapeDecoration(
+                                                              shape: RoundedRectangleBorder(
+                                                                side: BorderSide(
+                                                                  color: Theme.of(context).colorScheme.surface,
+                                                                  width: 2,
+                                                                ),
+                                                                borderRadius: BorderRadius.all(Radius.circular(8))
+                                                              ),
+                                                            ),
+                                                            child: Text(
+                                                              "${_reps![builderIndex]}",
+                                                              style: TextStyle(fontWeight: FontWeight.w900, fontSize: Theme.of(context).textTheme.titleMedium!.fontSize),
+                                                              textAlign: TextAlign.center,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      SizedBox(width: 8,),
+                                                      Expanded(
+                                                        child: InputBox(
+                                                          labelText: "Description",
+                                                          value: _descriptions![builderIndex],
+                                                          setter: (value) {
+                                                            _descriptions![builderIndex] = value;
+                                                          },
+                                                          validator: (value) => null,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          ),
+                                          SizedBox(height: 8,),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: SizedBox(
+                                                  height: 40,
+                                                  child: TextButton(
+                                                    style: TextButton.styleFrom(
+                                                      backgroundColor: Theme.of(context).colorScheme.surface,
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                      ),
+                                                    ),
+                                                    onPressed: () {
+                                                      if (_numSets > 1) {
+                                                        setState(() {
+                                                          _numSets--;
+                                                          _reps!.removeLast();
+                                                          _descriptions!.removeLast();
+                                                        });
+                                                      }
+                                                    },
+                                                    child: Text(
+                                                      "-",
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontWeight: FontWeight.w900,
+                                                        fontSize: Theme.of(context).textTheme.titleLarge!.fontSize,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(width: 8,),
+                                              Expanded(
+                                                child: SizedBox(
+                                                  height: 40,
+                                                  child: TextButton(
+                                                    style: TextButton.styleFrom(
+                                                      backgroundColor: Theme.of(context).colorScheme.surface,
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                                                      ),
+                                                    ),
+                                                    onPressed: () {
+                                                      if (_numSets < 10) {
+                                                        setState(() {
+                                                          _numSets++;
+                                                          _reps!.add(1);
+                                                          _descriptions!.add("");
+                                                        });
+                                                      }
+                                                    },
+                                                    child: Text(
+                                                      "+",
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontWeight: FontWeight.w900,
+                                                        fontSize: Theme.of(context).textTheme.titleLarge!.fontSize,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      );
+                                    }
+                                    return Container();
+                                  },
+                                ),
+                              ],
                             ),
+                            // Row(
+                            //   mainAxisAlignment: MainAxisAlignment.center,
+                            //   children: [
+                            //     Checkbox(
+                            //       checkColor: Colors.white,
+                            //       activeColor: Theme.of(context).colorScheme.primary,
+                            //       value: workoutStructure,
+                            //       onChanged: (bool? value) {
+                            //         setState(() {
+                            //           workoutStructure = value!;
+                            //           if (value) {
+                            //             route = false;
+                            //           }
+                            //         });
+                            //         _reps = [];
+                            //         _descriptions = [];
+                            //         _routes = [];
+                            //         _images = [];
+                            //         _paces = [];
+                            //         for (var i = _descriptions!.length; i < _numSets; i++) {
+                            //           _descriptions!.add("");
+                            //           _reps!.add(null);
+                            //           _images!.add(null);
+                            //           _routes!.add(null);
+                            //           _paces!.add(null);
+                            //         }
+                            //       }
+                            //     ),
+                            //     Text("Sets", style: TextStyle(fontSize: 15)),
+                            //     SizedBox(width: 10),
+                            //     Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
+                            //     SizedBox(width: 10,),
+                            //     Checkbox(
+                            //       value: route,
+                            //       onChanged: (bool? value) {
+                            //         setState(() {
+                            //           route = value!;
+                            //           if (value) {
+                            //             workoutStructure = false;
+                            //           }
+                            //         });
+                            //       },
+                            //     ),
+                            //     Text("Route"),
+                            //   ],
+                            // ),
+                            // Builder(
+                            //   builder: (context) {
+                            //     if (workoutStructure) {
+                            //       return Column(
+                            //         children: [
+                            //           Builder(
+                            //             builder: (context) {
+                            //               List<Widget> result = [];
+                            //               for (int i = 0; i < _numSets; i++) {
+                            //                 result.add(WorkoutStructureFormField(
+                            //                   repsValue: "${_reps?[i] ?? ""}",
+                            //                   descriptionValue: _descriptions![i],
+                            //                   paceValue: _paces![i],
+                            //                   repsSetter: (value) {
+                            //                     _reps?[i] = int.parse(value == "" ? "1" : value);
+                            //                   },
+                            //                   descriptionSetter: (value) {
+                            //                     _descriptions?[i] = value;
+                            //                   },
+                            //                   paceSetter: (value) {
+                            //                     setState(() {
+                            //                       _paces?[i] = value;
+                            //                     });
+                            //                   },
+                            //                   repsValidator: (value) {
+                            //                     if (value != "" && int.tryParse(value) == null) {
+                            //                       return "# only";
+                            //                     }
+                            //                     return null;
+                            //                   },
+                            //                   descriptionValidator: (value) {
+                            //                     if (value == "") {
+                            //                       return "Required";
+                            //                     }
+                            //                     return null;
+                            //                   }, 
+                            //                   user: userData,
+                            //                   routeSetter: (value) {
+                            //                     _routes?.add(value);
+                            //                     setState(() {
+                            //                       _descriptions![i] = value!.key;
+                            //                     });
+                            //                   },
+                            //                   mileageImageSetter: () {
+                            //                     // remove this method
+                            //                   }
+                            //                 ));
+                            //                 if (i != _numSets-1) {
+                            //                   result.add(SizedBox(height: 12,));
+                            //                 }
+                            //               }
+                            //               return Column(children: result,);
+                            //             },
+                            //           ),
+                            //           SizedBox(height: 8),
+                            //           Row(
+                            //             mainAxisAlignment: MainAxisAlignment.center,
+                            //             children: [
+                            //               ElevatedButton(
+                            //                 style: ElevatedButton.styleFrom(
+                            //                   backgroundColor: Theme.of(context).colorScheme.primary,
+                            //                   textStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            //                 ),
+                            //                 onPressed: () {
+                            //                   if (_numSets > 1) {
+                            //                     _numSets--;
+                            //                     _descriptions!.removeLast();
+                            //                     _images!.removeLast();
+                            //                     _reps!.removeLast();
+                            //                     _paces!.removeLast();
+                            //                     setState(() {});
+                            //                   }
+                            //                 },
+                            //                 child: Text("-", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
+                            //               ),
+                            //               SizedBox(width: 8),
+                            //               ElevatedButton(
+                            //                 style: ElevatedButton.styleFrom(
+                            //                   backgroundColor: Theme.of(context).colorScheme.primary,
+                            //                 ),
+                            //                 onPressed: () {
+                            //                   if (_numSets < 10) {
+                            //                     _numSets++;
+                            //                     _descriptions!.add("");
+                            //                     _images!.add(null);
+                            //                     _reps!.add(null);
+                            //                     _paces!.add(null);
+                            //                     setState(() {});
+                            //                   }
+                            //                 }, 
+                            //                 child: Text("+", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
+                            //               ),
+                            //             ],
+                            //           ),
+                            //           SizedBox(height: 6),
+                            //         ],
+                            //       );
+                            //     }
+                            //     return Container();
+                            //   }
+                            // ),
                             Builder(
                               builder: (context) {
                                 if (route) {
@@ -603,55 +1227,59 @@ class _AddRunPageState extends State<AddRunPage> {
                                 return Container();
                               },
                             ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                textStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
-                              ),
-                              onPressed: () async {
-                                final result = await FilePicker.platform.pickFiles(withData: true);
-                                if (result != null) {
-                                  var file = utf8.decode(result.files.single.bytes as List<int>);
-                                  var polyline = await GPXHelper.getPolyline(file);
-                                  final response = await http.get(Uri.parse("https://maps.googleapis.com/maps/api/staticmap?size=400x400&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:administrative|visibility:off&path=color:0x012271ff%7Cenc:$polyline&key=${Env.msApiKey}"));
-                                  if (response.statusCode == 200) {
-                                    print("Successfully fetched map");
-                                    image = await FlutterImageCompress.compressWithList(
-                                      response.bodyBytes,
-                                      minHeight: 400,
-                                      minWidth: 400,
-                                      quality: 40
-                                    );
-                                    setState(() {});
-                                  } else {
-                                    print("Failed to fetch map");
-                                  }
-                                }
-                              },
-                              child: Text("Upload GPS Data"),
-                            ),
-                            Builder(
-                              builder: (context) {
-                                if (image != null) {
-                                  return Column(
-                                    children: [
-                                      SizedBox(height: 12,),
-                                      Image.memory(image!),
-                                    ],
-                                  );
-                                }
-                                return Container();
-                              }
-                            )
+                            // Upload GPS
+                            // ElevatedButton(
+                            //   style: ElevatedButton.styleFrom(
+                            //     textStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                            //   ),
+                            //   onPressed: () async {
+                            //     final result = await FilePicker.platform.pickFiles(withData: true);
+                            //     if (result != null) {
+                            //       var file = utf8.decode(result.files.single.bytes as List<int>);
+                            //       var polyline = await GPXHelper.getPolyline(file);
+                            //       final response = await http.get(Uri.parse("https://maps.googleapis.com/maps/api/staticmap?size=400x400&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:administrative|visibility:off&path=color:0x012271ff%7Cenc:$polyline&key=${Env.msApiKey}"));
+                            //       if (response.statusCode == 200) {
+                            //         print("Successfully fetched map");
+                            //         image = await FlutterImageCompress.compressWithList(
+                            //           response.bodyBytes,
+                            //           minHeight: 400,
+                            //           minWidth: 400,
+                            //           quality: 40
+                            //         );
+                            //         setState(() {});
+                            //       } else {
+                            //         print("Failed to fetch map");
+                            //       }
+                            //     }
+                            //   },
+                            //   child: Text("Upload GPS Data"),
+                            // ),
+                            // Builder(
+                            //   builder: (context) {
+                            //     if (image != null) {
+                            //       return Column(
+                            //         children: [
+                            //           SizedBox(height: 12,),
+                            //           Image.memory(image!),
+                            //         ],
+                            //       );
+                            //     }
+                            //     return Container();
+                            //   }
+                            // )
                           ],
                         ),
                       ),
                     ),
                     SizedBox(
-                      width: 90,
-                      height: 32,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          textStyle: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                      height: 40,
+                      width: 150,
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                          ),
                         ),
                         onPressed: () async {
                           // _reps = [];
@@ -673,7 +1301,7 @@ class _AddRunPageState extends State<AddRunPage> {
                             Map<int, List<dynamic>> sets = {};
                             if (_descriptions != null) {
                               for (int i = 0; i < _descriptions!.length; i++) {
-                                List<dynamic> details = [_descriptions![i], _images![i], _reps![i], _paces![i]];
+                                List<dynamic> details = [_descriptions![i], null, _reps![i], null];
                                 sets.addAll({i : details});
                               }
                             }
@@ -681,14 +1309,14 @@ class _AddRunPageState extends State<AddRunPage> {
                               id: editID,
                               title: _title,
                               distance: _distance,
-                              unit: _unit,
+                              unit: _unit!,
                               time: timeInSeconds,
                               perceivedEffort: perceivedEffortRating == null ? null : (perceivedEffortRating!*100).round()/100,
                               type: _type,
                               notes: _notes,
                               sets: workoutStructure ? sets : {},
                               color: cardColor ? (otherCardColor ?? Theme.of(context).colorScheme.secondary).value.toRadixString(16) : "ffebedf3",
-                              timestamp: timestamp ?? (DateTime.now().millisecondsSinceEpoch/1000).round(),
+                              timestamp: timestamp ?? (now.millisecondsSinceEpoch/1000).round(),
                               image: image,
                             );
                             if (editID == null) {
@@ -700,7 +1328,14 @@ class _AddRunPageState extends State<AddRunPage> {
                             Navigator.pop(context);
                           }
                         },
-                        child: Text("Save", style: TextStyle(color: Theme.of(context).colorScheme.secondary),),
+                        child: Text(
+                          "Save",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                          ),
+                        ),
                       ),
                     ),
                     SizedBox(height: 10),

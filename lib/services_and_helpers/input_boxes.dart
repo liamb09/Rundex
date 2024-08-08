@@ -89,33 +89,39 @@ class DoubleInputBox extends StatelessWidget {
   }
 }
 
-class StringInputBox extends StatelessWidget {
-  const StringInputBox({
+class InputBox extends StatelessWidget {
+  const InputBox({
     super.key,
     required this.labelText,
     required this.value,
-    required this.strValueSetter,
+    required this.setter,
+    required this.validator,
+    this.maxLines,
+    this.keyboardType,
   });
 
   final String labelText;
   final String value;
-  final void Function(String value) strValueSetter;
+  final void Function(String value) setter;
+  final String? Function (String value) validator;
+  final int? maxLines;
+  final TextInputType? keyboardType;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      initialValue: value,
       decoration: InputDecoration(
-        border: OutlineInputBorder(),
-        labelText: labelText,
+        hintText: labelText,
+        border: OutlineInputBorder(
+          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.all(Radius.circular(8))
+        ),
       ),
-      validator: (value) {
-        if (value?.isEmpty == true) {
-          return "Required";
-        }
-        return null;
-      },
-      onSaved: (newValue) => strValueSetter("$newValue"),
+      keyboardType: keyboardType,
+      initialValue: value,
+      onSaved:  (newValue) => setter("$newValue"),
+      validator: (value) => validator(value!),
+      maxLines: maxLines,
     );
   }
 }

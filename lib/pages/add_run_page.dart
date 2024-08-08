@@ -643,11 +643,64 @@ class _AddRunPageState extends State<AddRunPage> {
                                   splashColor: Colors.transparent,
                                   splashFactory: NoSplash.splashFactory,
                                   onTap: () async {
-                                    DateTime? dateTime = await getDateTime();
-                                    if (dateTime != null) {
-                                      timestamp = (DateTime.parse(dateTime.toString()).millisecondsSinceEpoch/1000).round();
-                                    }
-                                    setState(() {});
+                                    showCupertinoModalPopup(
+                                      context: context,
+                                      builder: (context) {
+                                        return Container(
+                                          color: Colors.white,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text("Date", style: Theme.of(context).textTheme.titleLarge),
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Expanded(
+                                                      child: SizedBox(
+                                                        height: 200,
+                                                        child: CupertinoDatePicker(
+                                                          initialDateTime: now,
+                                                          maximumDate: now,
+                                                          mode: CupertinoDatePickerMode.date,
+                                                          showDayOfWeek: true,
+                                                          onDateTimeChanged: (dateTime) {
+                                                            setState(() {
+                                                              timestamp = (dateTime.millisecondsSinceEpoch/1000).round();
+                                                            });
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                MaterialButton(
+                                                  color: Theme.of(context).colorScheme.primary,
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(6.0),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        SizedBox(
+                                                          child: Text(
+                                                            "OK",
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    );
                                   },
                                   child: Text(
                                     timestamp == null || timestamp == (DateTime.parse(now.toString()).millisecondsSinceEpoch/1000).round() ?

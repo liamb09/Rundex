@@ -123,12 +123,12 @@ class _AddRunPageState extends State<AddRunPage> {
 
     if (zeroTo100.isEmpty) {
       for (int i = 0; i < 100; i++) {
-        zeroTo100.add(Center(child: Text("$i")));
+        zeroTo100.add(Center(child: Text("${i < 10 ? "0$i" : i}")));
       }
     }
     if (zeroTo60.isEmpty) {
       for (int i = 0; i < 60; i++) {
-        zeroTo60.add(Center(child: Text("$i")));
+        zeroTo60.add(Center(child: Text("${i < 10 ? "0$i" : i}")));
       }
     }
     if (oneTo20.isEmpty) {
@@ -661,7 +661,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                       child: SizedBox(
                                                         height: 200,
                                                         child: CupertinoDatePicker(
-                                                          initialDateTime: now,
+                                                          initialDateTime: timestamp == null ? now : DateTime.fromMillisecondsSinceEpoch(timestamp!*1000),
                                                           maximumDate: now,
                                                           mode: CupertinoDatePickerMode.date,
                                                           showDayOfWeek: true,

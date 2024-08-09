@@ -8,6 +8,7 @@ import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
 import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';
 import 'package:tinycolor2/tinycolor2.dart';
+import 'package:flutter_share/flutter_share.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -147,7 +148,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 Builder(
                                   builder: (context) {
-                                    if (run.time != 0) {
+                                    if (run.time != 0 && run.distance != 0) {
                                       return Expanded(
                                         child: Column(
                                           children: [
@@ -441,7 +442,32 @@ class _HomePageState extends State<HomePage> {
                                                       ],
                                                     ),
                                                   ),
-                                                  onPressed: () {},
+                                                  onPressed: () {
+                                                    String bodyText = "${run.title} (${run.type})\n";
+                                                    if (run.distance != 0 && run.time != 0) {
+                                                      bodyText += "${run.distance}${run.unit} in ${secondsToTime(run.time)} (${secondsToTime((run.time/run.distance).round())}min/${run.unit})\n";
+                                                    } else if (run.time == 0 && run.distance != 0) {
+                                                      bodyText += "${run.distance}${run.unit}\n";
+                                                    } else if (run.distance == 0 && run.time != 0) {
+                                                      bodyText += "${secondsToTime(run.time)}\n";
+                                                    }
+                                                    if (run.sets!.isNotEmpty) {
+                                                      bodyText += "\nSets:\n";
+                                                      for (List<dynamic> set in run.sets!.values) {
+                                                        bodyText += "${set[2]} X ${set[0]}\n";
+                                                      }
+                                                    }
+                                                    if (run.notes != "") {
+                                                      bodyText += "\nNotes: ${run.notes}";
+                                                    }
+                                                    if (bodyText.substring(bodyText.length-2) == "\n") {
+                                                      bodyText = bodyText.substring(0, bodyText.length-2);
+                                                    }
+                                                    FlutterShare.share(
+                                                      title: run.title,
+                                                      text: bodyText,
+                                                    );
+                                                  },
                                                 )
                                               ],
                                             );

@@ -8,7 +8,6 @@ import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';
 //import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
-import 'package:tinycolor2/tinycolor2.dart';
 
 class StatsPage extends StatefulWidget {
   @override

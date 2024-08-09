@@ -38,7 +38,7 @@ class User {
   static String encodeRoutes (Map<String, Map<Uint8List?, double?>>? r) {
     Map<String, Map<String?, double?>>? newR = {};
     if (r != null) {
-      for (var entry in r!.entries) {
+      for (var entry in r.entries) {
         newR.addAll({entry.key : {jsonEncode(entry.value.keys.first) : entry.value.values.first}});
       }
     }

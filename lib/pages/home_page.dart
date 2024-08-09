@@ -1,22 +1,10 @@
-import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:running_log/pages/add_run_page.dart';
-import 'package:running_log/services_and_helpers/GPXHelper.dart';
 import 'package:running_log/services_and_helpers/Run.dart';
 import 'package:running_log/services_and_helpers/RunsDatabase.dart';
 import 'package:running_log/services_and_helpers/User.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
-import 'package:running_log/services_and_helpers/input_boxes.dart';
-import 'package:flex_color_picker/flex_color_picker.dart';
-import 'package:intl/intl.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:running_log/services_and_helpers/env.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';
 import 'package:tinycolor2/tinycolor2.dart';
@@ -53,24 +41,24 @@ class _HomePageState extends State<HomePage> {
     //return (color != null ? Color(int.parse(color.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black);
   }
 
-  ListTile getRunDisplay (User user, Run run) {
-    // TODO: maybe fix run card ui? dont really know what to do
+  ListTile getRunDisplay (User user, Run run, bool inDialog) {
     int secondsSinceRun = (DateTime.now().millisecondsSinceEpoch/1000).round() - run.timestamp;
-    String timeMessage = "";
+    String dateMessage = "";
     if (secondsSinceRun < 86400) {
-      timeMessage = "Today";
+      dateMessage = "Today";
     } else if (secondsSinceRun < 86400*2) {
-      timeMessage = "Yesterday";
+      dateMessage = "Yesterday";
     } else if (secondsSinceRun < 604800) {
-      timeMessage = "${(secondsSinceRun/86400).floor()}d";
+      dateMessage = "${(secondsSinceRun/86400).floor()}d";
     } else if (secondsSinceRun < 86400*365) {
-      timeMessage = "${(secondsSinceRun/(86400*7)).floor()}w";
+      dateMessage = "${(secondsSinceRun/(86400*7)).floor()}w";
     } else {
-      timeMessage = "${(secondsSinceRun/(86400*365)).floor()}y";
+      dateMessage = "${(secondsSinceRun/(86400*365)).floor()}y";
     }
     return ListTile(
       // Title, type, and date
       title: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Expanded(
             child: Column(
@@ -78,7 +66,9 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Text(
                   run.title,
-                  style: TextStyle(fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
                 Text(
                   run.type,
@@ -87,13 +77,14 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Text(
-            timeMessage
+            dateMessage,
           ),
         ],
       ),
       subtitle: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Builder(
               builder: (context) {
@@ -102,96 +93,127 @@ class _HomePageState extends State<HomePage> {
                 }
                 return Column(
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Builder(
-                          builder: (context) {
-                            if (run.distance != 0) {
-                              return Expanded(
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      "${run.distance}",
-                                      style: TextStyle(fontWeight: FontWeight.w900)
-                                    ),
-                                    Text(
-                                      run.unit == "mi" ? "Miles" : "Kilometers",
-                                    ),
-                                  ],
+                    Builder(
+                      builder: (context) {
+                        if (run.distance == 0 && run.timestamp == 0) {
+                          return Container();
+                        }
+                        return Column(
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Builder(
+                                  builder: (context) {
+                                    if (run.distance != 0) {
+                                      return Expanded(
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              "${run.distance}",
+                                              style: TextStyle(fontWeight: FontWeight.w900)
+                                            ),
+                                            Text(
+                                              run.unit == "mi" ? "Miles" : "Kilometers",
+                                              style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                    return Container();
+                                  },
                                 ),
-                              );
-                            }
-                            return Container();
-                          },
-                        ),
-                        Builder(
-                          builder: (context) {
-                            if (run.time != 0) {
-                              return Expanded(
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      secondsToTime(run.time),
-                                      style: TextStyle(fontWeight: FontWeight.w900)
-                                    ),
-                                    Text(
-                                      "Time",
-                                    ),
-                                  ],
+                                Builder(
+                                  builder: (context) {
+                                    if (run.time != 0) {
+                                      return Expanded(
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              secondsToTime(run.time),
+                                              style: TextStyle(fontWeight: FontWeight.w900)
+                                            ),
+                                            Text(
+                                              "Time",
+                                              style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                    return Container();
+                                  },
                                 ),
-                              );
-                            }
-                            return Container();
-                          },
-                        ),
-                        Builder(
-                          builder: (context) {
-                            if (run.time != 0) {
-                              return Expanded(
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      secondsToTime((run.time/run.distance).round()),
-                                      style: TextStyle(fontWeight: FontWeight.w900)
-                                    ),
-                                    Text(
-                                      "Min/${run.unit}",
-                                    ),
-                                  ],
+                                Builder(
+                                  builder: (context) {
+                                    if (run.time != 0) {
+                                      return Expanded(
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              secondsToTime((run.time/run.distance).round()),
+                                              style: TextStyle(fontWeight: FontWeight.w900)
+                                            ),
+                                            Text(
+                                              "Min/${run.unit}",
+                                              style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                    return Container();
+                                  },
                                 ),
-                              );
-                            }
-                            return Container();
-                          },
-                        ),
-                      ],
+                              ],
+                            ),
+                            SizedBox(height: 10,),
+                          ],
+                        );
+                      }
                     ),
-                    SizedBox(height: 10,),
                   ],
                 );
               }
             ),
             Builder(
               builder: (context) {
-                if (run.sets == null) {
+                if (run.sets!.isEmpty) {
                   return Container();
                 }
-                return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: run.sets!.length,
-                  itemBuilder: (context, index) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("${run.sets![index]![2]}"),
-                        SizedBox(width: 3,),
-                        Icon(Icons.close, size: 15,),
-                        SizedBox(width: 3,),
-                        Text("${run.sets![index]![0]}"),
-                      ],
-                    );
-                  },
+                return Column(
+                  children: [
+                    ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: run.sets!.length,
+                      itemBuilder: (context, index) {
+                        return Column(
+                          children: [
+                            Row(
+                              // mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("${run.sets![index]![2]}"),
+                                SizedBox(width: 3,),
+                                Icon(Icons.close, size: 15,),
+                                SizedBox(width: 3,),
+                                Expanded(child: Text("${run.sets![index]![0]}", softWrap: true, style: TextStyle(height: 1.2))),
+                              ],
+                            ),
+                            Builder(
+                              builder: (context) {
+                                if (!inDialog) {
+                                  return SizedBox(height: 2);
+                                }
+                                return SizedBox(height: 6);
+                              }
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
                 );
               },
             ),
@@ -202,8 +224,8 @@ class _HomePageState extends State<HomePage> {
                 }
                 return Column(
                   children: [
-                    SizedBox(height: 10,),
-                    Text(run.notes),
+                    SizedBox(height: 6),
+                    Text(run.notes, textAlign: TextAlign.left,),
                   ],
                 );
               },
@@ -246,163 +268,200 @@ class _HomePageState extends State<HomePage> {
                 ? Center(child: Text("You have no runs."))
                 : Column(
                   children: [
-                    SizedBox(height: 15),
                     Expanded(
                       child: ListView(
                         children: snapshot.data!.map((run) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                              child: Card(
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                color: Theme.of(context).colorScheme.surface, //run.color == null ? null : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000),
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(8),
-                                  onTap: () {
-                                    showDialog(
-                                      context: context, 
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          backgroundColor: run.color == null ? null : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              getRunDisplay(user, run),
-                                            ],
-                                          ),
-                                          actionsAlignment: MainAxisAlignment.center,
-                                          actions: [
-                                            MaterialButton(
-                                              color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(6.0),
-                                                child: Row(
+                          return Column(
+                            children: [
+                              Builder(
+                                builder: (context) {
+                                  if (snapshot.data![0] == run) {
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(height: 20),
+                                        Row(
+                                          children: [
+                                            SizedBox(width: 20,),
+                                            Text("Your runs", textAlign: TextAlign.left, style: TextStyle(
+                                              fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
+                                              fontWeight: FontWeight.w900,
+                                            ),),
+                                          ],
+                                        ),
+                                        SizedBox(height: 10),
+                                      ],
+                                    );
+                                  }
+                                  return Container();
+                                },
+                              ),
+                              Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+                                  child: Card(
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    color: Theme.of(context).colorScheme.surface, //run.color == null ? null : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000),
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(8),
+                                      onTap: () {
+                                        showDialog(
+                                          context: context, 
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              backgroundColor: run.color == null ? null : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              content: SizedBox(
+                                                width: double.maxFinite,
+                                                child: Column(
                                                   mainAxisSize: MainAxisSize.min,
                                                   children: [
-                                                    Icon(
-                                                      Icons.delete_outline, color: txtColorByBkgd(run.color),
-                                                    ),
-                                                    SizedBox(width: 5,),
-                                                    Text(
-                                                      "Delete",
-                                                      style: TextStyle(
-                                                        color: txtColorByBkgd(run.color),
-                                                      ),
-                                                    ),
+                                                    getRunDisplay(user, run, true),
                                                   ],
-                                                ),
+                                                )
                                               ),
-                                              onPressed: () {
-                                                showDialog(context: context, builder: (context) {
-                                                  return AlertDialog(
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(10),
-                                                    ),
-                                                    content: Text("Delete \"${run.title}?\""),
-                                                    actionsAlignment: MainAxisAlignment.center,
-                                                    actions: [
-                                                      Row(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          MaterialButton(
-                                                            color: Theme.of(context).cardColor.darken(20),
-                                                            child: Padding(
-                                                              padding: const EdgeInsets.all(6),
-                                                              child: Text("Delete", style: TextStyle(
-                                                                color: Provider.of<ThemeProvider>(context).themeData == lightMode ? Colors.red.darken(20) : Colors.red.lighten(20),
-                                                              ),),
-                                                            ),
-                                                            onPressed: () {
-                                                              RunsDatabase.instance.removeRun(run.id!).then((_) => Navigator.pop(context));
-                                                            },
+                                              actionsAlignment: MainAxisAlignment.center,
+                                              actions: [
+                                                MaterialButton(
+                                                  color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(6.0),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.delete_outline, color: txtColorByBkgd(run.color),
+                                                        ),
+                                                        SizedBox(width: 5,),
+                                                        Text(
+                                                          "Delete",
+                                                          style: TextStyle(
+                                                            color: txtColorByBkgd(run.color),
                                                           ),
-                                                          SizedBox(width: 10,),
-                                                          MaterialButton(
-                                                            color: Theme.of(context).colorScheme.secondary,
-                                                            child: Padding(
-                                                              padding: const EdgeInsets.all(6),
-                                                              child: Text("Cancel", style: TextStyle(color: Provider.of<ThemeProvider>(context).themeData == lightMode ? Colors.white : Colors.black),),
-                                                            ),
-                                                            onPressed: () {
-                                                              Navigator.pop(context);
-                                                            },
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  onPressed: () {
+                                                    showDialog(context: context, builder: (context) {
+                                                      return AlertDialog(
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(8),
+                                                        ),
+                                                        // backgroundColor: Theme.of(context).colorScheme.surface,
+                                                        content: Text("Delete \"${run.title}?\""),
+                                                        actionsAlignment: MainAxisAlignment.center,
+                                                        actions: [
+                                                          Row(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            children: [
+                                                              MaterialButton(
+                                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets.all(6),
+                                                                  child: Text("Delete"),
+                                                                ),
+                                                                onPressed: () {
+                                                                  RunsDatabase.instance.removeRun(run.id!).then((_) => Navigator.pop(context));
+                                                                },
+                                                              ),
+                                                              SizedBox(width: 10,),
+                                                              MaterialButton(
+                                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                                color: Theme.of(context).colorScheme.primary,
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets.all(6),
+                                                                  child: Text("Cancel"),
+                                                                ),
+                                                                onPressed: () {
+                                                                  Navigator.pop(context);
+                                                                },
+                                                              )
+                                                            ],
                                                           )
                                                         ],
+                                                      );
+                                                    }).then((_) => Navigator.pop(context)).then((_) => setState(() {}));
+                                                  },
+                                                ),
+                                                MaterialButton(
+                                                  color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(6.0),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.edit_outlined, color: txtColorByBkgd(run.color),
+                                                        ),
+                                                        SizedBox(width: 5,),
+                                                        Text(
+                                                          "Edit",
+                                                          style: TextStyle(
+                                                            color: txtColorByBkgd(run.color),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.push(context, MaterialPageRoute<void>(
+                                                      builder: (BuildContext context) => AddRunPage(),
+                                                      settings: RouteSettings(
+                                                        arguments: run,
                                                       )
-                                                    ],
-                                                  );
-                                                }).then((_) => Navigator.pop(context)).then((_) => setState(() {}));
-                                              },
-                                            ),
-                                            MaterialButton(
-                                              color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(6.0),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                      Icons.edit_outlined, color: txtColorByBkgd(run.color),
-                                                    ),
-                                                    SizedBox(width: 5,),
-                                                    Text(
-                                                      "Edit",
-                                                      style: TextStyle(
-                                                        color: txtColorByBkgd(run.color),
-                                                      ),
-                                                    ),
-                                                  ],
+                                                    )).then((_) => Navigator.pop(context)).then((_) => setState(() {}));
+                                                  },
                                                 ),
-                                              ),
-                                              onPressed: () {
-                                                Navigator.push(context, MaterialPageRoute<void>(
-                                                  builder: (BuildContext context) => AddRunPage(),
-                                                  settings: RouteSettings(
-                                                    arguments: run,
-                                                  )
-                                                )).then((_) => Navigator.pop(context)).then((_) => setState(() {}));
-                                              },
-                                            ),
-                                            MaterialButton(
-                                              color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(6.0),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                      Icons.share_outlined, color: txtColorByBkgd(run.color),
+                                                MaterialButton(
+                                                  color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(6.0),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.share_outlined, color: txtColorByBkgd(run.color),
+                                                        ),
+                                                        SizedBox(width: 5,),
+                                                        Text(
+                                                          "Share",
+                                                          style: TextStyle(
+                                                            color: txtColorByBkgd(run.color),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                    SizedBox(width: 5,),
-                                                    Text(
-                                                      "Share",
-                                                      style: TextStyle(
-                                                        color: txtColorByBkgd(run.color),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              onPressed: () {},
-                                            )
-                                          ],
+                                                  ),
+                                                  onPressed: () {},
+                                                )
+                                              ],
+                                            );
+                                          }
                                         );
-                                      }
-                                    );
-                                  },
-                                  child: getRunDisplay(user, run),
+                                      },
+                                      child: getRunDisplay(user, run, false),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                              Builder(
+                                builder: (context) {
+                                  if (snapshot.data![snapshot.data!.length-1] == run) {
+                                    return SizedBox(height: 60);
+                                  }
+                                  return Container();
+                                },
+                              ),
+                            ],
                           );
                         }).toList()
                       ),

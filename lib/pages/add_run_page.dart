@@ -1,23 +1,13 @@
-import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:running_log/services_and_helpers/GPXHelper.dart';
 import 'package:running_log/services_and_helpers/Run.dart';
 import 'package:running_log/services_and_helpers/RunsDatabase.dart';
 import 'package:running_log/services_and_helpers/User.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
 import 'package:running_log/services_and_helpers/input_boxes.dart';
-import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:running_log/services_and_helpers/env.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:running_log/theme/theme_provider.dart';
 
 class AddRunPage extends StatefulWidget {
   @override
@@ -69,21 +59,7 @@ class _AddRunPageState extends State<AddRunPage> {
 
   Future<DateTime?> getDateTime () async {
     DateTime? selectedDate = await showDatePicker(context: context, firstDate: DateTime(2000), lastDate: DateTime.now(), initialDate: timestamp != null ? DateTime.fromMillisecondsSinceEpoch(timestamp!*1000) : now);
-    TimeOfDay? selectedTime;
-    // if (selectedDate != null) {
-    //   selectedTime = await showTimePicker(context: context, initialTime: timestamp == null ? TimeOfDay.fromDateTime(now) : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(timestamp!*1000)));
-    // }
-    if (selectedTime != null) {
-      isTime = true;
-    }
-    DateTime? dateTime = selectedTime == null ? selectedDate : DateTime(
-      selectedDate!.year,
-      selectedDate.month,
-      selectedDate.day,
-      selectedTime.hour,
-      selectedTime.minute
-    );
-    return dateTime;
+    return selectedDate;
   }
 
   void setMilageAndImage (MapEntry<String, Map<Uint8List?, double?>> chosenRoute) {
@@ -623,7 +599,7 @@ class _AddRunPageState extends State<AddRunPage> {
                               maxLines: 5,
                             ),
                             SizedBox(height: 12),
-                            // Date & Time
+                            // Date
                             Row(
                               children: [
                                 Expanded(
@@ -631,7 +607,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "Date & Time",
+                                        "Date",
                                         style: Theme.of(context).textTheme.titleMedium,
                                       ),
                                     ],
@@ -959,7 +935,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                                                 });
                                                                               },
                                                                               scrollController: FixedExtentScrollController(
-                                                                                initialItem: _distance.floor(),
+                                                                                initialItem: _reps![builderIndex]!-1,
                                                                               ),
                                                                               children: oneTo20,
                                                                             ),
@@ -1323,81 +1299,80 @@ class _AddRunPageState extends State<AddRunPage> {
                             //     return Container();
                             //   }
                             // )
+                            SizedBox(height: 60,),
                           ],
                         ),
                       ),
                     ),
-                    SizedBox(
-                      height: 40,
-                      width: 150,
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                        ),
-                        onPressed: () async {
-                          // _reps = [];
-                          // _descriptions = [];
-                          // _routes = [];
-                          // _images = [];
-                          // _paces = [];
-                          // for (var i = _descriptions!.length; i < _numSets; i++) {
-                          //   _descriptions!.add("");
-                          //   _reps!.add(null);
-                          //   _images!.add(null);
-                          //   _routes!.add(null);
-                          //   _paces!.add(null);
-                          // }
-                          if (formKey.currentState?.validate() == true) {
-                            formKey.currentState?.save();
-                            // Add run to database
-                            int timeInSeconds = (_hours*60 + _minutes)*60 + _seconds;
-                            Map<int, List<dynamic>> sets = {};
-                            if (_descriptions != null) {
-                              for (int i = 0; i < _descriptions!.length; i++) {
-                                List<dynamic> details = [_descriptions![i], null, _reps![i], null];
-                                sets.addAll({i : details});
-                              }
-                            }
-                            var run = Run(
-                              id: editID,
-                              title: _title,
-                              distance: _distance,
-                              unit: _unit!,
-                              time: timeInSeconds,
-                              perceivedEffort: perceivedEffortRating == null ? null : (perceivedEffortRating!*100).round()/100,
-                              type: _type,
-                              notes: _notes,
-                              sets: workoutStructure ? sets : {},
-                              color: cardColor ? (otherCardColor ?? Theme.of(context).colorScheme.secondary).value.toRadixString(16) : "ffebedf3",
-                              timestamp: timestamp ?? (now.millisecondsSinceEpoch/1000).round(),
-                              image: image,
-                            );
-                            if (editID == null) {
-                              await RunsDatabase.instance.addRun(run);
-                            } else {
-                              await RunsDatabase.instance.updateRun(run);
-                            }
-                            // return to homepage
-                            Navigator.pop(context);
-                          }
-                        },
-                        child: Text(
-                          "Save",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w900,
-                            fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
                   ],
                 );
               }
+            ),
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: SizedBox(
+            width: 150,
+            height: 40,
+            child: FloatingActionButton.extended(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+              ),
+              label: Text(
+                "Save",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w900,
+                  fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                ),
+              ),
+              onPressed: () async {
+                // _reps = [];
+                // _descriptions = [];
+                // _routes = [];
+                // _images = [];
+                // _paces = [];
+                // for (var i = _descriptions!.length; i < _numSets; i++) {
+                //   _descriptions!.add("");
+                //   _reps!.add(null);
+                //   _images!.add(null);
+                //   _routes!.add(null);
+                //   _paces!.add(null);
+                // }
+                if (formKey.currentState?.validate() == true) {
+                  formKey.currentState?.save();
+                  // Add run to database
+                  int timeInSeconds = (_hours*60 + _minutes)*60 + _seconds;
+                  Map<int, List<dynamic>> sets = {};
+                  if (_descriptions != null) {
+                    for (int i = 0; i < _descriptions!.length; i++) {
+                      List<dynamic> details = [_descriptions![i], null, _reps![i], null];
+                      sets.addAll({i : details});
+                    }
+                  }
+                  var run = Run(
+                    id: editID,
+                    title: _title,
+                    distance: _distance,
+                    unit: _unit!,
+                    time: timeInSeconds,
+                    perceivedEffort: perceivedEffortRating == null ? null : (perceivedEffortRating!*100).round()/100,
+                    type: _type,
+                    notes: _notes,
+                    sets: workoutStructure ? sets : {},
+                    color: cardColor ? (otherCardColor ?? Theme.of(context).colorScheme.secondary).value.toRadixString(16) : "ffebedf3",
+                    timestamp: timestamp ?? (now.millisecondsSinceEpoch/1000).round(),
+                    image: image,
+                  );
+                  if (editID == null) {
+                    await RunsDatabase.instance.addRun(run);
+                  } else {
+                    await RunsDatabase.instance.updateRun(run);
+                  }
+                  // return to homepage
+                  Navigator.pop(context);
+                }
+              },
             ),
           ),
         );

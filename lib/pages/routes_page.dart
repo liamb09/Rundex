@@ -1,17 +1,13 @@
 import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:provider/provider.dart';
-import 'package:running_log/main.dart';
 import 'package:running_log/services_and_helpers/GPXHelper.dart';
 import 'package:running_log/services_and_helpers/User.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
 import 'package:running_log/services_and_helpers/env.dart';
-import 'package:running_log/services_and_helpers/input_boxes.dart';
 import 'package:http/http.dart' as http;
 import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';

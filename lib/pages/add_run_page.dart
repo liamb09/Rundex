@@ -736,58 +736,61 @@ class _AddRunPageState extends State<AddRunPage> {
                                   splashColor: Colors.transparent,
                                   splashFactory: NoSplash.splashFactory,
                                   onTap: () async {
-                                    await showDialog(
+                                    await showModalBottomSheet(
                                       context: context,
                                       builder: (context) {
                                         return StatefulBuilder(
-                                          builder: (context, setState) => AlertDialog(
-                                            title: Text(
-                                              "Perceived Effort",
-                                              textAlign: TextAlign.center,
-                                            ),
-                                            content: Column(
+                                          builder: (context, setState) => Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Column(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Slider(
-                                                  value: perceivedEffortRating ?? 5,
-                                                  min: 0,
-                                                  max: 10,
-                                                  divisions: 100,
-                                                  label: perceivedEffortRating == null ? "5" : "${(perceivedEffortRating!*10).round()/10}",
-                                                  inactiveColor: Theme.of(context).colorScheme.secondary,
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      perceivedEffortRating = value;
-                                                      perceivedEffort = true;
-                                                    });
+                                                Text(
+                                                  "Perceived Effort",
+                                                  style: Theme.of(context).textTheme.titleLarge
+                                                ),
+                                                Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Slider(
+                                                      value: perceivedEffortRating ?? 5,
+                                                      min: 0,
+                                                      max: 10,
+                                                      divisions: 100,
+                                                      label: perceivedEffortRating == null ? "5" : "${(perceivedEffortRating!*10).round()/10}",
+                                                      inactiveColor: Theme.of(context).colorScheme.secondary,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          perceivedEffortRating = value;
+                                                          perceivedEffort = true;
+                                                        });
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
+                                                MaterialButton(
+                                                  color: Theme.of(context).colorScheme.primary,
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(6.0),
+                                                    child: Row(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        SizedBox(
+                                                          child: Text(
+                                                            "OK",
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  onPressed: () {
+                                                    perceivedEffortRating ??= 5;
+                                                    Navigator.pop(context);
                                                   },
                                                 ),
                                               ],
                                             ),
-                                            actionsAlignment: MainAxisAlignment.center,
-                                            actions: [
-                                              MaterialButton(
-                                                color: Theme.of(context).colorScheme.primary,
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(6.0),
-                                                  child: Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      SizedBox(
-                                                        child: Text(
-                                                          "OK",
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                onPressed: () {
-                                                  perceivedEffortRating ??= 5;
-                                                  Navigator.pop(context);
-                                                },
-                                              ),
-                                            ],
                                           ),
                                         );
                                       },

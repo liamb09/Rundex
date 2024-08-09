@@ -15,6 +15,7 @@ ThemeData lightMode = ThemeData(
     filled: true,
     fillColor: Color(0xfff5f5f5),
   ),
+  bottomSheetTheme: BottomSheetThemeData(modalBarrierColor: Color.fromRGBO(0, 0, 0, .2)),
 );
 
 ThemeData darkMode = ThemeData(

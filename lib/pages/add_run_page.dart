@@ -2,12 +2,15 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:running_log/services_and_helpers/Run.dart';
 import 'package:running_log/services_and_helpers/RunsDatabase.dart';
 import 'package:running_log/services_and_helpers/User.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
 import 'package:running_log/services_and_helpers/input_boxes.dart';
 import 'package:intl/intl.dart';
+import 'package:running_log/theme/theme.dart';
+import 'package:running_log/theme/theme_provider.dart';
 
 class AddRunPage extends StatefulWidget {
   @override
@@ -98,7 +101,7 @@ class _AddRunPageState extends State<AddRunPage> {
   Widget build(BuildContext context) {
 
     if (zeroTo100.isEmpty) {
-      for (int i = 0; i < 100; i++) {
+      for (int i = 0; i <= 100; i++) {
         zeroTo100.add(Center(child: Text("${i < 10 ? "0$i" : i}")));
       }
     }
@@ -170,7 +173,7 @@ class _AddRunPageState extends State<AddRunPage> {
             ),
             backgroundColor: Theme.of(context).colorScheme.tertiary,
           ),
-          backgroundColor: Theme.of(context).colorScheme.background,
+          backgroundColor: Theme.of(context).colorScheme.tertiary,
           body: SingleChildScrollView(
             child: FutureBuilder<User>(
               future: user,
@@ -256,7 +259,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                       context: context,
                                       builder: (context) {
                                         return Container(
-                                          color: Colors.white,
+                                          color: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
                                           child: Padding(
                                             padding: const EdgeInsets.all(16.0),
                                             child: Column(
@@ -270,6 +273,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                       height: 200,
                                                       width: 100,
                                                       child: CupertinoPicker(
+                                                        backgroundColor: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
                                                         itemExtent: 40,
                                                         onSelectedItemChanged: (index) {
                                                           setState(() {
@@ -312,6 +316,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                         SizedBox(
                                                           child: Text(
                                                             "OK",
+                                                            style: TextStyle(color: Colors.black),
                                                           ),
                                                         ),
                                                       ],
@@ -372,7 +377,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                       context: context,
                                       builder: (context) {
                                         return Container(
-                                          color: Colors.white,
+                                          color: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
                                           child: Padding(
                                             padding: const EdgeInsets.all(16.0),
                                             child: Column(
@@ -386,6 +391,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                       height: 200,
                                                       width: 100,
                                                       child: CupertinoPicker(
+                                                        backgroundColor: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
                                                         itemExtent: 40,
                                                         onSelectedItemChanged: (index) {
                                                           setState(() {
@@ -445,6 +451,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                         SizedBox(
                                                           child: Text(
                                                             "OK",
+                                                            style: TextStyle(color: Colors.black),
                                                           ),
                                                         ),
                                                       ],
@@ -565,30 +572,6 @@ class _AddRunPageState extends State<AddRunPage> {
                                 // ),
                               ],
                             ),
-                            // DropdownButtonFormField(
-                            //   decoration: InputDecoration(
-                            //     border: OutlineInputBorder(),
-                            //     labelText: "Type",
-                            //   ),
-                            //   items: types,
-                            //   onChanged: (newValue) {
-                            //     setState(() {
-                            //       _type = newValue!;
-                            //       String currentCardColor = userData.runColors[_type]!;
-                            //       if (currentCardColor != "ebedf3") {
-                            //         otherCardColor = Color(int.parse(currentCardColor, radix: 16) + 0xff000000);
-                            //         cardColor = true;
-                            //       } else {
-                            //         otherCardColor = Color(0xffebedf3);
-                            //         cardColor = false;
-                            //       }
-                            //     });
-                            //   },
-                            //   value: _type,
-                            //   validator: (value) {
-                            //     return null;
-                            //   },
-                            // ),
                             SizedBox(height: 12),
                             // Notes
                             InputBox(
@@ -623,7 +606,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                       context: context,
                                       builder: (context) {
                                         return Container(
-                                          color: Colors.white,
+                                          color: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
                                           child: Padding(
                                             padding: const EdgeInsets.all(16.0),
                                             child: Column(
@@ -637,6 +620,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                       child: SizedBox(
                                                         height: 200,
                                                         child: CupertinoDatePicker(
+                                                          backgroundColor: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? null : Color(0xff0a0a0a),
                                                           initialDateTime: timestamp == null ? now : DateTime.fromMillisecondsSinceEpoch(timestamp!*1000),
                                                           maximumDate: now,
                                                           mode: CupertinoDatePickerMode.date,
@@ -662,6 +646,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                         SizedBox(
                                                           child: Text(
                                                             "OK",
+                                                            style: TextStyle(color: Colors.black),
                                                           ),
                                                         ),
                                                       ],
@@ -680,7 +665,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                   },
                                   child: Text(
                                     timestamp == null || timestamp == (DateTime.parse(now.toString()).millisecondsSinceEpoch/1000).round() ?
-                                      "Now" :
+                                      "Today" :
                                       DateFormat.yMMMEd().format(DateTime.fromMillisecondsSinceEpoch(timestamp!*1000)),
                                     textAlign: TextAlign.left,
                                     style: TextStyle(
@@ -717,7 +702,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                       builder: (context) {
                                         return StatefulBuilder(
                                           builder: (context, setState) => Padding(
-                                            padding: const EdgeInsets.all(16.0),
+                                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 64.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
@@ -755,6 +740,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                         SizedBox(
                                                           child: Text(
                                                             "OK",
+                                                            style: TextStyle(color: Colors.black),
                                                           ),
                                                         ),
                                                       ],
@@ -825,6 +811,7 @@ class _AddRunPageState extends State<AddRunPage> {
                             //     return Container();
                             //   },
                             // ),
+                            
                             // Sets
                             Column(
                               children: [
@@ -914,7 +901,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                             context: context,
                                                             builder: (context) {
                                                               return Container(
-                                                                color: Colors.white,
+                                                                color: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
                                                                 child: Padding(
                                                                   padding: const EdgeInsets.all(16.0),
                                                                   child: Column(
@@ -928,6 +915,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                                             height: 200,
                                                                             width: 100,
                                                                             child: CupertinoPicker(
+                                                                              backgroundColor: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? null : Color(0xff0a0a0a),
                                                                               itemExtent: 40,
                                                                               onSelectedItemChanged: (index) {
                                                                                 setState(() {
@@ -953,6 +941,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                                                               SizedBox(
                                                                                 child: Text(
                                                                                   "OK",
+                                                                                  style: TextStyle(color: Colors.black),
                                                                                 ),
                                                                               ),
                                                                             ],
@@ -1082,153 +1071,6 @@ class _AddRunPageState extends State<AddRunPage> {
                                 ),
                               ],
                             ),
-                            // Row(
-                            //   mainAxisAlignment: MainAxisAlignment.center,
-                            //   children: [
-                            //     Checkbox(
-                            //       checkColor: Colors.white,
-                            //       activeColor: Theme.of(context).colorScheme.primary,
-                            //       value: workoutStructure,
-                            //       onChanged: (bool? value) {
-                            //         setState(() {
-                            //           workoutStructure = value!;
-                            //           if (value) {
-                            //             route = false;
-                            //           }
-                            //         });
-                            //         _reps = [];
-                            //         _descriptions = [];
-                            //         _routes = [];
-                            //         _images = [];
-                            //         _paces = [];
-                            //         for (var i = _descriptions!.length; i < _numSets; i++) {
-                            //           _descriptions!.add("");
-                            //           _reps!.add(null);
-                            //           _images!.add(null);
-                            //           _routes!.add(null);
-                            //           _paces!.add(null);
-                            //         }
-                            //       }
-                            //     ),
-                            //     Text("Sets", style: TextStyle(fontSize: 15)),
-                            //     SizedBox(width: 10),
-                            //     Text("OR", style: TextStyle(fontWeight: FontWeight.bold),),
-                            //     SizedBox(width: 10,),
-                            //     Checkbox(
-                            //       value: route,
-                            //       onChanged: (bool? value) {
-                            //         setState(() {
-                            //           route = value!;
-                            //           if (value) {
-                            //             workoutStructure = false;
-                            //           }
-                            //         });
-                            //       },
-                            //     ),
-                            //     Text("Route"),
-                            //   ],
-                            // ),
-                            // Builder(
-                            //   builder: (context) {
-                            //     if (workoutStructure) {
-                            //       return Column(
-                            //         children: [
-                            //           Builder(
-                            //             builder: (context) {
-                            //               List<Widget> result = [];
-                            //               for (int i = 0; i < _numSets; i++) {
-                            //                 result.add(WorkoutStructureFormField(
-                            //                   repsValue: "${_reps?[i] ?? ""}",
-                            //                   descriptionValue: _descriptions![i],
-                            //                   paceValue: _paces![i],
-                            //                   repsSetter: (value) {
-                            //                     _reps?[i] = int.parse(value == "" ? "1" : value);
-                            //                   },
-                            //                   descriptionSetter: (value) {
-                            //                     _descriptions?[i] = value;
-                            //                   },
-                            //                   paceSetter: (value) {
-                            //                     setState(() {
-                            //                       _paces?[i] = value;
-                            //                     });
-                            //                   },
-                            //                   repsValidator: (value) {
-                            //                     if (value != "" && int.tryParse(value) == null) {
-                            //                       return "# only";
-                            //                     }
-                            //                     return null;
-                            //                   },
-                            //                   descriptionValidator: (value) {
-                            //                     if (value == "") {
-                            //                       return "Required";
-                            //                     }
-                            //                     return null;
-                            //                   }, 
-                            //                   user: userData,
-                            //                   routeSetter: (value) {
-                            //                     _routes?.add(value);
-                            //                     setState(() {
-                            //                       _descriptions![i] = value!.key;
-                            //                     });
-                            //                   },
-                            //                   mileageImageSetter: () {
-                            //                     // remove this method
-                            //                   }
-                            //                 ));
-                            //                 if (i != _numSets-1) {
-                            //                   result.add(SizedBox(height: 12,));
-                            //                 }
-                            //               }
-                            //               return Column(children: result,);
-                            //             },
-                            //           ),
-                            //           SizedBox(height: 8),
-                            //           Row(
-                            //             mainAxisAlignment: MainAxisAlignment.center,
-                            //             children: [
-                            //               ElevatedButton(
-                            //                 style: ElevatedButton.styleFrom(
-                            //                   backgroundColor: Theme.of(context).colorScheme.primary,
-                            //                   textStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                            //                 ),
-                            //                 onPressed: () {
-                            //                   if (_numSets > 1) {
-                            //                     _numSets--;
-                            //                     _descriptions!.removeLast();
-                            //                     _images!.removeLast();
-                            //                     _reps!.removeLast();
-                            //                     _paces!.removeLast();
-                            //                     setState(() {});
-                            //                   }
-                            //                 },
-                            //                 child: Text("-", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
-                            //               ),
-                            //               SizedBox(width: 8),
-                            //               ElevatedButton(
-                            //                 style: ElevatedButton.styleFrom(
-                            //                   backgroundColor: Theme.of(context).colorScheme.primary,
-                            //                 ),
-                            //                 onPressed: () {
-                            //                   if (_numSets < 10) {
-                            //                     _numSets++;
-                            //                     _descriptions!.add("");
-                            //                     _images!.add(null);
-                            //                     _reps!.add(null);
-                            //                     _paces!.add(null);
-                            //                     setState(() {});
-                            //                   }
-                            //                 }, 
-                            //                 child: Text("+", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
-                            //               ),
-                            //             ],
-                            //           ),
-                            //           SizedBox(height: 6),
-                            //         ],
-                            //       );
-                            //     }
-                            //     return Container();
-                            //   }
-                            // ),
                             Builder(
                               builder: (context) {
                                 if (route) {

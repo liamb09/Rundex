@@ -113,8 +113,10 @@ class InputBox extends StatelessWidget {
         hintText: labelText,
         border: OutlineInputBorder(
           borderSide: BorderSide.none,
-          borderRadius: BorderRadius.all(Radius.circular(8))
+          borderRadius: BorderRadius.all(Radius.circular(8)),
         ),
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.surface,
       ),
       keyboardType: keyboardType,
       initialValue: value,

@@ -24,21 +24,29 @@ class ProfileEditField extends StatelessWidget {
   @override
   Widget build (BuildContext context) {
     return InkWell(
-      onLongPress: () {
+      highlightColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      splashFactory: NoSplash.splashFactory,
+      onTap: () {
         toggleEdit();
       },
       child: IntrinsicWidth(
         child: TextField(
           decoration: InputDecoration(
-            contentPadding: EdgeInsets.all(5),
+            contentPadding: EdgeInsets.fromLTRB(5, 5, -3, 5),
+            border: InputBorder.none,
+            fillColor: Colors.transparent,
+            focusColor: Colors.transparent,
+            hoverColor: Colors.transparent,
           ),
           selectionWidthStyle: BoxWidthStyle.tight,
           controller: TextEditingController(text: value),
-          style: TextStyle(color: Colors.black, fontSize: 14),
+          style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: Theme.of(context).textTheme.titleMedium!.fontSize),
           textAlign: TextAlign.right,
           enabled: inEdit,
           onSubmitted: (value) async {
-            if (!intOnly || int.tryParse(value) != null) {
+            if ((!intOnly || int.tryParse(value) != null) && value != "") {
               toggleEdit();
               var newUser = User(
                 name: identifier == "name" ? value : user.name,

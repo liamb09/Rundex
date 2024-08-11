@@ -13,7 +13,6 @@ class ThemeProvider with ChangeNotifier {
   }
 
   ThemeProvider (bool isLight) {
-    print(isLight);
     if (isLight) {
       themeData = lightMode;
     } else {

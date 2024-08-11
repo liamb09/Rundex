@@ -111,7 +111,7 @@ class _HomePageState extends State<HomePage> {
                                         child: Column(
                                           children: [
                                             Text(
-                                              "${run.distance}",
+                                              "${(run.distance*100).round()/100}",
                                               style: TextStyle(fontWeight: FontWeight.w900)
                                             ),
                                             Text(
@@ -313,7 +313,7 @@ class _HomePageState extends State<HomePage> {
                                           context: context, 
                                           builder: (context) {
                                             return AlertDialog(
-                                              backgroundColor: run.color == null ? null : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000),
+                                              backgroundColor: Theme.of(context).colorScheme.surface,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
@@ -329,21 +329,20 @@ class _HomePageState extends State<HomePage> {
                                               actionsAlignment: MainAxisAlignment.center,
                                               actions: [
                                                 MaterialButton(
-                                                  color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 2)),
                                                   child: Padding(
                                                     padding: const EdgeInsets.all(6.0),
                                                     child: Row(
                                                       mainAxisSize: MainAxisSize.min,
                                                       children: [
                                                         Icon(
-                                                          Icons.delete_outline, color: txtColorByBkgd(run.color),
+                                                          Icons.delete_outline, color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
                                                         ),
                                                         SizedBox(width: 5,),
                                                         Text(
                                                           "Delete",
                                                           style: TextStyle(
-                                                            color: txtColorByBkgd(run.color),
+                                                            color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
                                                           ),
                                                         ),
                                                       ],
@@ -352,6 +351,7 @@ class _HomePageState extends State<HomePage> {
                                                   onPressed: () {
                                                     showDialog(context: context, builder: (context) {
                                                       return AlertDialog(
+                                                        backgroundColor: Theme.of(context).colorScheme.surface,
                                                         shape: RoundedRectangleBorder(
                                                           borderRadius: BorderRadius.circular(8),
                                                         ),
@@ -392,21 +392,20 @@ class _HomePageState extends State<HomePage> {
                                                   },
                                                 ),
                                                 MaterialButton(
-                                                  color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 2)),
                                                   child: Padding(
                                                     padding: const EdgeInsets.all(6.0),
                                                     child: Row(
                                                       mainAxisSize: MainAxisSize.min,
                                                       children: [
                                                         Icon(
-                                                          Icons.edit_outlined, color: txtColorByBkgd(run.color),
+                                                          Icons.edit_outlined, color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
                                                         ),
                                                         SizedBox(width: 5,),
                                                         Text(
                                                           "Edit",
                                                           style: TextStyle(
-                                                            color: txtColorByBkgd(run.color),
+                                                            color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
                                                           ),
                                                         ),
                                                       ],
@@ -422,21 +421,20 @@ class _HomePageState extends State<HomePage> {
                                                   },
                                                 ),
                                                 MaterialButton(
-                                                  color: run.color == null ? Theme.of(context).cardColor.darken(20) : (txtColorByBkgd(run.color) == Colors.black ? Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).lighten(10) : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000).darken(10)),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 2)),
                                                   child: Padding(
                                                     padding: const EdgeInsets.all(6.0),
                                                     child: Row(
                                                       mainAxisSize: MainAxisSize.min,
                                                       children: [
                                                         Icon(
-                                                          Icons.share_outlined, color: txtColorByBkgd(run.color),
+                                                          Icons.share_outlined, color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
                                                         ),
                                                         SizedBox(width: 5,),
                                                         Text(
                                                           "Share",
                                                           style: TextStyle(
-                                                            color: txtColorByBkgd(run.color),
+                                                            color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
                                                           ),
                                                         ),
                                                       ],

@@ -1195,7 +1195,7 @@ class _AddRunPageState extends State<AddRunPage> {
                   var run = Run(
                     id: editID,
                     title: _title,
-                    distance: _distance,
+                    distance: (_distance*100).round()/100,
                     unit: _unit!,
                     time: timeInSeconds,
                     perceivedEffort: perceivedEffortRating == null ? null : (perceivedEffortRating!*100).round()/100,

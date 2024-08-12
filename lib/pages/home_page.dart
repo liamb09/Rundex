@@ -42,6 +42,19 @@ class _HomePageState extends State<HomePage> {
     //return (color != null ? Color(int.parse(color.substring(2, 8), radix: 16) + 0xFF000000).computeLuminance() > 0.5 ? Colors.black : Colors.white : Colors.black);
   }
 
+  double toUserUnits (double dist, String distUnit, String userUnit) {
+    double newDist = dist;
+    if (distUnit != userUnit) {
+      if (distUnit == "km") {
+        newDist = dist / 1.609;
+      } else {
+        newDist = dist * 1.609;
+      }
+    }
+    newDist = (newDist*100).round()/100;
+    return newDist;
+  }
+
   ListTile getRunDisplay (User user, Run run, bool inDialog) {
     int runTimestamp = run.timestamp - run.timestamp%86400;
     int secondsSinceRun = (DateTime.now().millisecondsSinceEpoch/1000).round() - runTimestamp;
@@ -154,11 +167,11 @@ class _HomePageState extends State<HomePage> {
                                         child: Column(
                                           children: [
                                             Text(
-                                              secondsToTime((run.time/run.distance).round()),
+                                              secondsToTime((run.time/toUserUnits(run.distance, run.unit, user.distUnit)).round()),
                                               style: TextStyle(fontWeight: FontWeight.w900)
                                             ),
                                             Text(
-                                              "Min/${run.unit}",
+                                              "Min/${user.distUnit}",
                                               style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                                             ),
                                           ],
@@ -330,7 +343,7 @@ class _HomePageState extends State<HomePage> {
                                               actionsAlignment: MainAxisAlignment.center,
                                               actions: [
                                                 MaterialButton(
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 2)),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 1)),
                                                   child: Padding(
                                                     padding: const EdgeInsets.all(6.0),
                                                     child: Row(
@@ -393,7 +406,7 @@ class _HomePageState extends State<HomePage> {
                                                   },
                                                 ),
                                                 MaterialButton(
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 2)),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 1)),
                                                   child: Padding(
                                                     padding: const EdgeInsets.all(6.0),
                                                     child: Row(
@@ -422,7 +435,7 @@ class _HomePageState extends State<HomePage> {
                                                   },
                                                 ),
                                                 MaterialButton(
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 2)),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 1)),
                                                   child: Padding(
                                                     padding: const EdgeInsets.all(6.0),
                                                     child: Row(

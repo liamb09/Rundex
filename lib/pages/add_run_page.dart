@@ -885,6 +885,7 @@ class _AddRunPageState extends State<AddRunPage> {
                                       return Column(
                                         children: [
                                           ListView.builder(
+                                            physics: NeverScrollableScrollPhysics(),
                                             shrinkWrap: true,
                                             itemCount: _numSets,
                                             itemBuilder: (context, builderIndex) {

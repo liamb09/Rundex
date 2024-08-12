@@ -43,7 +43,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   ListTile getRunDisplay (User user, Run run, bool inDialog) {
-    int secondsSinceRun = (DateTime.now().millisecondsSinceEpoch/1000).round() - run.timestamp;
+    int runTimestamp = run.timestamp - run.timestamp%86400;
+    int secondsSinceRun = (DateTime.now().millisecondsSinceEpoch/1000).round() - runTimestamp;
     String dateMessage = "";
     if (secondsSinceRun < 86400) {
       dateMessage = "Today";

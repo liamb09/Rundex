@@ -150,13 +150,14 @@ class _StatsPageState extends State<StatsPage> {
             return Scaffold(
               body: Center(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
                   child: Column(
                     children: [
                       Row(
                         children: [
                           Text(distanceChartStep == "daily" ? "This week" : "Last 7 weeks", textAlign: TextAlign.left, style: TextStyle(
                             fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
+                            fontWeight: FontWeight.w900,
                           ),),
                         ],
                       ),

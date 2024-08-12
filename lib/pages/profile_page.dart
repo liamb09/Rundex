@@ -55,7 +55,7 @@ class _ProfilePageState extends State<ProfilePage> {
         return Scaffold(
           body: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
               child: Stack(
                 children: [
                   Column(
@@ -63,7 +63,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 10),
                           Row(
                             children: [
                               Text("Profile", textAlign: TextAlign.left, style: TextStyle(

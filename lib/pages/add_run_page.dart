@@ -698,6 +698,9 @@ class _AddRunPageState extends State<AddRunPage> {
                                   splashFactory: NoSplash.splashFactory,
                                   onTap: () async {
                                     await showModalBottomSheet(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(top: Radius.circular(0.0)),
+                                      ),
                                       context: context,
                                       builder: (context) {
                                         return StatefulBuilder(

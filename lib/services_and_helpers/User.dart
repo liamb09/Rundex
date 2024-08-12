@@ -7,7 +7,7 @@ class User {
   final double height;
   final int weight;
   final Map<String, String> runColors;
-  final int? goal;
+  final int goal;
   final String distUnit;
   final Map<String, Map<Uint8List?, double?>>? routes;
 
@@ -17,7 +17,7 @@ class User {
     required this.height,
     required this.weight,
     required this.runColors,
-    this.goal,
+    required this.goal,
     required this.distUnit,
     this.routes,
   });

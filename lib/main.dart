@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:running_log/pages/home_page.dart';
+import 'package:running_log/pages/pr_page.dart';
 import 'package:running_log/pages/profile_page.dart';
 import 'package:running_log/pages/stats_page.dart';
 import 'package:running_log/theme/theme.dart';
@@ -68,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final _pages = [
     HomePage(),
     StatsPage(),
-    Placeholder(),
+    PRPage(),
     ProfilePage(),
   ];
 

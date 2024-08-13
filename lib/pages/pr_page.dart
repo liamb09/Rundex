@@ -55,17 +55,36 @@ class _PRPageState extends State<PRPage> {
     for (int i = 0; i < decodedPRs.length; i++) {
       ret.addAll({decodedPRs.keys.elementAt(i): decodedPRs.values.elementAt(i) as int});
     }
+    ret = sortPRs(ret);
     return ret;
+  }
+
+  Map<String, int> sortPRs (Map<String, int> prs) {
+    return Map.fromEntries(prs.entries.toList()..sort((e1, e2) => e1.value.compareTo(e2.value)));
   }
 
   void savePrs (SharedPreferences sp, Map<String, int> prs) {
     sp.setString("prs", json.encode(prs));
   }
 
+  double toUserUnits (double dist, String distUnit, String userUnit) {
+    double newDist = dist;
+    if (distUnit != userUnit) {
+      if (distUnit == "km") {
+        newDist = dist / 1.609;
+      } else {
+        newDist = dist * 1.609;
+      }
+    }
+    newDist = (newDist*100).round()/100;
+    return newDist;
+  }
+
   String? newUnit;
   String inEdit = "";
   List<Widget> zeroTo100 = [];
   List<Widget> zeroTo60 = [];
+  int showDetailedIndex = -1;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +124,7 @@ class _PRPageState extends State<PRPage> {
             }
             return Scaffold(
               body: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
                 child: ListView.builder(
                   itemCount: prs.length,
                   itemBuilder: (context, index) {
@@ -117,13 +136,16 @@ class _PRPageState extends State<PRPage> {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Text("Your PRs", textAlign: TextAlign.left, style: TextStyle(
-                                        fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
-                                        fontWeight: FontWeight.w900,
-                                      ),),
-                                    ],
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                    child: Row(
+                                      children: [
+                                        Text("Your PRs", textAlign: TextAlign.left, style: TextStyle(
+                                          fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
+                                          fontWeight: FontWeight.w900,
+                                        ),),
+                                      ],
+                                    ),
                                   ),
                                   SizedBox(height: 10),
                                 ],
@@ -134,20 +156,50 @@ class _PRPageState extends State<PRPage> {
                         ),
                         InkWell(
                           onTap: () {
-                                              
+                            if (showDetailedIndex != index) {
+                              setState(() => showDetailedIndex = index);
+                            } else {
+                              setState(() => showDetailedIndex = -1);
+                            }
                           },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12.0),
-                            child: Row(
+                            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+                            child: Stack(
                               children: [
-                                Expanded(child: Text(prs.keys.elementAt(index), style: Theme.of(context).textTheme.titleMedium,)),
-                                Text(
-                                  secondsToTime(prs.values.elementAt(index)),
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                    fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
-                                    color: Theme.of(context).colorScheme.secondary,
-                                  ),
+                                Row(
+                                  children: [
+                                    Expanded(child: Text(prs.keys.elementAt(index), style: Theme.of(context).textTheme.titleMedium,)),
+                                    Text(
+                                      secondsToTime(prs.values.elementAt(index)),
+                                      textAlign: TextAlign.left,
+                                      style: TextStyle(
+                                        fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                        color: Theme.of(context).colorScheme.secondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Builder(
+                                      builder: (context) {
+                                        if (showDetailedIndex == index) {
+                                          String key = prs.keys.elementAt(index);
+                                          int value = prs.values.elementAt(index);
+                                          return Text(
+                                            "${secondsToTime((value/toUserUnits(double.parse(key.substring(0, key.length-2)), key.substring(key.length-2), userData.distUnit)).round())}/${userData.distUnit}",
+                                            textAlign: TextAlign.left,
+                                            style: TextStyle(
+                                              fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                              color: Theme.of(context).colorScheme.secondary,
+                                            ),
+                                          );
+                                        }
+                                        return Container();
+                                      }
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -489,6 +541,7 @@ class _PRPageState extends State<PRPage> {
                                         onPressed: () {
                                           if (dist > 0 && hours + minutes + seconds > 0) {
                                             prs.addAll({"$dist$unit": hours*60*60 + minutes*60 + seconds});
+                                            prs = sortPRs(prs);
                                             savePrs(sharedPreferences, prs);
                                             Navigator.pop(context);
                                           }

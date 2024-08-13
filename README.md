@@ -8,6 +8,5 @@ This currently is not published anywhere, but I am just coming back to it and pl
 (roughly in order of importance)
  - [ ] Finish mileage charts + goals
  - [ ] Improve UI
- - [ ] Add PR tracker
  - [ ] Add weather
  - [ ] Add starter survey

@@ -63,6 +63,18 @@ class _StatsPageState extends State<StatsPage> {
     return weeklyMileage;
   }
 
+  double getThisWeekMileage (List<Run> runs) {
+    int currentTimestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
+    int weekStartTimestamp = (currentTimestamp - (currentTimestamp % 604800)) + 345600; // get to last sunday
+    double ret = 0;
+    for (int i = runs.length-1; i >= 0; i--) {
+      if (runs[i].timestamp >= weekStartTimestamp) {
+        ret += runs[i].distance;
+      }
+    }
+    return ret;
+  }
+
   List<MapEntry<String, double>> getLastWeekMileage (List<Run> runs, User user) {
     var currentTimestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
     var dayIndex = ((((currentTimestamp % 604800)/86400).floor()-3)+7)%7;
@@ -134,6 +146,7 @@ class _StatsPageState extends State<StatsPage> {
           builder: (BuildContext context, AsyncSnapshot<User> userSnapshot) {
             var userData = userSnapshot.data;
             List<double> weeklyMileage = [];
+            double thisWeekMileage = 0;
             List<DayData> lastWeek = [];
             List<WeekData> lastFewWeeks = [];
             List<WeekData> userGoalWeeks = [];
@@ -142,6 +155,8 @@ class _StatsPageState extends State<StatsPage> {
             } else {
               if (runs != null) {
                 weeklyMileage = getWeekMileage(runs, userData);
+                thisWeekMileage = getThisWeekMileage(runs);
+                print(thisWeekMileage);
                 lastWeek = getDailyChartData(getLastWeekMileage(runs, userData));
                 lastFewWeeks = getWeeklyGraphData(getLastFewWeeksMileage(runs, userData));
               }
@@ -155,22 +170,77 @@ class _StatsPageState extends State<StatsPage> {
                     children: [
                       Row(
                         children: [
-                          Text(distanceChartStep == "daily" ? "This week" : "Last 7 weeks", textAlign: TextAlign.left, style: TextStyle(
+                          Text("This week", textAlign: TextAlign.left, style: TextStyle(
                             fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
                             fontWeight: FontWeight.w900,
                           ),),
                         ],
                       ),
+                      gauges.SfRadialGauge(
+                        axes: <gauges.RadialAxis>[
+                          gauges.RadialAxis(
+                            showLabels: false,
+                            showTicks: false,
+                            radiusFactor: 0.8,
+                            axisLineStyle: gauges.AxisLineStyle(
+                              thickness: 0.2,
+                              cornerStyle: gauges.CornerStyle.bothCurve,
+                              color: Provider.of<ThemeProvider>(context).themeData == darkMode ? Color(0xff171717) : Color(0xffE8E8E8),
+                              thicknessUnit: gauges.GaugeSizeUnit.factor,
+                            ),
+                            pointers: <gauges.GaugePointer>[
+                              gauges.RangePointer(
+                                value: (thisWeekMileage/userData.goal)*100,
+                                width: 0.2,
+                                cornerStyle: gauges.CornerStyle.bothCurve,
+                                color: Theme.of(context).colorScheme.primary,
+                                sizeUnit: gauges.GaugeSizeUnit.factor,
+                                enableAnimation: true,
+                                animationDuration: 200,
+                                animationType: gauges.AnimationType.linear
+                              )
+                            ],
+                            annotations: <gauges.GaugeAnnotation>[
+                              gauges.GaugeAnnotation(
+                                positionFactor: 0.1,
+                                angle: 90,
+                                widget: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "${thisWeekMileage.toStringAsFixed(2)} / ${userData.goal}",
+                                      style: Theme.of(context).textTheme.headlineSmall,
+                                    ),
+                                    Text(
+                                      userData.distUnit == "mi" ? "Miles" : "Kilometers",
+                                      style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text(distanceChartStep == "daily" ? "Last 7 days" : "Last 7 weeks", textAlign: TextAlign.left, style: TextStyle(
+                            fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
+                            fontWeight: FontWeight.w900,
+                          ),),
+                        ],
+                      ),
+                      SizedBox(height: 20,),
                       CupertinoSlidingSegmentedControl<String>(
                         groupValue: distanceChartStep,
                         children: <String, Widget>{
                           "daily": Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Text("Daily"),
+                            child: Text("Daily Mileage"),
                           ),
                           "weekly": Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Text("Weekly"),
+                            child: Text("Weekly Mileage"),
                           ),
                         },
                         onValueChanged: (String? value) {
@@ -181,7 +251,6 @@ class _StatsPageState extends State<StatsPage> {
                           }
                         },
                       ),
-                      // TODO: add weekly and maybe yearly chart, and a CupertinoSlidingSegmentedControl to switch between them
                       Builder(
                         builder: (context) {
                           if (distanceChartStep == "daily") {
@@ -259,52 +328,7 @@ class _StatsPageState extends State<StatsPage> {
                           return Container();
                         }
                       ),
-                      gauges.SfRadialGauge(
-                        axes: <gauges.RadialAxis>[
-                          gauges.RadialAxis(
-                            showLabels: false,
-                            showTicks: false,
-                            radiusFactor: 0.8,
-                            axisLineStyle: gauges.AxisLineStyle(
-                              thickness: 0.2,
-                              cornerStyle: gauges.CornerStyle.bothCurve,
-                              color: Provider.of<ThemeProvider>(context).themeData == darkMode ? Color(0xff171717) : Color(0xffE8E8E8),
-                              thicknessUnit: gauges.GaugeSizeUnit.factor,
-                            ),
-                            pointers: <gauges.GaugePointer>[
-                              gauges.RangePointer(
-                                value: (weeklyMileage[0]/userData.goal!)*100,
-                                width: 0.2,
-                                cornerStyle: gauges.CornerStyle.bothCurve,
-                                color: Theme.of(context).colorScheme.primary,
-                                sizeUnit: gauges.GaugeSizeUnit.factor,
-                                enableAnimation: true,
-                                animationDuration: 200,
-                                animationType: gauges.AnimationType.linear
-                              )
-                            ],
-                            annotations: <gauges.GaugeAnnotation>[
-                              gauges.GaugeAnnotation(
-                                positionFactor: 0.1,
-                                angle: 90,
-                                widget: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "${weeklyMileage[0].toStringAsFixed(2)} / ${userData.goal}",
-                                      style: Theme.of(context).textTheme.headlineSmall,
-                                    ),
-                                    Text(
-                                      userData.distUnit == "mi" ? "Miles" : "Kilometers",
-                                      style: TextStyle(color: Theme.of(context).colorScheme.secondary),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
+
                     ],
                   ),
                 ),

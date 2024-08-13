@@ -201,7 +201,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                                     setState(() {});
                                                   },
                                                   scrollController: FixedExtentScrollController(
-                                                    initialItem: userData.goal!-1,
+                                                    initialItem: userData.goal-1,
                                                   ),
                                                   children: oneTo200,
                                                 ),

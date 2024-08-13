@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:running_log/pages/add_run_page.dart';
 import 'package:running_log/services_and_helpers/Run.dart';
 import 'package:running_log/services_and_helpers/RunsDatabase.dart';
 import 'package:running_log/services_and_helpers/User.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
-import 'package:running_log/theme/theme.dart';
-import 'package:running_log/theme/theme_provider.dart';
-import 'package:tinycolor2/tinycolor2.dart';
 import 'package:flutter_share/flutter_share.dart';
 
 class HomePage extends StatefulWidget {

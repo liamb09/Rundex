@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:running_log/services_and_helpers/User.dart';
 import 'package:running_log/services_and_helpers/UserDatabaseHelper.dart';
-import 'package:running_log/services_and_helpers/profile_edit_field.dart';
 import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -128,6 +126,7 @@ class _PRPageState extends State<PRPage> {
                 child: ListView.builder(
                   itemCount: prs.length,
                   itemBuilder: (context, index) {
+                    String thisKey = prs.keys.elementAt(index);
                     return Column(
                       children: [
                         Builder(
@@ -162,13 +161,17 @@ class _PRPageState extends State<PRPage> {
                               setState(() => showDetailedIndex = -1);
                             }
                           },
+                          // TODO: delete pr when you hold it (add "are your sure?" dialog)
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
                             child: Stack(
                               children: [
                                 Row(
                                   children: [
-                                    Expanded(child: Text(prs.keys.elementAt(index), style: Theme.of(context).textTheme.titleMedium,)),
+                                    Expanded(child: Text(
+                                      thisKey.substring(thisKey.length-4, thisKey.length-2) == ".0" ? "${thisKey.substring(0, thisKey.length-4)}${thisKey.substring(thisKey.length-2)}" : thisKey, 
+                                      style: Theme.of(context).textTheme.titleMedium,
+                                    )),
                                     Text(
                                       secondsToTime(prs.values.elementAt(index)),
                                       textAlign: TextAlign.left,

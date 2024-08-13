@@ -4,7 +4,6 @@ import 'package:running_log/pages/home_page.dart';
 import 'package:running_log/pages/pr_page.dart';
 import 'package:running_log/pages/profile_page.dart';
 import 'package:running_log/pages/stats_page.dart';
-import 'package:running_log/theme/theme.dart';
 import 'package:running_log/theme/theme_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

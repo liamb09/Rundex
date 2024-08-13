@@ -110,7 +110,7 @@ class _StatsPageState extends State<StatsPage> {
     var currentTimestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
     List<MapEntry<String, double>> ret = [];
     for (int i = 0; i < 7; i++) {
-      ret.add(MapEntry(DateFormat.Md().format(DateTime.fromMillisecondsSinceEpoch(((currentTimestamp - currentTimestamp%604800) - (6-i)*604800 + 86400*4)*1000)), (user.goal)!.toDouble() ));
+      ret.add(MapEntry(DateFormat.Md().format(DateTime.fromMillisecondsSinceEpoch(((currentTimestamp - currentTimestamp%604800) - (6-i)*604800 + 86400*4)*1000)), (user.goal).toDouble() ));
     }
     return ret;
   }
@@ -145,7 +145,6 @@ class _StatsPageState extends State<StatsPage> {
           future: user,
           builder: (BuildContext context, AsyncSnapshot<User> userSnapshot) {
             var userData = userSnapshot.data;
-            List<double> weeklyMileage = [];
             double thisWeekMileage = 0;
             List<DayData> lastWeek = [];
             List<WeekData> lastFewWeeks = [];
@@ -154,7 +153,6 @@ class _StatsPageState extends State<StatsPage> {
               return CircularProgressIndicator();
             } else {
               if (runs != null) {
-                weeklyMileage = getWeekMileage(runs, userData);
                 thisWeekMileage = getThisWeekMileage(runs);
                 print(thisWeekMileage);
                 lastWeek = getDailyChartData(getLastWeekMileage(runs, userData));

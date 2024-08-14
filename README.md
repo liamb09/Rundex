@@ -8,8 +8,5 @@ This currently is not published anywhere, but I am just coming back to it and pl
 (roughly in order of importance)
  - [ ] Finish mileage charts + goals
  - [ ] Improve UI
- - [ ] Add PR tracker
- - [ ] Parse distance from GPS data
- - [ ] Add run sharing
  - [ ] Add weather
  - [ ] Add starter survey

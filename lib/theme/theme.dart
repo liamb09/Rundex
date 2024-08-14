@@ -1,23 +1,36 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 ThemeData lightMode = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
   colorScheme: ColorScheme.light(
-    background: Color(0xffFFFFFC),
-    primary: Color(0xff012271),
-    secondary: Color.fromARGB(255, 65, 101, 184),
+    primary: Color(0xFF38E078),
+    secondary: Color(0xff626262),
     tertiary: Colors.white,
+    surface: Color(0xfff5f5f5),
   ),
+  textTheme: GoogleFonts.publicSansTextTheme(),
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: Color(0xfff5f5f5),
+  ),
+  bottomSheetTheme: BottomSheetThemeData(modalBarrierColor: Color.fromRGBO(0, 0, 0, .2)),
 );
 
 ThemeData darkMode = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   colorScheme: ColorScheme.dark(
-    background: Color(0xff292929),
-    primary: Color.fromARGB(255, 65, 101, 184),
-    secondary: Color.fromARGB(255, 160, 189, 255),
+    primary: Color(0xff38e078),
+    secondary: Color(0xff9d9d9d),
     tertiary: Colors.black,
+    surface: Color(0xff0a0a0a),
+  ),
+  textTheme: GoogleFonts.publicSansTextTheme().apply(bodyColor: Color(0xffe2e4df), displayColor: Color(0xffe2e4df)),
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: Color(0xfff5f5f5),
   ),
 );

@@ -7,7 +7,7 @@ class User {
   final double height;
   final int weight;
   final Map<String, String> runColors;
-  final int? goal;
+  final int goal;
   final String distUnit;
   final Map<String, Map<Uint8List?, double?>>? routes;
 
@@ -17,7 +17,7 @@ class User {
     required this.height,
     required this.weight,
     required this.runColors,
-    this.goal,
+    required this.goal,
     required this.distUnit,
     this.routes,
   });
@@ -38,7 +38,7 @@ class User {
   static String encodeRoutes (Map<String, Map<Uint8List?, double?>>? r) {
     Map<String, Map<String?, double?>>? newR = {};
     if (r != null) {
-      for (var entry in r!.entries) {
+      for (var entry in r.entries) {
         newR.addAll({entry.key : {jsonEncode(entry.value.keys.first) : entry.value.values.first}});
       }
     }

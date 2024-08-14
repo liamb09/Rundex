@@ -8,6 +8,7 @@ import 'package:running_log/theme/theme_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
+  // TODO: try to test on phone
   WidgetsFlutterBinding.ensureInitialized();
   //RunsDatabase.instance.clearDatabase();
   //UserDatabase.instance.clearDatabase();

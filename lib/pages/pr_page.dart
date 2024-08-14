@@ -88,7 +88,7 @@ class _PRPageState extends State<PRPage> {
   Widget build(BuildContext context) {
 
     if (zeroTo100.isEmpty) {
-      for (int i = 0; i <= 100; i++) {
+      for (int i = 0; i < 100; i++) {
         zeroTo100.add(Center(child: Text("${i < 10 ? "0$i" : i}")));
       }
     }
@@ -124,92 +124,138 @@ class _PRPageState extends State<PRPage> {
               body: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
                 child: ListView.builder(
-                  itemCount: prs.length,
+                  itemCount: prs.length+1,
                   itemBuilder: (context, index) {
-                    String thisKey = prs.keys.elementAt(index);
-                    return Column(
-                      children: [
-                        Builder(
-                          builder: (context) {
-                            if (index == 0) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                    child: Row(
-                                      children: [
-                                        Text("Your PRs", textAlign: TextAlign.left, style: TextStyle(
-                                          fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
-                                          fontWeight: FontWeight.w900,
-                                        ),),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(height: 10),
-                                ],
-                              );
-                            }
-                            return Container();
-                          },
-                        ),
-                        InkWell(
-                          onTap: () {
-                            if (showDetailedIndex != index) {
-                              setState(() => showDetailedIndex = index);
-                            } else {
-                              setState(() => showDetailedIndex = -1);
-                            }
-                          },
-                          // TODO: delete pr when you hold it (add "are your sure?" dialog)
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
-                            child: Stack(
-                              children: [
-                                Row(
+                    if (index != prs.length && prs.isNotEmpty) {
+                      String thisKey = prs.keys.elementAt(index);
+                      return Column(
+                        children: [
+                          Builder(
+                            builder: (context) {
+                              if (index == 0) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Expanded(child: Text(
-                                      thisKey.substring(thisKey.length-4, thisKey.length-2) == ".0" ? "${thisKey.substring(0, thisKey.length-4)}${thisKey.substring(thisKey.length-2)}" : thisKey, 
-                                      style: Theme.of(context).textTheme.titleMedium,
-                                    )),
-                                    Text(
-                                      secondsToTime(prs.values.elementAt(index)),
-                                      textAlign: TextAlign.left,
-                                      style: TextStyle(
-                                        fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
-                                        color: Theme.of(context).colorScheme.secondary,
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                      child: Row(
+                                        children: [
+                                          Text("Your PRs", textAlign: TextAlign.left, style: TextStyle(
+                                            fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
+                                            fontWeight: FontWeight.w900,
+                                          ),),
+                                        ],
                                       ),
                                     ),
+                                    SizedBox(height: 10),
                                   ],
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                );
+                              }
+                              return Container();
+                            },
+                          ),
+                          Dismissible(
+                            key: Key(thisKey),
+                            background: Container(
+                              color: Colors.red,
+                              child: Row(
+                                children: [
+                                  Expanded(child: Container()),
+                                  Text("Delete", style: TextStyle(
+                                    color: Colors.white, 
+                                    fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                    fontWeight: FontWeight.w900,
+                                  ),),
+                                  SizedBox(width: 20,),
+                                ],
+                              ),
+                            ),
+                            direction: DismissDirection.endToStart,
+                            onDismissed: (direction) {
+                              prs.remove(thisKey);
+                              savePrs(sharedPreferences, prs);
+                              setState(() {});
+                            },
+                            child: InkWell(
+                              onTap: () {
+                                if (showDetailedIndex != index) {
+                                  setState(() => showDetailedIndex = index);
+                                } else {
+                                  setState(() => showDetailedIndex = -1);
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+                                child: Stack(
                                   children: [
-                                    Builder(
-                                      builder: (context) {
-                                        if (showDetailedIndex == index) {
-                                          String key = prs.keys.elementAt(index);
-                                          int value = prs.values.elementAt(index);
-                                          return Text(
-                                            "${secondsToTime((value/toUserUnits(double.parse(key.substring(0, key.length-2)), key.substring(key.length-2), userData.distUnit)).round())}/${userData.distUnit}",
-                                            textAlign: TextAlign.left,
-                                            style: TextStyle(
-                                              fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
-                                              color: Theme.of(context).colorScheme.secondary,
-                                            ),
-                                          );
-                                        }
-                                        return Container();
-                                      }
+                                    Row(
+                                      children: [
+                                        Expanded(child: Text(
+                                          "${thisKey.substring(thisKey.length-4, thisKey.length-2) == ".0" ?
+                                            thisKey.substring(0, thisKey.length-4) : thisKey.substring(0, thisKey.length-2)} ${thisKey.substring(thisKey.length-2) == "mi" ? "mile" : "kilometer"}${double.parse(thisKey.substring(0, thisKey.length-4)) == 1 ? "" : "s"}",
+                                          style: Theme.of(context).textTheme.titleMedium,
+                                        )),
+                                        Text(
+                                          secondsToTime(prs.values.elementAt(index)),
+                                          textAlign: TextAlign.left,
+                                          style: TextStyle(
+                                            fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                            color: Theme.of(context).colorScheme.secondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Builder(
+                                          builder: (context) {
+                                            if (showDetailedIndex == index) {
+                                              String key = prs.keys.elementAt(index);
+                                              int value = prs.values.elementAt(index);
+                                              return Text(
+                                                "${secondsToTime((value/toUserUnits(double.parse(key.substring(0, key.length-2)), key.substring(key.length-2), userData.distUnit)).round())}/${userData.distUnit}",
+                                                textAlign: TextAlign.left,
+                                                style: TextStyle(
+                                                  fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                                  color: Theme.of(context).colorScheme.secondary,
+                                                ),
+                                              );
+                                            }
+                                            return Container();
+                                          }
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      );
+                    }
+                    if (prs.isEmpty) {
+                      return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Text("Your PRs", textAlign: TextAlign.left, style: TextStyle(
+                                fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
+                                fontWeight: FontWeight.w900,
+                              ),),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          Center(
+                            child: Text("You have not added any PRs."),
+                          ),
+                        ],
+                      ),
                     );
+                    }
                   },
                 ),
               ),

@@ -101,7 +101,7 @@ class _AddRunPageState extends State<AddRunPage> {
   Widget build(BuildContext context) {
 
     if (zeroTo100.isEmpty) {
-      for (int i = 0; i <= 100; i++) {
+      for (int i = 0; i < 100; i++) {
         zeroTo100.add(Center(child: Text("${i < 10 ? "0$i" : i}")));
       }
     }

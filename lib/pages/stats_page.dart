@@ -154,7 +154,6 @@ class _StatsPageState extends State<StatsPage> {
             } else {
               if (runs != null) {
                 thisWeekMileage = getThisWeekMileage(runs);
-                print(thisWeekMileage);
                 lastWeek = getDailyChartData(getLastWeekMileage(runs, userData));
                 lastFewWeeks = getWeeklyGraphData(getLastFewWeeksMileage(runs, userData));
               }

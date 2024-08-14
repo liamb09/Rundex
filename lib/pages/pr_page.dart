@@ -46,19 +46,19 @@ class _PRPageState extends State<PRPage> {
     }
   }
 
-  Map<String, int> getPRs (String encodedPRs) {
+  Map<String, int> getPRs (String encodedPRs, User user) {
     if (encodedPRs == "") return {};
     Map<String, dynamic> decodedPRs = json.decode(encodedPRs);
     Map<String, int> ret = {};
     for (int i = 0; i < decodedPRs.length; i++) {
       ret.addAll({decodedPRs.keys.elementAt(i): decodedPRs.values.elementAt(i) as int});
     }
-    ret = sortPRs(ret);
+    ret = sortPRs(ret, user.distUnit);
     return ret;
   }
 
-  Map<String, int> sortPRs (Map<String, int> prs) {
-    return Map.fromEntries(prs.entries.toList()..sort((e1, e2) => e1.value.compareTo(e2.value)));
+  Map<String, int> sortPRs (Map<String, int> prs, String userUnit) {
+    return Map.fromEntries(prs.entries.toList()..sort((e1, e2) => toUserUnits(double.parse(e1.key.substring(0, e1.key.length-2)), e1.key.substring(e1.key.length-2), userUnit).compareTo(toUserUnits(double.parse(e2.key.substring(0, e2.key.length-2)), e2.key.substring(e2.key.length-2), userUnit))));
   }
 
   void savePrs (SharedPreferences sp, Map<String, int> prs) {
@@ -100,7 +100,6 @@ class _PRPageState extends State<PRPage> {
 
     Future<User> user = getUserFromDB();
     Future<SharedPreferences> sp = SharedPreferences.getInstance();
-    // TODO: add detailed view of pr (like average pace) when you click it
     return FutureBuilder<SharedPreferences>(
       future: sp,
       builder: (BuildContext context, AsyncSnapshot<SharedPreferences> snapshot) {
@@ -111,7 +110,6 @@ class _PRPageState extends State<PRPage> {
         if (sharedPreferences.getString("prs") == null) {
           sharedPreferences.setString("prs", "");
         }
-        Map<String, int> prs = getPRs(sharedPreferences.getString("prs")!);
         //
         return FutureBuilder<User>(
           future: user,
@@ -120,6 +118,7 @@ class _PRPageState extends State<PRPage> {
             if (userData == null) {
               return CircularProgressIndicator();
             }
+            Map<String, int> prs = getPRs(sharedPreferences.getString("prs")!, userData);
             return Scaffold(
               body: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
@@ -177,6 +176,341 @@ class _PRPageState extends State<PRPage> {
                               setState(() {});
                             },
                             child: InkWell(
+                              onLongPress: () {
+                                int thisValue = prs.values.elementAt(index);
+                                double dist = double.parse(thisKey.substring(0, thisKey.length-2));
+                                String unit = thisKey.substring(thisKey.length-2);
+                                int hours = (thisValue/3600).floor();
+                                int minutes = ((thisValue-hours*3600)/60).floor();
+                                int seconds = thisValue%60;
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return StatefulBuilder(
+                                      builder: (context, setState) {
+                                        return AlertDialog(
+                                          backgroundColor: Theme.of(context).colorScheme.surface,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          content: SizedBox(
+                                            width: double.maxFinite,
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 10),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text("Add a PR", style: Theme.of(context).textTheme.titleLarge),
+                                                  SizedBox(height: 12),
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(
+                                                              "Distance",
+                                                              style: Theme.of(context).textTheme.titleMedium,
+                                                            ),
+                                                            InkWell(
+                                                              highlightColor: Colors.transparent,
+                                                              hoverColor: Colors.transparent,
+                                                              splashColor: Colors.transparent,
+                                                              splashFactory: NoSplash.splashFactory,
+                                                              onTap: () {
+                                                                if (unit == "mi") {
+                                                                  setState(() {
+                                                                    unit = "km";
+                                                                  });
+                                                                } else {
+                                                                  setState(() {
+                                                                    unit = "mi";
+                                                                  });
+                                                                }
+                                                              },
+                                                              child: Text(
+                                                                unit == "mi" ? "Miles" : "Kilometers",
+                                                                textAlign: TextAlign.left,
+                                                                style: TextStyle(
+                                                                  fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                                                  color: Theme.of(context).colorScheme.secondary,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      InkWell(
+                                                        highlightColor: Colors.transparent,
+                                                        hoverColor: Colors.transparent,
+                                                        splashColor: Colors.transparent,
+                                                        splashFactory: NoSplash.splashFactory,
+                                                        onTap: () async {
+                                                          showCupertinoModalPopup(
+                                                            context: context,
+                                                            builder: (context) {
+                                                              return Container(
+                                                                color: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets.all(16.0),
+                                                                  child: Column(
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: [
+                                                                      Text("Distance", style: Theme.of(context).textTheme.titleLarge),
+                                                                      Row(
+                                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                                        children: [
+                                                                          SizedBox(
+                                                                            height: 200,
+                                                                            width: 100,
+                                                                            child: CupertinoPicker(
+                                                                              backgroundColor: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
+                                                                              itemExtent: 40,
+                                                                              onSelectedItemChanged: (index) {
+                                                                                setState(() {
+                                                                                  dist = index + (dist - dist.floor());
+                                                                                });
+                                                                              },
+                                                                              scrollController: FixedExtentScrollController(
+                                                                                initialItem: dist.floor(),
+                                                                              ),
+                                                                              children: zeroTo100,
+                                                                            ),
+                                                                          ),
+                                                                          Text(".", style: Theme.of(context).textTheme.headlineLarge),
+                                                                          SizedBox(
+                                                                            height: 200,
+                                                                            width: 100,
+                                                                            child: CupertinoPicker(
+                                                                              itemExtent: 40,
+                                                                              onSelectedItemChanged: (index) {
+                                                                                setState(() {
+                                                                                  dist = dist.floor() + index/100;
+                                                                                });
+                                                                              },
+                                                                              scrollController: FixedExtentScrollController(
+                                                                                initialItem: (((dist - dist.floor())*100).round()).toInt(),
+                                                                              ),
+                                                                              children: zeroTo100,
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                      MaterialButton(
+                                                                        color: Theme.of(context).colorScheme.primary,
+                                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                                        child: Padding(
+                                                                          padding: const EdgeInsets.all(6.0),
+                                                                          child: Row(
+                                                                            mainAxisSize: MainAxisSize.min,
+                                                                            children: [
+                                                                              SizedBox(
+                                                                                child: Text(
+                                                                                  "OK",
+                                                                                  style: TextStyle(color: Colors.black),
+                                                                                ),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                        ),
+                                                                        onPressed: () {
+                                                                          if (dist != 0) {
+                                                                            Navigator.pop(context);
+                                                                          }
+                                                                        },
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              );
+                                                            }
+                                                          );
+                                                        },
+                                                        child: Text(
+                                                          dist == 0 ? "—" : "${(dist*100).round()/100}",
+                                                          textAlign: TextAlign.left,
+                                                          style: TextStyle(
+                                                            fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                                            color: Theme.of(context).colorScheme.secondary,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ]
+                                                  ),
+                                                  SizedBox(height: 12),
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(
+                                                              "Time",
+                                                              style: Theme.of(context).textTheme.titleMedium,
+                                                            ),
+                                                            Text(
+                                                              "h:m:s",
+                                                              textAlign: TextAlign.left,
+                                                              style: TextStyle(
+                                                                fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                                                color: Theme.of(context).colorScheme.secondary,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      InkWell(
+                                                        highlightColor: Colors.transparent,
+                                                        hoverColor: Colors.transparent,
+                                                        splashColor: Colors.transparent,
+                                                        splashFactory: NoSplash.splashFactory,
+                                                        onTap: () async {
+                                                          showCupertinoModalPopup(
+                                                            context: context,
+                                                            builder: (context) {
+                                                              return Container(
+                                                                color: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets.all(16.0),
+                                                                  child: Column(
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: [
+                                                                      Text("Time", style: Theme.of(context).textTheme.titleLarge),
+                                                                      Row(
+                                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                                        children: [
+                                                                          SizedBox(
+                                                                            height: 200,
+                                                                            width: 100,
+                                                                            child: CupertinoPicker(
+                                                                              backgroundColor: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
+                                                                              itemExtent: 40,
+                                                                              onSelectedItemChanged: (index) {
+                                                                                setState(() {
+                                                                                  hours = index;
+                                                                                });
+                                                                              },
+                                                                              scrollController: FixedExtentScrollController(
+                                                                                initialItem: hours,
+                                                                              ),
+                                                                              children: zeroTo60,
+                                                                            ),
+                                                                          ),
+                                                                          Text(":", style: Theme.of(context).textTheme.headlineLarge),
+                                                                          SizedBox(
+                                                                            height: 200,
+                                                                            width: 100,
+                                                                            child: CupertinoPicker(
+                                                                              itemExtent: 40,
+                                                                              onSelectedItemChanged: (index) {
+                                                                                setState(() {
+                                                                                  minutes = index;
+                                                                                });
+                                                                              },
+                                                                              scrollController: FixedExtentScrollController(
+                                                                                initialItem: minutes,
+                                                                              ),
+                                                                              children: zeroTo60,
+                                                                            ),
+                                                                          ),
+                                                                          Text(":", style: Theme.of(context).textTheme.headlineLarge),
+                                                                          SizedBox(
+                                                                            height: 200,
+                                                                            width: 100,
+                                                                            child: CupertinoPicker(
+                                                                              itemExtent: 40,
+                                                                              onSelectedItemChanged: (index) {
+                                                                                setState(() {
+                                                                                  seconds = index;
+                                                                                });
+                                                                              },
+                                                                              scrollController: FixedExtentScrollController(
+                                                                                initialItem: seconds,
+                                                                              ),
+                                                                              children: zeroTo60,
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                      MaterialButton(
+                                                                        color: Theme.of(context).colorScheme.primary,
+                                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                                        child: Padding(
+                                                                          padding: const EdgeInsets.all(6.0),
+                                                                          child: Row(
+                                                                            mainAxisSize: MainAxisSize.min,
+                                                                            children: [
+                                                                              SizedBox(
+                                                                                child: Text(
+                                                                                  "OK",
+                                                                                  style: TextStyle(color: Colors.black),
+                                                                                ),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                        ),
+                                                                        onPressed: () {
+                                                                          if (hours + minutes + seconds > 0) {
+                                                                            Navigator.pop(context);
+                                                                          }
+                                                                        },
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              );
+                                                            }
+                                                          );
+                                                        },
+                                                        child: Text(
+                                                          hours*60*60 + minutes*60 + seconds == 0 ? "—" : secondsToTime(hours*60*60 + minutes*60 + seconds),
+                                                          textAlign: TextAlign.left,
+                                                          style: TextStyle(
+                                                            fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                                            color: Theme.of(context).colorScheme.secondary,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ]
+                                                  ),
+                                                  SizedBox(height: 12),
+                                                  MaterialButton(
+                                                    color: Theme.of(context).colorScheme.primary,
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.all(6.0),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          SizedBox(
+                                                            child: Text(
+                                                              "Save",
+                                                              style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900,),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    onPressed: () {
+                                                      if (dist > 0 && hours + minutes + seconds > 0) {
+                                                        prs.remove(thisKey);
+                                                        prs.addAll({"$dist$unit": hours*60*60 + minutes*60 + seconds});
+                                                        prs = sortPRs(prs, userData.distUnit);
+                                                        savePrs(sharedPreferences, prs);
+                                                        Navigator.pop(context);
+                                                      }
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            )
+                                          ),
+                                        );
+                                      }
+                                    );
+                                  }
+                                ).then((_) => setState(() {}));
+                              },
                               onTap: () {
                                 if (showDetailedIndex != index) {
                                   setState(() => showDetailedIndex = index);
@@ -256,6 +590,7 @@ class _PRPageState extends State<PRPage> {
                       ),
                     );
                     }
+                    return Container();
                   },
                 ),
               ),
@@ -590,7 +925,7 @@ class _PRPageState extends State<PRPage> {
                                         onPressed: () {
                                           if (dist > 0 && hours + minutes + seconds > 0) {
                                             prs.addAll({"$dist$unit": hours*60*60 + minutes*60 + seconds});
-                                            prs = sortPRs(prs);
+                                            prs = sortPRs(prs, userData.distUnit);
                                             savePrs(sharedPreferences, prs);
                                             Navigator.pop(context);
                                           }

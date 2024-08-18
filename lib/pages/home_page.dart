@@ -261,251 +261,253 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.tertiary,
-      body: FutureBuilder<User>(
-        future: getUserFromDB(),
-        builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
-          var user = snapshot.data;
-          if (user == null) {
-            return CircularProgressIndicator();
-          }
-          return Center(
-            child: FutureBuilder<List<Run>>(
-              future: RunsDatabase.instance.getRuns(),
-              builder: (BuildContext context, AsyncSnapshot<List<Run>> snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(child: Text("Loading..."));
-                }
-                return snapshot.data!.isEmpty
-                ? Center(child: Text("You have no runs."))
-                : Column(
-                  children: [
-                    Expanded(
-                      child: ListView(
-                        children: snapshot.data!.map((run) {
-                          return Column(
-                            children: [
-                              Builder(
-                                builder: (context) {
-                                  if (snapshot.data![0] == run) {
-                                    return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(height: 20),
-                                        Row(
-                                          children: [
-                                            SizedBox(width: 20,),
-                                            Text("Your runs", textAlign: TextAlign.left, style: TextStyle(
-                                              fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
-                                              fontWeight: FontWeight.w900,
-                                            ),),
-                                          ],
-                                        ),
-                                        SizedBox(height: 10),
-                                      ],
-                                    );
-                                  }
-                                  return Container();
-                                },
-                              ),
-                              Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                                  child: Card(
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    color: Theme.of(context).colorScheme.surface, //run.color == null ? null : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000),
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(8),
-                                      onTap: () {
-                                        showDialog(
-                                          context: context, 
-                                          builder: (context) {
-                                            return AlertDialog(
-                                              backgroundColor: Theme.of(context).colorScheme.surface,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              content: SizedBox(
-                                                width: double.maxFinite,
-                                                child: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    getRunDisplay(user, run, true),
-                                                  ],
-                                                )
-                                              ),
-                                              actionsAlignment: MainAxisAlignment.center,
-                                              actions: [
-                                                MaterialButton(
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 1)),
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.all(6.0),
-                                                    child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      children: [
-                                                        Icon(
-                                                          Icons.delete_outline, color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
-                                                        ),
-                                                        SizedBox(width: 5,),
-                                                        Text(
-                                                          "Delete",
-                                                          style: TextStyle(
-                                                            color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
+      body: SafeArea(
+        child: FutureBuilder<User>(
+          future: getUserFromDB(),
+          builder: (BuildContext context, AsyncSnapshot<User> snapshot) {
+            var user = snapshot.data;
+            if (user == null) {
+              return CircularProgressIndicator();
+            }
+            return Center(
+              child: FutureBuilder<List<Run>>(
+                future: RunsDatabase.instance.getRuns(),
+                builder: (BuildContext context, AsyncSnapshot<List<Run>> snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: Text("Loading..."));
+                  }
+                  return snapshot.data!.isEmpty
+                  ? Center(child: Text("You have no runs."))
+                  : Column(
+                    children: [
+                      Expanded(
+                        child: ListView(
+                          children: snapshot.data!.map((run) {
+                            return Column(
+                              children: [
+                                Builder(
+                                  builder: (context) {
+                                    if (snapshot.data![0] == run) {
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          SizedBox(height: 20),
+                                          Row(
+                                            children: [
+                                              SizedBox(width: 20,),
+                                              Text("Your runs", textAlign: TextAlign.left, style: TextStyle(
+                                                fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
+                                                fontWeight: FontWeight.w900,
+                                              ),),
+                                            ],
+                                          ),
+                                          SizedBox(height: 10),
+                                        ],
+                                      );
+                                    }
+                                    return Container();
+                                  },
+                                ),
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+                                    child: Card(
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      color: Theme.of(context).colorScheme.surface, //run.color == null ? null : Color(int.parse(run.color!.substring(2, 8), radix: 16) + 0xFF000000),
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(8),
+                                        onTap: () {
+                                          showDialog(
+                                            context: context, 
+                                            builder: (context) {
+                                              return AlertDialog(
+                                                backgroundColor: Theme.of(context).colorScheme.surface,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                content: SizedBox(
+                                                  width: double.maxFinite,
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      getRunDisplay(user, run, true),
+                                                    ],
+                                                  )
+                                                ),
+                                                actionsAlignment: MainAxisAlignment.center,
+                                                actions: [
+                                                  MaterialButton(
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 1)),
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.all(6.0),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Icon(
+                                                            Icons.delete_outline, color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
                                                           ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  onPressed: () {
-                                                    showDialog(context: context, builder: (context) {
-                                                      return AlertDialog(
-                                                        backgroundColor: Theme.of(context).colorScheme.surface,
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(8),
-                                                        ),
-                                                        // backgroundColor: Theme.of(context).colorScheme.surface,
-                                                        content: Text("Delete \"${run.title}?\""),
-                                                        actionsAlignment: MainAxisAlignment.center,
-                                                        actions: [
-                                                          Row(
-                                                            mainAxisSize: MainAxisSize.min,
-                                                            children: [
-                                                              MaterialButton(
-                                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                                                child: Padding(
-                                                                  padding: const EdgeInsets.all(6),
-                                                                  child: Text("Delete"),
-                                                                ),
-                                                                onPressed: () {
-                                                                  RunsDatabase.instance.removeRun(run.id!).then((_) => Navigator.pop(context));
-                                                                },
-                                                              ),
-                                                              SizedBox(width: 10,),
-                                                              MaterialButton(
-                                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                                                color: Theme.of(context).colorScheme.primary,
-                                                                child: Padding(
-                                                                  padding: const EdgeInsets.all(6),
-                                                                  child: Text("Cancel"),
-                                                                ),
-                                                                onPressed: () {
-                                                                  Navigator.pop(context);
-                                                                },
-                                                              )
-                                                            ],
-                                                          )
+                                                          SizedBox(width: 5,),
+                                                          Text(
+                                                            "Delete",
+                                                            style: TextStyle(
+                                                              color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
+                                                            ),
+                                                          ),
                                                         ],
-                                                      );
-                                                    }).then((_) => Navigator.pop(context)).then((_) => setState(() {}));
-                                                  },
-                                                ),
-                                                MaterialButton(
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 1)),
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.all(6.0),
-                                                    child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      children: [
-                                                        Icon(
-                                                          Icons.edit_outlined, color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
-                                                        ),
-                                                        SizedBox(width: 5,),
-                                                        Text(
-                                                          "Edit",
-                                                          style: TextStyle(
-                                                            color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
-                                                          ),
-                                                        ),
-                                                      ],
+                                                      ),
                                                     ),
-                                                  ),
-                                                  onPressed: () {
-                                                    Navigator.push(context, MaterialPageRoute<void>(
-                                                      builder: (BuildContext context) => AddRunPage(),
-                                                      settings: RouteSettings(
-                                                        arguments: run,
-                                                      )
-                                                    )).then((_) => Navigator.pop(context)).then((_) => setState(() {}));
-                                                  },
-                                                ),
-                                                MaterialButton(
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 1)),
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.all(6.0),
-                                                    child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      children: [
-                                                        Icon(
-                                                          Icons.share_outlined, color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
-                                                        ),
-                                                        SizedBox(width: 5,),
-                                                        Text(
-                                                          "Share",
-                                                          style: TextStyle(
-                                                            color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
+                                                    onPressed: () {
+                                                      showDialog(context: context, builder: (context) {
+                                                        return AlertDialog(
+                                                          backgroundColor: Theme.of(context).colorScheme.surface,
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius: BorderRadius.circular(8),
                                                           ),
-                                                        ),
-                                                      ],
-                                                    ),
+                                                          // backgroundColor: Theme.of(context).colorScheme.surface,
+                                                          content: Text("Delete \"${run.title}?\""),
+                                                          actionsAlignment: MainAxisAlignment.center,
+                                                          actions: [
+                                                            Row(
+                                                              mainAxisSize: MainAxisSize.min,
+                                                              children: [
+                                                                MaterialButton(
+                                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                                  child: Padding(
+                                                                    padding: const EdgeInsets.all(6),
+                                                                    child: Text("Delete"),
+                                                                  ),
+                                                                  onPressed: () {
+                                                                    RunsDatabase.instance.removeRun(run.id!).then((_) => Navigator.pop(context));
+                                                                  },
+                                                                ),
+                                                                SizedBox(width: 10,),
+                                                                MaterialButton(
+                                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                                                  color: Theme.of(context).colorScheme.primary,
+                                                                  child: Padding(
+                                                                    padding: const EdgeInsets.all(6),
+                                                                    child: Text("Cancel"),
+                                                                  ),
+                                                                  onPressed: () {
+                                                                    Navigator.pop(context);
+                                                                  },
+                                                                )
+                                                              ],
+                                                            )
+                                                          ],
+                                                        );
+                                                      }).then((_) => Navigator.pop(context)).then((_) => setState(() {}));
+                                                    },
                                                   ),
-                                                  onPressed: () {
-                                                    String bodyText = "${run.title} (${run.type})\n";
-                                                    if (run.distance != 0 && run.time != 0) {
-                                                      bodyText += "${run.distance}${run.unit} in ${secondsToTime(run.time)} (${secondsToTime((run.time/run.distance).round())}min/${run.unit})\n";
-                                                    } else if (run.time == 0 && run.distance != 0) {
-                                                      bodyText += "${run.distance}${run.unit}\n";
-                                                    } else if (run.distance == 0 && run.time != 0) {
-                                                      bodyText += "${secondsToTime(run.time)}\n";
-                                                    }
-                                                    if (run.sets!.isNotEmpty) {
-                                                      bodyText += "\nSets:\n";
-                                                      for (List<dynamic> set in run.sets!.values) {
-                                                        bodyText += "${set[2]} X ${set[0]}\n";
+                                                  MaterialButton(
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 1)),
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.all(6.0),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Icon(
+                                                            Icons.edit_outlined, color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
+                                                          ),
+                                                          SizedBox(width: 5,),
+                                                          Text(
+                                                            "Edit",
+                                                            style: TextStyle(
+                                                              color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.push(context, MaterialPageRoute<void>(
+                                                        builder: (BuildContext context) => AddRunPage(),
+                                                        settings: RouteSettings(
+                                                          arguments: run,
+                                                        )
+                                                      )).then((_) => Navigator.pop(context)).then((_) => setState(() {}));
+                                                    },
+                                                  ),
+                                                  MaterialButton(
+                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black, width: 1)),
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.all(6.0),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Icon(
+                                                            Icons.share_outlined, color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
+                                                          ),
+                                                          SizedBox(width: 5,),
+                                                          Text(
+                                                            "Share",
+                                                            style: TextStyle(
+                                                              color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    onPressed: () {
+                                                      String bodyText = "${run.title} (${run.type})\n";
+                                                      if (run.distance != 0 && run.time != 0) {
+                                                        bodyText += "${run.distance}${run.unit} in ${secondsToTime(run.time)} (${secondsToTime((run.time/run.distance).round())}min/${run.unit})\n";
+                                                      } else if (run.time == 0 && run.distance != 0) {
+                                                        bodyText += "${run.distance}${run.unit}\n";
+                                                      } else if (run.distance == 0 && run.time != 0) {
+                                                        bodyText += "${secondsToTime(run.time)}\n";
                                                       }
-                                                    }
-                                                    if (run.notes != "") {
-                                                      bodyText += "\nNotes: ${run.notes}";
-                                                    }
-                                                    if (bodyText.substring(bodyText.length-2) == "\n") {
-                                                      bodyText = bodyText.substring(0, bodyText.length-2);
-                                                    }
-                                                    FlutterShare.share(
-                                                      title: run.title,
-                                                      text: bodyText,
-                                                    );
-                                                  },
-                                                )
-                                              ],
-                                            );
-                                          }
-                                        );
-                                      },
-                                      child: getRunDisplay(user, run, false),
+                                                      if (run.sets!.isNotEmpty) {
+                                                        bodyText += "\nSets:\n";
+                                                        for (List<dynamic> set in run.sets!.values) {
+                                                          bodyText += "${set[2]} X ${set[0]}\n";
+                                                        }
+                                                      }
+                                                      if (run.notes != "") {
+                                                        bodyText += "\nNotes: ${run.notes}";
+                                                      }
+                                                      if (bodyText.substring(bodyText.length-2) == "\n") {
+                                                        bodyText = bodyText.substring(0, bodyText.length-2);
+                                                      }
+                                                      FlutterShare.share(
+                                                        title: run.title,
+                                                        text: bodyText,
+                                                      );
+                                                    },
+                                                  )
+                                                ],
+                                              );
+                                            }
+                                          );
+                                        },
+                                        child: getRunDisplay(user, run, false),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              Builder(
-                                builder: (context) {
-                                  if (snapshot.data![snapshot.data!.length-1] == run) {
-                                    return SizedBox(height: 60);
-                                  }
-                                  return Container();
-                                },
-                              ),
-                            ],
-                          );
-                        }).toList()
+                                Builder(
+                                  builder: (context) {
+                                    if (snapshot.data![snapshot.data!.length-1] == run) {
+                                      return SizedBox(height: 60);
+                                    }
+                                    return Container();
+                                  },
+                                ),
+                              ],
+                            );
+                          }).toList()
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              }
-            ),
-          );
-        }
+                    ],
+                  );
+                }
+              ),
+            );
+          }
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: SizedBox(

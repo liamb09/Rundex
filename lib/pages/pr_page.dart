@@ -120,478 +120,480 @@ class _PRPageState extends State<PRPage> {
             }
             Map<String, int> prs = getPRs(sharedPreferences.getString("prs")!, userData);
             return Scaffold(
-              body: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
-                child: ListView.builder(
-                  itemCount: prs.length+1,
-                  itemBuilder: (context, index) {
-                    if (index != prs.length && prs.isNotEmpty) {
-                      String thisKey = prs.keys.elementAt(index);
-                      return Column(
-                        children: [
-                          Builder(
-                            builder: (context) {
-                              if (index == 0) {
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                      child: Row(
-                                        children: [
-                                          Text("Your PRs", textAlign: TextAlign.left, style: TextStyle(
-                                            fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
-                                            fontWeight: FontWeight.w900,
-                                          ),),
-                                        ],
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
+                  child: ListView.builder(
+                    itemCount: prs.length+1,
+                    itemBuilder: (context, index) {
+                      if (index != prs.length && prs.isNotEmpty) {
+                        String thisKey = prs.keys.elementAt(index);
+                        return Column(
+                          children: [
+                            Builder(
+                              builder: (context) {
+                                if (index == 0) {
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                        child: Row(
+                                          children: [
+                                            Text("Your PRs", textAlign: TextAlign.left, style: TextStyle(
+                                              fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
+                                              fontWeight: FontWeight.w900,
+                                            ),),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    SizedBox(height: 10),
-                                  ],
-                                );
-                              }
-                              return Container();
-                            },
-                          ),
-                          Dismissible(
-                            key: Key(thisKey),
-                            background: Container(
-                              color: Colors.red,
-                              child: Row(
-                                children: [
-                                  Expanded(child: Container()),
-                                  Text("Delete", style: TextStyle(
-                                    color: Colors.white, 
-                                    fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
-                                    fontWeight: FontWeight.w900,
-                                  ),),
-                                  SizedBox(width: 20,),
-                                ],
-                              ),
+                                      SizedBox(height: 10),
+                                    ],
+                                  );
+                                }
+                                return Container();
+                              },
                             ),
-                            direction: DismissDirection.endToStart,
-                            onDismissed: (direction) {
-                              prs.remove(thisKey);
-                              savePrs(sharedPreferences, prs);
-                              setState(() {});
-                            },
-                            child: InkWell(
-                              onLongPress: () {
-                                int thisValue = prs.values.elementAt(index);
-                                double dist = double.parse(thisKey.substring(0, thisKey.length-2));
-                                String unit = thisKey.substring(thisKey.length-2);
-                                int hours = (thisValue/3600).floor();
-                                int minutes = ((thisValue-hours*3600)/60).floor();
-                                int seconds = thisValue%60;
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return StatefulBuilder(
-                                      builder: (context, setState) {
-                                        return AlertDialog(
-                                          backgroundColor: Theme.of(context).colorScheme.surface,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          content: SizedBox(
-                                            width: double.maxFinite,
-                                            child: Padding(
-                                              padding: const EdgeInsets.symmetric(vertical: 10),
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text("Add a PR", style: Theme.of(context).textTheme.titleLarge),
-                                                  SizedBox(height: 12),
-                                                  Row(
-                                                    children: [
-                                                      Expanded(
-                                                        child: Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          children: [
-                                                            Text(
-                                                              "Distance",
-                                                              style: Theme.of(context).textTheme.titleMedium,
+                            Dismissible(
+                              key: Key(thisKey),
+                              background: Container(
+                                color: Colors.red,
+                                child: Row(
+                                  children: [
+                                    Expanded(child: Container()),
+                                    Text("Delete", style: TextStyle(
+                                      color: Colors.white, 
+                                      fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                      fontWeight: FontWeight.w900,
+                                    ),),
+                                    SizedBox(width: 20,),
+                                  ],
+                                ),
+                              ),
+                              direction: DismissDirection.endToStart,
+                              onDismissed: (direction) {
+                                prs.remove(thisKey);
+                                savePrs(sharedPreferences, prs);
+                                setState(() {});
+                              },
+                              child: InkWell(
+                                onLongPress: () {
+                                  int thisValue = prs.values.elementAt(index);
+                                  double dist = double.parse(thisKey.substring(0, thisKey.length-2));
+                                  String unit = thisKey.substring(thisKey.length-2);
+                                  int hours = (thisValue/3600).floor();
+                                  int minutes = ((thisValue-hours*3600)/60).floor();
+                                  int seconds = thisValue%60;
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return StatefulBuilder(
+                                        builder: (context, setState) {
+                                          return AlertDialog(
+                                            backgroundColor: Theme.of(context).colorScheme.surface,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            content: SizedBox(
+                                              width: double.maxFinite,
+                                              child: Padding(
+                                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Text("Add a PR", style: Theme.of(context).textTheme.titleLarge),
+                                                    SizedBox(height: 12),
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              Text(
+                                                                "Distance",
+                                                                style: Theme.of(context).textTheme.titleMedium,
+                                                              ),
+                                                              InkWell(
+                                                                highlightColor: Colors.transparent,
+                                                                hoverColor: Colors.transparent,
+                                                                splashColor: Colors.transparent,
+                                                                splashFactory: NoSplash.splashFactory,
+                                                                onTap: () {
+                                                                  if (unit == "mi") {
+                                                                    setState(() {
+                                                                      unit = "km";
+                                                                    });
+                                                                  } else {
+                                                                    setState(() {
+                                                                      unit = "mi";
+                                                                    });
+                                                                  }
+                                                                },
+                                                                child: Text(
+                                                                  unit == "mi" ? "Miles" : "Kilometers",
+                                                                  textAlign: TextAlign.left,
+                                                                  style: TextStyle(
+                                                                    fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                                                    color: Theme.of(context).colorScheme.secondary,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        InkWell(
+                                                          highlightColor: Colors.transparent,
+                                                          hoverColor: Colors.transparent,
+                                                          splashColor: Colors.transparent,
+                                                          splashFactory: NoSplash.splashFactory,
+                                                          onTap: () async {
+                                                            showCupertinoModalPopup(
+                                                              context: context,
+                                                              builder: (context) {
+                                                                return Container(
+                                                                  color: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
+                                                                  child: Padding(
+                                                                    padding: const EdgeInsets.all(16.0),
+                                                                    child: Column(
+                                                                      mainAxisSize: MainAxisSize.min,
+                                                                      children: [
+                                                                        Text("Distance", style: Theme.of(context).textTheme.titleLarge),
+                                                                        Row(
+                                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                                          children: [
+                                                                            SizedBox(
+                                                                              height: 200,
+                                                                              width: 100,
+                                                                              child: CupertinoPicker(
+                                                                                backgroundColor: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
+                                                                                itemExtent: 40,
+                                                                                onSelectedItemChanged: (index) {
+                                                                                  setState(() {
+                                                                                    dist = index + (dist - dist.floor());
+                                                                                  });
+                                                                                },
+                                                                                scrollController: FixedExtentScrollController(
+                                                                                  initialItem: dist.floor(),
+                                                                                ),
+                                                                                children: zeroTo100,
+                                                                              ),
+                                                                            ),
+                                                                            Text(".", style: Theme.of(context).textTheme.headlineLarge),
+                                                                            SizedBox(
+                                                                              height: 200,
+                                                                              width: 100,
+                                                                              child: CupertinoPicker(
+                                                                                itemExtent: 40,
+                                                                                onSelectedItemChanged: (index) {
+                                                                                  setState(() {
+                                                                                    dist = dist.floor() + index/100;
+                                                                                  });
+                                                                                },
+                                                                                scrollController: FixedExtentScrollController(
+                                                                                  initialItem: (((dist - dist.floor())*100).round()).toInt(),
+                                                                                ),
+                                                                                children: zeroTo100,
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                        MaterialButton(
+                                                                          color: Theme.of(context).colorScheme.primary,
+                                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                                          child: Padding(
+                                                                            padding: const EdgeInsets.all(6.0),
+                                                                            child: Row(
+                                                                              mainAxisSize: MainAxisSize.min,
+                                                                              children: [
+                                                                                SizedBox(
+                                                                                  child: Text(
+                                                                                    "OK",
+                                                                                    style: TextStyle(color: Colors.black),
+                                                                                  ),
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                          ),
+                                                                          onPressed: () {
+                                                                            if (dist != 0) {
+                                                                              Navigator.pop(context);
+                                                                            }
+                                                                          },
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              }
+                                                            );
+                                                          },
+                                                          child: Text(
+                                                            dist == 0 ? "—" : "${(dist*100).round()/100}",
+                                                            textAlign: TextAlign.left,
+                                                            style: TextStyle(
+                                                              fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                                              color: Theme.of(context).colorScheme.secondary,
                                                             ),
-                                                            InkWell(
-                                                              highlightColor: Colors.transparent,
-                                                              hoverColor: Colors.transparent,
-                                                              splashColor: Colors.transparent,
-                                                              splashFactory: NoSplash.splashFactory,
-                                                              onTap: () {
-                                                                if (unit == "mi") {
-                                                                  setState(() {
-                                                                    unit = "km";
-                                                                  });
-                                                                } else {
-                                                                  setState(() {
-                                                                    unit = "mi";
-                                                                  });
-                                                                }
-                                                              },
-                                                              child: Text(
-                                                                unit == "mi" ? "Miles" : "Kilometers",
+                                                          ),
+                                                        ),
+                                                      ]
+                                                    ),
+                                                    SizedBox(height: 12),
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              Text(
+                                                                "Time",
+                                                                style: Theme.of(context).textTheme.titleMedium,
+                                                              ),
+                                                              Text(
+                                                                "h:m:s",
                                                                 textAlign: TextAlign.left,
                                                                 style: TextStyle(
                                                                   fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
                                                                   color: Theme.of(context).colorScheme.secondary,
                                                                 ),
                                                               ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      InkWell(
-                                                        highlightColor: Colors.transparent,
-                                                        hoverColor: Colors.transparent,
-                                                        splashColor: Colors.transparent,
-                                                        splashFactory: NoSplash.splashFactory,
-                                                        onTap: () async {
-                                                          showCupertinoModalPopup(
-                                                            context: context,
-                                                            builder: (context) {
-                                                              return Container(
-                                                                color: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
-                                                                child: Padding(
-                                                                  padding: const EdgeInsets.all(16.0),
-                                                                  child: Column(
-                                                                    mainAxisSize: MainAxisSize.min,
-                                                                    children: [
-                                                                      Text("Distance", style: Theme.of(context).textTheme.titleLarge),
-                                                                      Row(
-                                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                                        children: [
-                                                                          SizedBox(
-                                                                            height: 200,
-                                                                            width: 100,
-                                                                            child: CupertinoPicker(
-                                                                              backgroundColor: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
-                                                                              itemExtent: 40,
-                                                                              onSelectedItemChanged: (index) {
-                                                                                setState(() {
-                                                                                  dist = index + (dist - dist.floor());
-                                                                                });
-                                                                              },
-                                                                              scrollController: FixedExtentScrollController(
-                                                                                initialItem: dist.floor(),
-                                                                              ),
-                                                                              children: zeroTo100,
-                                                                            ),
-                                                                          ),
-                                                                          Text(".", style: Theme.of(context).textTheme.headlineLarge),
-                                                                          SizedBox(
-                                                                            height: 200,
-                                                                            width: 100,
-                                                                            child: CupertinoPicker(
-                                                                              itemExtent: 40,
-                                                                              onSelectedItemChanged: (index) {
-                                                                                setState(() {
-                                                                                  dist = dist.floor() + index/100;
-                                                                                });
-                                                                              },
-                                                                              scrollController: FixedExtentScrollController(
-                                                                                initialItem: (((dist - dist.floor())*100).round()).toInt(),
-                                                                              ),
-                                                                              children: zeroTo100,
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                      MaterialButton(
-                                                                        color: Theme.of(context).colorScheme.primary,
-                                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                                        child: Padding(
-                                                                          padding: const EdgeInsets.all(6.0),
-                                                                          child: Row(
-                                                                            mainAxisSize: MainAxisSize.min,
-                                                                            children: [
-                                                                              SizedBox(
-                                                                                child: Text(
-                                                                                  "OK",
-                                                                                  style: TextStyle(color: Colors.black),
-                                                                                ),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                        ),
-                                                                        onPressed: () {
-                                                                          if (dist != 0) {
-                                                                            Navigator.pop(context);
-                                                                          }
-                                                                        },
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              );
-                                                            }
-                                                          );
-                                                        },
-                                                        child: Text(
-                                                          dist == 0 ? "—" : "${(dist*100).round()/100}",
-                                                          textAlign: TextAlign.left,
-                                                          style: TextStyle(
-                                                            fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
-                                                            color: Theme.of(context).colorScheme.secondary,
+                                                            ],
                                                           ),
                                                         ),
-                                                      ),
-                                                    ]
-                                                  ),
-                                                  SizedBox(height: 12),
-                                                  Row(
-                                                    children: [
-                                                      Expanded(
-                                                        child: Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          children: [
-                                                            Text(
-                                                              "Time",
-                                                              style: Theme.of(context).textTheme.titleMedium,
+                                                        InkWell(
+                                                          highlightColor: Colors.transparent,
+                                                          hoverColor: Colors.transparent,
+                                                          splashColor: Colors.transparent,
+                                                          splashFactory: NoSplash.splashFactory,
+                                                          onTap: () async {
+                                                            showCupertinoModalPopup(
+                                                              context: context,
+                                                              builder: (context) {
+                                                                return Container(
+                                                                  color: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
+                                                                  child: Padding(
+                                                                    padding: const EdgeInsets.all(16.0),
+                                                                    child: Column(
+                                                                      mainAxisSize: MainAxisSize.min,
+                                                                      children: [
+                                                                        Text("Time", style: Theme.of(context).textTheme.titleLarge),
+                                                                        Row(
+                                                                          mainAxisAlignment: MainAxisAlignment.center,
+                                                                          children: [
+                                                                            SizedBox(
+                                                                              height: 200,
+                                                                              width: 100,
+                                                                              child: CupertinoPicker(
+                                                                                backgroundColor: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
+                                                                                itemExtent: 40,
+                                                                                onSelectedItemChanged: (index) {
+                                                                                  setState(() {
+                                                                                    hours = index;
+                                                                                  });
+                                                                                },
+                                                                                scrollController: FixedExtentScrollController(
+                                                                                  initialItem: hours,
+                                                                                ),
+                                                                                children: zeroTo60,
+                                                                              ),
+                                                                            ),
+                                                                            Text(":", style: Theme.of(context).textTheme.headlineLarge),
+                                                                            SizedBox(
+                                                                              height: 200,
+                                                                              width: 100,
+                                                                              child: CupertinoPicker(
+                                                                                itemExtent: 40,
+                                                                                onSelectedItemChanged: (index) {
+                                                                                  setState(() {
+                                                                                    minutes = index;
+                                                                                  });
+                                                                                },
+                                                                                scrollController: FixedExtentScrollController(
+                                                                                  initialItem: minutes,
+                                                                                ),
+                                                                                children: zeroTo60,
+                                                                              ),
+                                                                            ),
+                                                                            Text(":", style: Theme.of(context).textTheme.headlineLarge),
+                                                                            SizedBox(
+                                                                              height: 200,
+                                                                              width: 100,
+                                                                              child: CupertinoPicker(
+                                                                                itemExtent: 40,
+                                                                                onSelectedItemChanged: (index) {
+                                                                                  setState(() {
+                                                                                    seconds = index;
+                                                                                  });
+                                                                                },
+                                                                                scrollController: FixedExtentScrollController(
+                                                                                  initialItem: seconds,
+                                                                                ),
+                                                                                children: zeroTo60,
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                        MaterialButton(
+                                                                          color: Theme.of(context).colorScheme.primary,
+                                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                                          child: Padding(
+                                                                            padding: const EdgeInsets.all(6.0),
+                                                                            child: Row(
+                                                                              mainAxisSize: MainAxisSize.min,
+                                                                              children: [
+                                                                                SizedBox(
+                                                                                  child: Text(
+                                                                                    "OK",
+                                                                                    style: TextStyle(color: Colors.black),
+                                                                                  ),
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                          ),
+                                                                          onPressed: () {
+                                                                            if (hours + minutes + seconds > 0) {
+                                                                              Navigator.pop(context);
+                                                                            }
+                                                                          },
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              }
+                                                            );
+                                                          },
+                                                          child: Text(
+                                                            hours*60*60 + minutes*60 + seconds == 0 ? "—" : secondsToTime(hours*60*60 + minutes*60 + seconds),
+                                                            textAlign: TextAlign.left,
+                                                            style: TextStyle(
+                                                              fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                                              color: Theme.of(context).colorScheme.secondary,
                                                             ),
-                                                            Text(
-                                                              "h:m:s",
-                                                              textAlign: TextAlign.left,
-                                                              style: TextStyle(
-                                                                fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
-                                                                color: Theme.of(context).colorScheme.secondary,
+                                                          ),
+                                                        ),
+                                                      ]
+                                                    ),
+                                                    SizedBox(height: 12),
+                                                    MaterialButton(
+                                                      color: Theme.of(context).colorScheme.primary,
+                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                                      child: Padding(
+                                                        padding: const EdgeInsets.all(6.0),
+                                                        child: Row(
+                                                          mainAxisSize: MainAxisSize.min,
+                                                          children: [
+                                                            SizedBox(
+                                                              child: Text(
+                                                                "Save",
+                                                                style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900,),
                                                               ),
                                                             ),
                                                           ],
                                                         ),
                                                       ),
-                                                      InkWell(
-                                                        highlightColor: Colors.transparent,
-                                                        hoverColor: Colors.transparent,
-                                                        splashColor: Colors.transparent,
-                                                        splashFactory: NoSplash.splashFactory,
-                                                        onTap: () async {
-                                                          showCupertinoModalPopup(
-                                                            context: context,
-                                                            builder: (context) {
-                                                              return Container(
-                                                                color: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
-                                                                child: Padding(
-                                                                  padding: const EdgeInsets.all(16.0),
-                                                                  child: Column(
-                                                                    mainAxisSize: MainAxisSize.min,
-                                                                    children: [
-                                                                      Text("Time", style: Theme.of(context).textTheme.titleLarge),
-                                                                      Row(
-                                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                                        children: [
-                                                                          SizedBox(
-                                                                            height: 200,
-                                                                            width: 100,
-                                                                            child: CupertinoPicker(
-                                                                              backgroundColor: Provider.of<ThemeProvider>(context, listen: false).themeData == lightMode ? Colors.white : Color(0xff0a0a0a),
-                                                                              itemExtent: 40,
-                                                                              onSelectedItemChanged: (index) {
-                                                                                setState(() {
-                                                                                  hours = index;
-                                                                                });
-                                                                              },
-                                                                              scrollController: FixedExtentScrollController(
-                                                                                initialItem: hours,
-                                                                              ),
-                                                                              children: zeroTo60,
-                                                                            ),
-                                                                          ),
-                                                                          Text(":", style: Theme.of(context).textTheme.headlineLarge),
-                                                                          SizedBox(
-                                                                            height: 200,
-                                                                            width: 100,
-                                                                            child: CupertinoPicker(
-                                                                              itemExtent: 40,
-                                                                              onSelectedItemChanged: (index) {
-                                                                                setState(() {
-                                                                                  minutes = index;
-                                                                                });
-                                                                              },
-                                                                              scrollController: FixedExtentScrollController(
-                                                                                initialItem: minutes,
-                                                                              ),
-                                                                              children: zeroTo60,
-                                                                            ),
-                                                                          ),
-                                                                          Text(":", style: Theme.of(context).textTheme.headlineLarge),
-                                                                          SizedBox(
-                                                                            height: 200,
-                                                                            width: 100,
-                                                                            child: CupertinoPicker(
-                                                                              itemExtent: 40,
-                                                                              onSelectedItemChanged: (index) {
-                                                                                setState(() {
-                                                                                  seconds = index;
-                                                                                });
-                                                                              },
-                                                                              scrollController: FixedExtentScrollController(
-                                                                                initialItem: seconds,
-                                                                              ),
-                                                                              children: zeroTo60,
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                      MaterialButton(
-                                                                        color: Theme.of(context).colorScheme.primary,
-                                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                                        child: Padding(
-                                                                          padding: const EdgeInsets.all(6.0),
-                                                                          child: Row(
-                                                                            mainAxisSize: MainAxisSize.min,
-                                                                            children: [
-                                                                              SizedBox(
-                                                                                child: Text(
-                                                                                  "OK",
-                                                                                  style: TextStyle(color: Colors.black),
-                                                                                ),
-                                                                              ),
-                                                                            ],
-                                                                          ),
-                                                                        ),
-                                                                        onPressed: () {
-                                                                          if (hours + minutes + seconds > 0) {
-                                                                            Navigator.pop(context);
-                                                                          }
-                                                                        },
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              );
-                                                            }
-                                                          );
-                                                        },
-                                                        child: Text(
-                                                          hours*60*60 + minutes*60 + seconds == 0 ? "—" : secondsToTime(hours*60*60 + minutes*60 + seconds),
-                                                          textAlign: TextAlign.left,
-                                                          style: TextStyle(
-                                                            fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
-                                                            color: Theme.of(context).colorScheme.secondary,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ]
-                                                  ),
-                                                  SizedBox(height: 12),
-                                                  MaterialButton(
-                                                    color: Theme.of(context).colorScheme.primary,
-                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                    child: Padding(
-                                                      padding: const EdgeInsets.all(6.0),
-                                                      child: Row(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          SizedBox(
-                                                            child: Text(
-                                                              "Save",
-                                                              style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900,),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
+                                                      onPressed: () {
+                                                        if (dist > 0 && hours + minutes + seconds > 0) {
+                                                          prs.remove(thisKey);
+                                                          prs.addAll({"$dist$unit": hours*60*60 + minutes*60 + seconds});
+                                                          prs = sortPRs(prs, userData.distUnit);
+                                                          savePrs(sharedPreferences, prs);
+                                                          Navigator.pop(context);
+                                                        }
+                                                      },
                                                     ),
-                                                    onPressed: () {
-                                                      if (dist > 0 && hours + minutes + seconds > 0) {
-                                                        prs.remove(thisKey);
-                                                        prs.addAll({"$dist$unit": hours*60*60 + minutes*60 + seconds});
-                                                        prs = sortPRs(prs, userData.distUnit);
-                                                        savePrs(sharedPreferences, prs);
-                                                        Navigator.pop(context);
-                                                      }
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            )
-                                          ),
-                                        );
-                                      }
-                                    );
-                                  }
-                                ).then((_) => setState(() {}));
-                              },
-                              onTap: () {
-                                if (showDetailedIndex != index) {
-                                  setState(() => showDetailedIndex = index);
-                                } else {
-                                  setState(() => showDetailedIndex = -1);
-                                }
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
-                                child: Stack(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(child: Text(
-                                          "${thisKey.substring(thisKey.length-4, thisKey.length-2) == ".0" ?
-                                            thisKey.substring(0, thisKey.length-4) : thisKey.substring(0, thisKey.length-2)} ${thisKey.substring(thisKey.length-2) == "mi" ? "mile" : "kilometer"}${double.parse(thisKey.substring(0, thisKey.length-4)) == 1 ? "" : "s"}",
-                                          style: Theme.of(context).textTheme.titleMedium,
-                                        )),
-                                        Text(
-                                          secondsToTime(prs.values.elementAt(index)),
-                                          textAlign: TextAlign.left,
-                                          style: TextStyle(
-                                            fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
-                                            color: Theme.of(context).colorScheme.secondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Builder(
-                                          builder: (context) {
-                                            if (showDetailedIndex == index) {
-                                              String key = prs.keys.elementAt(index);
-                                              int value = prs.values.elementAt(index);
-                                              return Text(
-                                                "${secondsToTime((value/toUserUnits(double.parse(key.substring(0, key.length-2)), key.substring(key.length-2), userData.distUnit)).round())}/${userData.distUnit}",
-                                                textAlign: TextAlign.left,
-                                                style: TextStyle(
-                                                  fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
-                                                  color: Theme.of(context).colorScheme.secondary,
+                                                  ],
                                                 ),
-                                              );
+                                              )
+                                            ),
+                                          );
+                                        }
+                                      );
+                                    }
+                                  ).then((_) => setState(() {}));
+                                },
+                                onTap: () {
+                                  if (showDetailedIndex != index) {
+                                    setState(() => showDetailedIndex = index);
+                                  } else {
+                                    setState(() => showDetailedIndex = -1);
+                                  }
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+                                  child: Stack(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(child: Text(
+                                            "${thisKey.substring(thisKey.length-4, thisKey.length-2) == ".0" ?
+                                              thisKey.substring(0, thisKey.length-4) : thisKey.substring(0, thisKey.length-2)} ${thisKey.substring(thisKey.length-2) == "mi" ? "mile" : "kilometer"}${double.parse(thisKey.substring(0, thisKey.length-4)) == 1 ? "" : "s"}",
+                                            style: Theme.of(context).textTheme.titleMedium,
+                                          )),
+                                          Text(
+                                            secondsToTime(prs.values.elementAt(index)),
+                                            textAlign: TextAlign.left,
+                                            style: TextStyle(
+                                              fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                              color: Theme.of(context).colorScheme.secondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Builder(
+                                            builder: (context) {
+                                              if (showDetailedIndex == index) {
+                                                String key = prs.keys.elementAt(index);
+                                                int value = prs.values.elementAt(index);
+                                                return Text(
+                                                  "${secondsToTime((value/toUserUnits(double.parse(key.substring(0, key.length-2)), key.substring(key.length-2), userData.distUnit)).round())}/${userData.distUnit}",
+                                                  textAlign: TextAlign.left,
+                                                  style: TextStyle(
+                                                    fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                                    color: Theme.of(context).colorScheme.secondary,
+                                                  ),
+                                                );
+                                              }
+                                              return Container();
                                             }
-                                            return Container();
-                                          }
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        );
+                      }
+                      if (prs.isEmpty) {
+                        return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Text("Your PRs", textAlign: TextAlign.left, style: TextStyle(
+                                  fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
+                                  fontWeight: FontWeight.w900,
+                                ),),
+                              ],
+                            ),
+                            SizedBox(height: 20),
+                            Center(
+                              child: Text("You have not added any PRs."),
+                            ),
+                          ],
+                        ),
                       );
-                    }
-                    if (prs.isEmpty) {
-                      return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Text("Your PRs", textAlign: TextAlign.left, style: TextStyle(
-                                fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
-                                fontWeight: FontWeight.w900,
-                              ),),
-                            ],
-                          ),
-                          SizedBox(height: 20),
-                          Center(
-                            child: Text("You have not added any PRs."),
-                          ),
-                        ],
-                      ),
-                    );
-                    }
-                    return Container();
-                  },
+                      }
+                      return Container();
+                    },
+                  ),
                 ),
               ),
               floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

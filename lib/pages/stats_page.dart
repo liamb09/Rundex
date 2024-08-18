@@ -160,173 +160,175 @@ class _StatsPageState extends State<StatsPage> {
               userGoalWeeks = getWeeklyGraphData(getLastFewWeeksGoal(userData));
             }
             return Scaffold(
-              body: Center(
+              body: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Text("This week", textAlign: TextAlign.left, style: TextStyle(
-                            fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
-                            fontWeight: FontWeight.w900,
-                          ),),
-                        ],
-                      ),
-                      gauges.SfRadialGauge(
-                        axes: <gauges.RadialAxis>[
-                          gauges.RadialAxis(
-                            showLabels: false,
-                            showTicks: false,
-                            radiusFactor: 0.8,
-                            axisLineStyle: gauges.AxisLineStyle(
-                              thickness: 0.2,
-                              cornerStyle: gauges.CornerStyle.bothCurve,
-                              color: Provider.of<ThemeProvider>(context).themeData == darkMode ? Color(0xff171717) : Color(0xffE8E8E8),
-                              thicknessUnit: gauges.GaugeSizeUnit.factor,
-                            ),
-                            pointers: <gauges.GaugePointer>[
-                              gauges.RangePointer(
-                                value: (thisWeekMileage/userData.goal)*100,
-                                width: 0.2,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Text("This week", textAlign: TextAlign.left, style: TextStyle(
+                              fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
+                              fontWeight: FontWeight.w900,
+                            ),),
+                          ],
+                        ),
+                        gauges.SfRadialGauge(
+                          axes: <gauges.RadialAxis>[
+                            gauges.RadialAxis(
+                              showLabels: false,
+                              showTicks: false,
+                              radiusFactor: 0.8,
+                              axisLineStyle: gauges.AxisLineStyle(
+                                thickness: 0.2,
                                 cornerStyle: gauges.CornerStyle.bothCurve,
-                                color: Theme.of(context).colorScheme.primary,
-                                sizeUnit: gauges.GaugeSizeUnit.factor,
-                                enableAnimation: true,
-                                animationDuration: 200,
-                                animationType: gauges.AnimationType.linear
-                              )
-                            ],
-                            annotations: <gauges.GaugeAnnotation>[
-                              gauges.GaugeAnnotation(
-                                positionFactor: 0.1,
-                                angle: 90,
-                                widget: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "${thisWeekMileage.toStringAsFixed(2)} / ${userData.goal}",
-                                      style: Theme.of(context).textTheme.headlineSmall,
-                                    ),
-                                    Text(
-                                      userData.distUnit == "mi" ? "Miles" : "Kilometers",
-                                      style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                                color: Provider.of<ThemeProvider>(context).themeData == darkMode ? Color(0xff171717) : Color(0xffE8E8E8),
+                                thicknessUnit: gauges.GaugeSizeUnit.factor,
+                              ),
+                              pointers: <gauges.GaugePointer>[
+                                gauges.RangePointer(
+                                  value: (thisWeekMileage/userData.goal)*100,
+                                  width: 0.2,
+                                  cornerStyle: gauges.CornerStyle.bothCurve,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  sizeUnit: gauges.GaugeSizeUnit.factor,
+                                  enableAnimation: true,
+                                  animationDuration: 200,
+                                  animationType: gauges.AnimationType.linear
+                                )
+                              ],
+                              annotations: <gauges.GaugeAnnotation>[
+                                gauges.GaugeAnnotation(
+                                  positionFactor: 0.1,
+                                  angle: 90,
+                                  widget: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "${thisWeekMileage.toStringAsFixed(2)} / ${userData.goal}",
+                                        style: Theme.of(context).textTheme.headlineSmall,
+                                      ),
+                                      Text(
+                                        userData.distUnit == "mi" ? "Miles" : "Kilometers",
+                                        style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Text(distanceChartStep == "daily" ? "Last 7 days" : "Last 7 weeks", textAlign: TextAlign.left, style: TextStyle(
+                              fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
+                              fontWeight: FontWeight.w900,
+                            ),),
+                          ],
+                        ),
+                        SizedBox(height: 20,),
+                        CupertinoSlidingSegmentedControl<String>(
+                          groupValue: distanceChartStep,
+                          children: <String, Widget>{
+                            "daily": Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: Text("Daily Mileage"),
+                            ),
+                            "weekly": Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: Text("Weekly Mileage"),
+                            ),
+                          },
+                          onValueChanged: (String? value) {
+                            if (value != null) {
+                              setState(() {
+                                distanceChartStep = value;
+                              });
+                            }
+                          },
+                        ),
+                        Builder(
+                          builder: (context) {
+                            if (distanceChartStep == "daily") {
+                              return SizedBox(
+                                height: 250,
+                                child: charts.SfCartesianChart(
+                                  series: [
+                                    charts.ColumnSeries<DayData, String>(
+                                      dataSource: lastWeek,
+                                      xValueMapper: (DayData day, _) => day.day,
+                                      yValueMapper: (DayData day, _) => day.distance,
+                                      color: Theme.of(context).colorScheme.primary,
+                                      animationDuration: 200,
+                                      dataLabelSettings: charts.DataLabelSettings(isVisible: true, showZeroValue: false),
+                                      borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
                                     ),
                                   ],
+                                  primaryXAxis: charts.CategoryAxis(
+                                    majorGridLines: charts.MajorGridLines(width: 0),
+                                    majorTickLines: charts.MajorTickLines(width: 0),
+                                    labelStyle: Theme.of(context).textTheme.titleMedium,
+                                  ),
+                                  primaryYAxis: charts.NumericAxis(
+                                    isVisible: false,
+                                  ),
+                                  borderColor: Colors.transparent,
+                                  plotAreaBorderWidth: 0,
                                 ),
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Text(distanceChartStep == "daily" ? "Last 7 days" : "Last 7 weeks", textAlign: TextAlign.left, style: TextStyle(
-                            fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
-                            fontWeight: FontWeight.w900,
-                          ),),
-                        ],
-                      ),
-                      SizedBox(height: 20,),
-                      CupertinoSlidingSegmentedControl<String>(
-                        groupValue: distanceChartStep,
-                        children: <String, Widget>{
-                          "daily": Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Text("Daily Mileage"),
-                          ),
-                          "weekly": Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Text("Weekly Mileage"),
-                          ),
-                        },
-                        onValueChanged: (String? value) {
-                          if (value != null) {
-                            setState(() {
-                              distanceChartStep = value;
-                            });
+                              );
+                            } else if (distanceChartStep == "weekly") {
+                              return SizedBox(
+                                height: 250,
+                                child: charts.SfCartesianChart(
+                                  series: [
+                                    charts.LineSeries<WeekData, String>(
+                                      dataSource: lastFewWeeks,
+                                      xValueMapper: (WeekData week, _) => week.name,
+                                      yValueMapper: (WeekData week, _) => week.distance,
+                                      color: Theme.of(context).colorScheme.primary,
+                                      animationDuration: 200,
+                                      enableTooltip: true,
+                                      width: 4,
+                                    ),
+                                    charts.LineSeries<WeekData, String>(
+                                      dataSource: userGoalWeeks,
+                                      xValueMapper: (WeekData week, _) => week.name,
+                                      yValueMapper: (WeekData week, _) => week.distance,
+                                      color: Theme.of(context).colorScheme.secondary,
+                                      animationDuration: 200,
+                                      dashArray: <double>[4, 4],
+                                      enableTooltip: false,
+                                      width: 2,
+                                    ),
+                                  ],
+                                  tooltipBehavior: charts.TooltipBehavior(
+                                    enable: true,
+                                    header: "",
+                                    color: Colors.transparent,
+                                    textStyle: TextStyle(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black),
+                                    format: "point.y${userData.distUnit}"
+                                  ),
+                                  primaryXAxis: charts.CategoryAxis(
+                                    majorGridLines: charts.MajorGridLines(width: 0),
+                                    majorTickLines: charts.MajorTickLines(width: 0),
+                                    labelStyle: Theme.of(context).textTheme.titleMedium,
+                                  ),
+                                  primaryYAxis: charts.NumericAxis(
+                                    isVisible: false,
+                                  ),
+                                  borderColor: Colors.transparent,
+                                  plotAreaBorderWidth: 0,
+                                ),
+                              );
+                            }
+                            return Container();
                           }
-                        },
-                      ),
-                      Builder(
-                        builder: (context) {
-                          if (distanceChartStep == "daily") {
-                            return SizedBox(
-                              height: 250,
-                              child: charts.SfCartesianChart(
-                                series: [
-                                  charts.ColumnSeries<DayData, String>(
-                                    dataSource: lastWeek,
-                                    xValueMapper: (DayData day, _) => day.day,
-                                    yValueMapper: (DayData day, _) => day.distance,
-                                    color: Theme.of(context).colorScheme.primary,
-                                    animationDuration: 200,
-                                    dataLabelSettings: charts.DataLabelSettings(isVisible: true, showZeroValue: false),
-                                    borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
-                                  ),
-                                ],
-                                primaryXAxis: charts.CategoryAxis(
-                                  majorGridLines: charts.MajorGridLines(width: 0),
-                                  majorTickLines: charts.MajorTickLines(width: 0),
-                                  labelStyle: Theme.of(context).textTheme.titleMedium,
-                                ),
-                                primaryYAxis: charts.NumericAxis(
-                                  isVisible: false,
-                                ),
-                                borderColor: Colors.transparent,
-                                plotAreaBorderWidth: 0,
-                              ),
-                            );
-                          } else if (distanceChartStep == "weekly") {
-                            return SizedBox(
-                              height: 250,
-                              child: charts.SfCartesianChart(
-                                series: [
-                                  charts.LineSeries<WeekData, String>(
-                                    dataSource: lastFewWeeks,
-                                    xValueMapper: (WeekData week, _) => week.name,
-                                    yValueMapper: (WeekData week, _) => week.distance,
-                                    color: Theme.of(context).colorScheme.primary,
-                                    animationDuration: 200,
-                                    enableTooltip: true,
-                                    width: 4,
-                                  ),
-                                  charts.LineSeries<WeekData, String>(
-                                    dataSource: userGoalWeeks,
-                                    xValueMapper: (WeekData week, _) => week.name,
-                                    yValueMapper: (WeekData week, _) => week.distance,
-                                    color: Theme.of(context).colorScheme.secondary,
-                                    animationDuration: 200,
-                                    dashArray: <double>[4, 4],
-                                    enableTooltip: false,
-                                    width: 2,
-                                  ),
-                                ],
-                                tooltipBehavior: charts.TooltipBehavior(
-                                  enable: true,
-                                  header: "",
-                                  color: Colors.transparent,
-                                  textStyle: TextStyle(color: Theme.of(context).colorScheme.tertiary == Colors.black ? Colors.white : Colors.black),
-                                  format: "point.y${userData.distUnit}"
-                                ),
-                                primaryXAxis: charts.CategoryAxis(
-                                  majorGridLines: charts.MajorGridLines(width: 0),
-                                  majorTickLines: charts.MajorTickLines(width: 0),
-                                  labelStyle: Theme.of(context).textTheme.titleMedium,
-                                ),
-                                primaryYAxis: charts.NumericAxis(
-                                  isVisible: false,
-                                ),
-                                borderColor: Colors.transparent,
-                                plotAreaBorderWidth: 0,
-                              ),
-                            );
-                          }
-                          return Container();
-                        }
-                      ),
-
-                    ],
+                        ),
+                    
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -65,11 +65,13 @@ class _StatsPageState extends State<StatsPage> {
 
   double getThisWeekMileage (List<Run> runs) {
     int currentTimestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-    int weekStartTimestamp = (currentTimestamp - (currentTimestamp % 604800)) + 345600; // get to last sunday
+    int weekStartTimestamp = (currentTimestamp - (currentTimestamp % 604800)) + 259200; // get to last sunday
     double ret = 0;
     for (int i = runs.length-1; i >= 0; i--) {
       if (runs[i].timestamp >= weekStartTimestamp) {
         ret += runs[i].distance;
+      } else {
+        break;
       }
     }
     return ret;
@@ -101,7 +103,9 @@ class _StatsPageState extends State<StatsPage> {
     for (int i = runs.length-1; i >= 0; i--) {
       int weeksSinceThisRun = ((currentTimestamp - (runs[i].timestamp - runs[i].timestamp%86400))/604800).floor();
       int retIndex = ret.length-1-weeksSinceThisRun;
-      ret[retIndex] = MapEntry(ret[retIndex].key, ((ret[retIndex].value + toUserUnits(runs[i].distance, runs[i].unit, user.distUnit))*100).round()/100);
+      if (retIndex >= 0) {
+        ret[retIndex] = MapEntry(ret[retIndex].key, ((ret[retIndex].value + toUserUnits(runs[i].distance, runs[i].unit, user.distUnit))*100).round()/100);
+      }
     }
     return ret;
   }

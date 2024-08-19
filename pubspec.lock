@@ -257,14 +257,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.0"
-  file_picker:
-    dependency: "direct main"
-    description:
-      name: file_picker
-      sha256: "167bb619cdddaa10ef2907609feb8a79c16dfa479d3afaf960f8e223f754bf12"
-      url: "https://pub.dev"
-    source: hosted
-    version: "8.1.2"
   fixnum:
     dependency: transitive
     description:
@@ -273,22 +265,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
-  flex_color_picker:
-    dependency: "direct main"
-    description:
-      name: flex_color_picker
-      sha256: "809af4ec82ede3b140ed0219b97d548de99e47aa4b99b14a10f705a2dbbcba5e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.5.1"
-  flex_seed_scheme:
-    dependency: transitive
-    description:
-      name: flex_seed_scheme
-      sha256: cc08c81879ecfd2ab840664ce4770980da0b8a319e35f51bcf763849b7f7596b
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.2"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -358,14 +334,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.1"
-  flutter_plugin_android_lifecycle:
-    dependency: transitive
-    description:
-      name: flutter_plugin_android_lifecycle
-      sha256: "9d98bd47ef9d34e803d438f17fd32b116d31009f534a6fa5ce3a1167f189a6de"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.21"
   flutter_share:
     dependency: "direct main"
     description:
@@ -648,14 +616,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.2"
-  pigment:
-    dependency: transitive
-    description:
-      name: pigment
-      sha256: b8c56059e21ecb9379a304c78a4f20e399d41e54384a7f64de21103b4b5c38dd
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.4"
   platform:
     dependency: transitive
     description:
@@ -925,14 +885,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1"
-  tinycolor2:
-    dependency: "direct main"
-    description:
-      name: tinycolor2
-      sha256: "81850c32ac8d4dcff37299bf3e52bcad4f4db6bc73d4b06727c9922de3766390"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.1"
   typed_data:
     dependency: transitive
     description:
@@ -997,14 +949,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
-  win32:
-    dependency: transitive
-    description:
-      name: win32
-      sha256: "68d1e89a91ed61ad9c370f9f8b6effed9ae5e0ede22a270bdfa6daf79fc2290a"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.5.4"
   xdg_directories:
     dependency: transitive
     description:

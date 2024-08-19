@@ -37,6 +37,12 @@ class MyApp extends StatelessWidget {
           title: 'Running Log',
           theme: Provider.of<ThemeProvider>(context, listen: true).themeData,
           home: MyHomePage(),
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.1)), 
+              child: child!
+            );
+          }
         );
       },
     );

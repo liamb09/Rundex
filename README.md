@@ -7,6 +7,8 @@ A simple running log to track mileage. Allows you to enter your run information 
  - [ ] Add starter survey
 
 ## Screenshots
+(slightly outdated)
+
 Home page
 
 <img src="assets/screenshots/home_page_light.png" alt="home page light" width="200"/><img src="assets/screenshots/home_page_dark.png" alt="home page dark" width="200"/>

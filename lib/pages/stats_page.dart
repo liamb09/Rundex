@@ -67,7 +67,7 @@ class _StatsPageState extends State<StatsPage> {
     int currentTimestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
     int weekStartTimestamp = (currentTimestamp - (currentTimestamp % 604800)) + 259200; // get to last sunday
     double ret = 0;
-    for (int i = runs.length-1; i >= 0; i--) {
+    for (int i = 0; i < runs.length; i++) {
       if (runs[i].timestamp >= weekStartTimestamp) {
         ret += runs[i].distance;
       } else {

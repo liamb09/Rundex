@@ -17,7 +17,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<User> getUserFromDB () async {
     var user = await UserDatabase.instance.getUser();
-    //UserDatabase.instance.clearDatabase();
     if (user.isEmpty) {
       UserDatabase.instance.addDefaultUser();
       user = await UserDatabase.instance.getUser();

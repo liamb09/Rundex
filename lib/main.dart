@@ -8,10 +8,7 @@ import 'package:running_log/theme/theme_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
-  // TODO: try to test on phone
   WidgetsFlutterBinding.ensureInitialized();
-  //RunsDatabase.instance.clearDatabase();
-  //UserDatabase.instance.clearDatabase();
   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
   if (sharedPreferences.getBool("light_mode") == null) {
     sharedPreferences.setBool("light_mode", true);
@@ -23,7 +20,6 @@ void main() async {
       builder: (context, child) {
         return MyApp(isLight: isLight,);
       },
-      // child: MyApp(isLight: isLight,),
     )
   );
 }
@@ -43,11 +39,6 @@ class MyApp extends StatelessWidget {
           home: MyHomePage(),
         );
       },
-      // child: MaterialApp(
-      //   title: 'Running Log',
-      //   theme: Provider.of<ThemeProvider>(context, listen: false).themeData,
-      //   home: MyHomePage(),
-      // ),
     );
   }
 }

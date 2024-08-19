@@ -120,9 +120,20 @@ class _PRPageState extends State<PRPage> {
             }
             Map<String, int> prs = getPRs(sharedPreferences.getString("prs")!, userData);
             return Scaffold(
+              appBar: AppBar(
+                surfaceTintColor: Theme.of(context).colorScheme.tertiary == Colors.white ? null : Colors.transparent,
+                title: Text(
+                  "Your PRs",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: Theme.of(context).textTheme.titleLarge!.fontSize,
+                  ),
+                ),
+                backgroundColor: Theme.of(context).colorScheme.tertiary,
+              ),
               body: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
                   child: ListView.builder(
                     itemCount: prs.length+1,
                     itemBuilder: (context, index) {
@@ -130,30 +141,6 @@ class _PRPageState extends State<PRPage> {
                         String thisKey = prs.keys.elementAt(index);
                         return Column(
                           children: [
-                            Builder(
-                              builder: (context) {
-                                if (index == 0) {
-                                  return Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                        child: Row(
-                                          children: [
-                                            Text("Your PRs", textAlign: TextAlign.left, style: TextStyle(
-                                              fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
-                                              fontWeight: FontWeight.w900,
-                                            ),),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(height: 10),
-                                    ],
-                                  );
-                                }
-                                return Container();
-                              },
-                            ),
                             Dismissible(
                               key: Key(thisKey),
                               background: Container(

@@ -158,6 +158,7 @@ class _AddRunPageState extends State<AddRunPage> {
       builder: (context, constraints) {
         return Scaffold(
           appBar: AppBar(
+            surfaceTintColor: Theme.of(context).colorScheme.tertiary == Colors.white ? null : Colors.transparent,
             leading: IconButton(
               icon: Icon(Icons.close),
               onPressed: () {
@@ -168,12 +169,11 @@ class _AddRunPageState extends State<AddRunPage> {
               "New run",
               style: TextStyle(
                 fontWeight: FontWeight.w900,
-                fontSize: Theme.of(context).textTheme.titleMedium!.fontSize,
+                fontSize: Theme.of(context).textTheme.titleLarge!.fontSize,
               ),
             ),
             backgroundColor: Theme.of(context).colorScheme.tertiary,
           ),
-          backgroundColor: Theme.of(context).colorScheme.tertiary,
           body: SafeArea(
             child: SingleChildScrollView(
               child: FutureBuilder<User>(

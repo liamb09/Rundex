@@ -52,28 +52,25 @@ class _ProfilePageState extends State<ProfilePage> {
           return CircularProgressIndicator();
         }
         return Scaffold(
+          appBar: AppBar(
+            surfaceTintColor: Theme.of(context).colorScheme.tertiary == Colors.white ? null : Colors.transparent,
+            title: Text(
+              "Profile",
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: Theme.of(context).textTheme.titleLarge!.fontSize,
+              ),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.tertiary,
+          ),
           body: SafeArea(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
                 child: Stack(
                   children: [
                     Column(
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text("Profile", textAlign: TextAlign.left, style: TextStyle(
-                                  fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
-                                  fontWeight: FontWeight.w900,
-                                ),),
-                              ],
-                            ),
-                            SizedBox(height: 10),
-                          ],
-                        ),
                         SizedBox(
                           width: 200,
                           height: 200,
@@ -107,7 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ],
                         ),
-                        SizedBox(height: 12),
+                        SizedBox(height: 4),
                         Row(
                           children: [
                             Expanded(

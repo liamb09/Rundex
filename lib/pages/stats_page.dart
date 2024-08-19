@@ -164,20 +164,23 @@ class _StatsPageState extends State<StatsPage> {
               userGoalWeeks = getWeeklyGraphData(getLastFewWeeksGoal(userData));
             }
             return Scaffold(
+              appBar: AppBar(
+                surfaceTintColor: Theme.of(context).colorScheme.tertiary == Colors.white ? null : Colors.transparent,
+                title: Text(
+                  "Mileage stats",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: Theme.of(context).textTheme.titleLarge!.fontSize,
+                  ),
+                ),
+                backgroundColor: Theme.of(context).colorScheme.tertiary,
+              ),
               body: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        Row(
-                          children: [
-                            Text("This week", textAlign: TextAlign.left, style: TextStyle(
-                              fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
-                              fontWeight: FontWeight.w900,
-                            ),),
-                          ],
-                        ),
                         gauges.SfRadialGauge(
                           axes: <gauges.RadialAxis>[
                             gauges.RadialAxis(
@@ -214,7 +217,7 @@ class _StatsPageState extends State<StatsPage> {
                                         style: Theme.of(context).textTheme.headlineSmall,
                                       ),
                                       Text(
-                                        userData.distUnit == "mi" ? "Miles" : "Kilometers",
+                                        "${userData.distUnit == "mi" ? "Miles" : "Kilometers"} this week",
                                         style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                                       ),
                                     ],
@@ -224,15 +227,6 @@ class _StatsPageState extends State<StatsPage> {
                             )
                           ],
                         ),
-                        Row(
-                          children: [
-                            Text(distanceChartStep == "daily" ? "Last 7 days" : "Last 7 weeks", textAlign: TextAlign.left, style: TextStyle(
-                              fontSize: Theme.of(context).textTheme.headlineSmall!.fontSize,
-                              fontWeight: FontWeight.w900,
-                            ),),
-                          ],
-                        ),
-                        SizedBox(height: 20,),
                         CupertinoSlidingSegmentedControl<String>(
                           groupValue: distanceChartStep,
                           children: <String, Widget>{
